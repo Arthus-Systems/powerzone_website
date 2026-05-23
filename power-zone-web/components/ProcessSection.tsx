@@ -94,19 +94,19 @@ export default function ProcessSection() {
   return (
     <section
       ref={containerRef}
-      className="relative bg-[#0F0F0F]"
+      className="relative bg-[#F4EFE7]"
       style={{ height: `${PROCESS_STEPS.length * SECTION_VH_PER_STEP}vh` }}
     >
       <div className="sticky top-0 flex h-screen flex-col overflow-hidden">
         {/* Section header */}
         <div className="px-6 pt-16 pb-4 text-center md:pt-20 md:pb-6">
-          <p className="text-[11px] font-medium uppercase tracking-[0.32em] text-red-500">
+          <p className="text-[20px] font-medium uppercase tracking-[0.32em] text-red-500">
             Our Solutions
           </p>
-          <h2 className="mx-auto mt-4 max-w-[60rem] text-[clamp(24px,3.2vw,46px)] font-semibold leading-[1.1] tracking-tight text-white">
+          <h2 className="mx-auto mt-4 max-w-[60rem] text-[clamp(24px,3.2vw,46px)] font-semibold leading-[1.1] tracking-tight text-black">
             Power &amp; Backup Solutions for Industry-Specific Demands
           </h2>
-          <p className="mx-auto mt-5 max-w-[44rem] text-[14px] leading-relaxed text-white/65 md:text-[15px]">
+          <p className="mx-auto mt-5 max-w-[44rem] text-[14px] leading-relaxed text-black/60 md:text-[15px]">
             Engineered to perform, trusted by industries across Pakistan and
             beyond. Discover resilient power systems tailored to your
             operational needs — with support you can count on.

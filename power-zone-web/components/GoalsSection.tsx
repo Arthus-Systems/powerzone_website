@@ -67,7 +67,7 @@ export default function GoalsSection() {
       <div className="sticky top-0 flex h-screen flex-col overflow-hidden">
         {/* Header */}
         <div className="px-8 pt-20 text-center md:pt-24">
-          <p className="text-[11px] font-medium uppercase tracking-[0.32em] text-red-600">
+          <p className="text-[20px] font-medium uppercase tracking-[0.32em] text-red-600">
             Operational Goals
           </p>
           <h2 className="mx-auto mt-4 max-w-[64rem] text-[clamp(28px,3.6vw,52px)] font-semibold leading-[1.08] tracking-tight text-black">

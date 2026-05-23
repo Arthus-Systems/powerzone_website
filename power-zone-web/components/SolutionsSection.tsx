@@ -90,9 +90,26 @@ export default function SolutionsSection() {
       style={{ height: `${SOLUTION_CARDS.length * SECTION_VH_PER_CARD}vh` }}
     >
       <div className="sticky top-0 flex h-screen flex-col overflow-hidden">
+        {/* Background image — sits inside the sticky container so it's pinned
+         * to the viewport for the entire scroll, never moves with the cards.
+         * The dark fallback bg on the <section> shows underneath so the page
+         * never flashes white if the image is still loading. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-0 bg-cover bg-center"
+          style={{ backgroundImage: "url('/images/background.png')" }}
+        />
+        {/* Subtle dark overlay so the white cards + headline stay readable
+         * regardless of what the image looks like. Bump the alpha (e.g. 0.65)
+         * if the photo is bright; drop to 0.25 if you want it more vivid. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-0 bg-black/45"
+        />
+
         {/* Section header */}
-        <div className="px-8 pt-24 text-center">
-          <p className="text-[11px] font-medium uppercase tracking-[0.32em] text-red-500">
+        <div className="relative z-10 px-8 pt-24 text-center">
+          <p className="text-[17px] font-medium uppercase tracking-[0.32em] text-white-500">
             Why Power Zone
           </p>
           <h2 className="mt-4 text-[clamp(28px,3.8vw,52px)] font-semibold leading-[1.05] tracking-tight text-white">
@@ -103,7 +120,7 @@ export default function SolutionsSection() {
         </div>
 
         {/* Cards stack — each card layer absolute-fills this container */}
-        <div className="relative flex-1">
+        <div className="relative z-10 flex-1">
           {SOLUTION_CARDS.map((card, i) => (
             <SolutionCard
               key={card.title}

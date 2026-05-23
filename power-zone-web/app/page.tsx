@@ -2,19 +2,32 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import SolutionsSection from '@/components/SolutionsSection';
 import ProcessSection from '@/components/ProcessSection';
 import GoalsSection from '@/components/GoalsSection';
 
 const LOGO_ON_DARK = '/images/logo-on-dark.png';
 const BUTTON_IMG = '/images/button.png';
-const BREAKER_SFX = '/breaker-on.mp3';
 const DIESEL_SFX = '/diesel-start.mp3';
-const IGNITION_TO_VIDEO_MS = 2600;
-const DIESEL_DELAY_MS = 250;
-const LIGHTS_ON_AT_S = 8.0;
-const DIESEL_FADE_MS = 600;
+
+// ─── INTRO TIMING (mirrors the reference index.html) ──────────────────────
+// Click → meters ramp 0 → target with jitter over STARTUP_DURATION.
+// After a short settle pause, the intro panel clip-paths away top-to-bottom
+// while a single-pixel transmission line descends in sync (REVEAL_DURATION).
+// When the reveal completes the video begins playing.
+const STARTUP_DURATION = 2500;
+const REVEAL_START_AT = STARTUP_DURATION + 400; // 2900
+const REVEAL_DURATION = 4000;
+const VIDEO_START_AT = REVEAL_START_AT + REVEAL_DURATION; // 6900
+// Engine fade is intentionally LONGER than the reveal so the diesel-start
+// recording naturally tails off across the whole transition.
+const DIESEL_FADE_DURATION = REVEAL_DURATION + 2500; // 6500ms, begins at REVEAL_START_AT
+
+// Status-line cascade — Backup → ONLINE, Auto-Start → COMPLETE, evenly spaced
+// across the meter ramp.
+const BACKUP_ONLINE_AT = 600;
+const AUTOSTART_COMPLETE_AT = 1300;
 
 const COLOR_RED = '#ff3b30';
 const COLOR_AMBER = '#ffbf3a';
@@ -22,9 +35,6 @@ const COLOR_GREEN = '#3bd67a';
 const COLOR_MUTED = 'rgba(255, 255, 255, 0.28)';
 
 const READOUT_TARGET = { power: 412, voltage: 415, ampere: 716 };
-const READOUT_RAMP_MS = 1800;
-const BACKUP_ONLINE_DELAY_MS = 1000;
-const AUTOSTART_COMPLETE_DELAY_MS = 1600;
 
 type StatusLineState = { state: string; color: string };
 
@@ -52,7 +62,7 @@ const NAV_LINKS = [
   { label: 'Contact Us', href: '/contact' },
 ];
 
-const INTRO_SEEN_KEY = "pz:introSeen";
+const INTRO_SEEN_KEY = 'pz:introSeen';
 
 export default function Home() {
   // Initialize all state to "intro complete" by default; on the first
@@ -65,6 +75,7 @@ export default function Home() {
   const [firstVisitChecked, setFirstVisitChecked] = useState(false);
   const [introSeen, setIntroSeen] = useState(true);
   const [hasPressed, setHasPressed] = useState(true);
+  const [isRevealing, setIsRevealing] = useState(false);
   const [hasLitUp, setHasLitUp] = useState(true);
   const [videoEnded, setVideoEnded] = useState(true);
   const [readings, setReadings] = useState({
@@ -81,40 +92,38 @@ export default function Home() {
     color: COLOR_GREEN,
   });
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const breakerAudioRef = useRef<HTMLAudioElement | null>(null);
   const dieselAudioRef = useRef<HTMLAudioElement | null>(null);
-  const dieselStoppedRef = useRef(false);
   const timersRef = useRef<number[]>([]);
 
   // Decide whether to play the intro on this mount. If the user has
   // never seen it (sessionStorage), reset to ignition-button state and
   // let them press it; otherwise leave the post-video hero visible. The
-  // sessionStorage key is set once the video finishes (or once they hit
-  // the ignition button — we don't want to replay the whole sequence
-  // if they navigate away and come back mid-intro).
+  // sessionStorage key is set once they hit the ignition button — we
+  // don't want to replay the whole sequence if they navigate away and
+  // come back mid-intro.
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const seen = sessionStorage.getItem(INTRO_SEEN_KEY) === "true";
+    if (typeof window === 'undefined') return;
+    const seen = sessionStorage.getItem(INTRO_SEEN_KEY) === 'true';
     if (!seen) {
       setIntroSeen(false);
       setHasPressed(false);
+      setIsRevealing(false);
       setHasLitUp(false);
       setVideoEnded(false);
       setReadings({ power: 0, voltage: 0, ampere: 0 });
-      setBackupStatus({ state: "STANDBY", color: COLOR_AMBER });
-      setAutoStartStatus({ state: "READY", color: COLOR_AMBER });
+      setBackupStatus({ state: 'STANDBY', color: COLOR_AMBER });
+      setAutoStartStatus({ state: 'READY', color: COLOR_AMBER });
     }
     setFirstVisitChecked(true);
   }, []);
 
+  // Start the video as soon as the reveal begins so it's already playing
+  // beneath the descending transmission line. Skip entirely for returning
+  // visitors (introSeen) — they see the static poster as a background.
   useEffect(() => {
-    // Skip the play call entirely once the intro has been seen — the
-    // video element renders only as a static poster background in that
-    // case (see the conditional `src` and `preload` on the <video>).
-    if (!hasLitUp || introSeen) return;
+    if (!isRevealing || introSeen) return;
     const video = videoRef.current;
     if (!video) return;
-
     const result = video.play();
     if (result && typeof result.then === 'function') {
       result.catch(() => {
@@ -123,18 +132,13 @@ export default function Home() {
         );
       });
     }
-  }, [hasLitUp, introSeen]);
+  }, [isRevealing, introSeen]);
 
   useEffect(() => {
-    const breaker = new Audio(BREAKER_SFX);
     const diesel = new Audio(DIESEL_SFX);
-    breaker.preload = 'auto';
     diesel.preload = 'auto';
-    breakerAudioRef.current = breaker;
     dieselAudioRef.current = diesel;
-
     return () => {
-      breaker.pause();
       diesel.pause();
     };
   }, []);
@@ -150,26 +154,53 @@ export default function Home() {
     if (!hasPressed) return;
     const startTime = performance.now();
     let rafId = 0;
+    // easeOutCubic ramp with subtle jitter in the first 70% so the meters
+    // feel like a real genset spooling up — voltage/RPM never rise linearly.
     const step = (now: number) => {
-      const t = Math.min(1, (now - startTime) / READOUT_RAMP_MS);
+      const t = Math.min(1, (now - startTime) / STARTUP_DURATION);
       const eased = 1 - Math.pow(1 - t, 3);
+      const jitterMag = t < 0.7 ? (1 - t) * 0.12 : 0;
+      const j = (target: number) =>
+        (Math.random() - 0.5) * target * jitterMag;
       setReadings({
-        power: Math.round(READOUT_TARGET.power * eased),
-        voltage: Math.round(READOUT_TARGET.voltage * eased),
-        ampere: Math.round(READOUT_TARGET.ampere * eased),
+        power: Math.max(
+          0,
+          Math.round(READOUT_TARGET.power * eased + j(READOUT_TARGET.power)),
+        ),
+        voltage: Math.max(
+          0,
+          Math.round(
+            READOUT_TARGET.voltage * eased + j(READOUT_TARGET.voltage),
+          ),
+        ),
+        ampere: Math.max(
+          0,
+          Math.round(
+            READOUT_TARGET.ampere * eased + j(READOUT_TARGET.ampere),
+          ),
+        ),
       });
       if (t < 1) rafId = requestAnimationFrame(step);
+      else
+        setReadings({
+          power: READOUT_TARGET.power,
+          voltage: READOUT_TARGET.voltage,
+          ampere: READOUT_TARGET.ampere,
+        });
     };
     rafId = requestAnimationFrame(step);
     return () => cancelAnimationFrame(rafId);
   }, [hasPressed]);
 
-  const fadeOutDiesel = () => {
+  // Smoothly ramps the diesel-start clip to silence over `durationMs` and
+  // then stops it. We restore the original volume on the audio element so a
+  // subsequent re-trigger (e.g. dev hot reload) starts from full volume.
+  const fadeOutDiesel = (durationMs: number) => {
     const audio = dieselAudioRef.current;
     if (!audio) return;
     const startVol = audio.volume;
-    const steps = 20;
-    const stepMs = DIESEL_FADE_MS / steps;
+    const steps = 24;
+    const stepMs = Math.max(20, durationMs / steps);
     let i = 0;
     const id = window.setInterval(() => {
       i++;
@@ -184,16 +215,6 @@ export default function Home() {
     timersRef.current.push(id);
   };
 
-  const handleVideoTimeUpdate = () => {
-    if (dieselStoppedRef.current) return;
-    const video = videoRef.current;
-    if (!video) return;
-    if (video.currentTime >= LIGHTS_ON_AT_S) {
-      dieselStoppedRef.current = true;
-      fadeOutDiesel();
-    }
-  };
-
   const handleIgnition = () => {
     if (hasPressed) return;
     setHasPressed(true);
@@ -201,35 +222,47 @@ export default function Home() {
     // Once the user pulls the trigger we consider the intro "seen" —
     // bouncing to /products and back shouldn't replay it.
     try {
-      sessionStorage.setItem(INTRO_SEEN_KEY, "true");
+      sessionStorage.setItem(INTRO_SEEN_KEY, 'true');
     } catch {
       /* sessionStorage unavailable — non-fatal */
     }
 
-    breakerAudioRef.current?.play().catch(() => {
-      console.warn('PowerZone intro: breaker sound blocked by browser.');
-    });
-
-    const dieselTimer = window.setTimeout(() => {
-      dieselAudioRef.current?.play().catch(() => {
+    // Diesel-start kicks in immediately and runs through the full intro.
+    // The fade begins at the same instant the clip-path reveal starts so
+    // the engine sound naturally tails off across the transition.
+    const diesel = dieselAudioRef.current;
+    if (diesel) {
+      diesel.currentTime = 0;
+      diesel.volume = 1;
+      diesel.play().catch(() => {
         console.warn('PowerZone intro: diesel sound blocked by browser.');
       });
-    }, DIESEL_DELAY_MS);
-    timersRef.current.push(dieselTimer);
+    }
 
+    // Status lines update mid-ramp.
     const backupTimer = window.setTimeout(() => {
       setBackupStatus({ state: 'ONLINE', color: COLOR_GREEN });
-    }, BACKUP_ONLINE_DELAY_MS);
+    }, BACKUP_ONLINE_AT);
     timersRef.current.push(backupTimer);
 
     const autoStartTimer = window.setTimeout(() => {
       setAutoStartStatus({ state: 'COMPLETE', color: COLOR_GREEN });
-    }, AUTOSTART_COMPLETE_DELAY_MS);
+    }, AUTOSTART_COMPLETE_AT);
     timersRef.current.push(autoStartTimer);
 
+    // Reveal phase — clip-path animation + transmission line descent +
+    // diesel fade-out all start in lockstep.
+    const revealTimer = window.setTimeout(() => {
+      setIsRevealing(true);
+      fadeOutDiesel(DIESEL_FADE_DURATION);
+    }, REVEAL_START_AT);
+    timersRef.current.push(revealTimer);
+
+    // After the reveal finishes the intro panel is fully clipped — drop it
+    // from the DOM and let the video take over.
     const handoff = window.setTimeout(
       () => setHasLitUp(true),
-      IGNITION_TO_VIDEO_MS,
+      VIDEO_START_AT,
     );
     timersRef.current.push(handoff);
   };
@@ -244,15 +277,45 @@ export default function Home() {
   return (
     <>
       <div className="relative w-screen h-screen overflow-hidden bg-black">
-        <AnimatePresence>
+        {/* Layer 1 — Video. Always rendered so it's visible underneath the
+         * intro panel as it clip-paths away. Plays only after isRevealing
+         * fires (so the first frame shows as soon as the line starts moving).
+         * When introSeen, no src is set — the poster acts as a static bg. */}
+        <video
+          ref={videoRef}
+          className="absolute inset-0 z-0 w-full h-full object-cover [transition:opacity_1200ms_ease-out]"
+          style={{ opacity: videoEnded ? 0.6 : 1 }}
+          src={introSeen ? undefined : '/poweron.mp4'}
+          poster="/images/intro-poster.jpg"
+          muted
+          playsInline
+          preload={introSeen ? 'none' : 'auto'}
+          onEnded={() => setVideoEnded(true)}
+        />
+
+        {/* Persistent top-left logo for the post-video state */}
+        {hasLitUp && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={LOGO_ON_DARK}
+            alt="PowerZone"
+            draggable={false}
+            className="pointer-events-none absolute left-[clamp(12px,2vw,32px)] top-[clamp(8px,1.5vh,20px)] z-40 h-[clamp(40px,6vh,72px)] w-auto select-none drop-shadow-[0_2px_10px_rgba(0,0,0,0.75)]"
+          />
+        )}
+
+        {/* Layer 2 — Intro panel. Sits above the video and clip-paths away
+         * from top to bottom over REVEAL_DURATION (linear). Once VIDEO_START_AT
+         * fires it's removed entirely so the video takes the screen. */}
         {!hasLitUp && (
-          <motion.div
-            key="intro"
-            initial={{ opacity: 1 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
+          <div
             className="absolute inset-0 z-20 bg-black"
+            style={{
+              clipPath: isRevealing ? 'inset(100% 0 0 0)' : 'inset(0 0 0 0)',
+              transition: isRevealing
+                ? `clip-path ${REVEAL_DURATION}ms linear`
+                : 'none',
+            }}
           >
             <div
               aria-hidden
@@ -324,135 +387,117 @@ export default function Home() {
             <div className="absolute bottom-[clamp(20px,3.5vh,32px)] left-1/2 z-30 -translate-x-1/2 font-mono text-[clamp(8px,1vh,10px)] uppercase tracking-[0.3em] text-white/25">
               Power Zone Emergency Management System v2.4
             </div>
-          </motion.div>
+          </div>
         )}
 
-        {hasLitUp && (
+        {/* Layer 3 — Transmission line. A 1px amber bar that descends from the
+         * top edge to the bottom of the viewport in lockstep with the clip-path
+         * reveal, then quickly fades out. Mirrors the reference exactly. */}
+        {isRevealing && !hasLitUp && (
           <motion.div
-            key="video"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1.2, ease: 'easeOut' }}
-            className="absolute inset-0 z-10"
-          >
-            <video
-              ref={videoRef}
-              className="absolute inset-0 w-full h-full object-cover [transition:opacity_1200ms_ease-out]"
-              style={{ opacity: videoEnded ? 0.2 : 1 }}
-              // Skip the video source entirely once the intro has been
-              // seen — the <video> renders just the poster as a static
-              // background, which matches the post-intro hero state.
-              src={introSeen ? undefined : "/poweron.mp4"}
-              poster="/images/intro-poster.jpg"
-              muted
-              playsInline
-              autoPlay={!introSeen}
-              preload={introSeen ? "none" : "auto"}
-              onTimeUpdate={handleVideoTimeUpdate}
-              onEnded={() => {
-                setVideoEnded(true);
-                // Persist for the rest of the session so navigating away
-                // and back to "/" doesn't replay the ignition + video.
-                try {
-                  sessionStorage.setItem(INTRO_SEEN_KEY, "true");
-                } catch {
-                  /* sessionStorage unavailable — non-fatal */
-                }
+            aria-hidden
+            className="pointer-events-none absolute left-0 right-0 top-0 z-30 h-px"
+            style={{
+              backgroundColor: COLOR_AMBER,
+              boxShadow: `0 0 8px ${COLOR_AMBER}`,
+            }}
+            initial={{ y: 0, opacity: 1 }}
+            animate={{ y: '100vh', opacity: [1, 1, 0] }}
+            transition={{
+              y: { duration: REVEAL_DURATION / 1000, ease: 'linear' },
+              opacity: {
+                duration: (REVEAL_DURATION + 300) / 1000,
+                times: [0, REVEAL_DURATION / (REVEAL_DURATION + 300), 1],
+                ease: 'linear',
+              },
+            }}
+          />
+        )}
+
+        {/* Hero punchline — appears only after the video finishes. */}
+        {videoEnded && (
+          <>
+            <motion.nav
+              initial={{ opacity: 0, y: -12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.9,
+                delay: 0.3,
+                ease: [0.22, 1, 0.36, 1],
               }}
-            />
-
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={LOGO_ON_DARK}
-              alt="PowerZone"
-              draggable={false}
-              className="pointer-events-none absolute left-[clamp(12px,2vw,32px)] top-[clamp(8px,1.5vh,20px)] z-40 h-[clamp(40px,6vh,72px)] w-auto select-none drop-shadow-[0_2px_10px_rgba(0,0,0,0.75)]"
-            />
-
-            {videoEnded && (
-              <>
-                {/* Full-width top navbar (logo overlays this via higher z-index) */}
-                <motion.nav
-                  initial={{ opacity: 0, y: -12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    duration: 0.9,
-                    delay: 0.3,
-                    ease: [0.22, 1, 0.36, 1],
-                  }}
-                  className="
-                    absolute left-0 right-0 top-0 z-30 h-24
-                    bg-black/30 backdrop-blur-md
-                    border-b border-white/10
-                  "
-                >
-                  <div
+              className="
+                absolute left-0 right-0 top-0 z-30 h-24
+                bg-black/30 backdrop-blur-md
+                border-b border-white/10
+              "
+            >
+              <div
+                className="
+                  flex h-full items-center justify-center gap-3
+                  text-sm font-bold uppercase tracking-[0.24em]
+                  text-white
+                  [text-shadow:0_1px_4px_rgba(0,0,0,0.65)]
+                "
+              >
+                {NAV_LINKS.map((link) => (
+                  <Link
+                    key={link.label}
+                    href={link.href}
                     className="
-                      flex h-full items-center justify-center gap-3
-                      text-sm font-bold uppercase tracking-[0.24em]
-                      text-white
-                      [text-shadow:0_1px_4px_rgba(0,0,0,0.65)]
+                      cursor-pointer
+                      rounded-full px-5 py-2
+                      transition-colors duration-300
+                      hover:bg-red-500/55
                     "
                   >
-                    {NAV_LINKS.map((link) => (
-                      <Link
-                        key={link.label}
-                        href={link.href}
-                        className="
-                          cursor-pointer
-                          rounded-full px-5 py-2
-                          transition-colors duration-300
-                          hover:bg-red-500/55
-                        "
-                      >
-                        {link.label}
-                      </Link>
-                    ))}
-                  </div>
-                </motion.nav>
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            </motion.nav>
 
-                {/* Hero punchline */}
-                <motion.div
-                  variants={HERO_CONTAINER_VARIANTS}
-                  initial="hidden"
-                  animate="show"
-                  className="pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-center px-8 text-center"
-                >
-                  <motion.span
-                    variants={HERO_ITEM_VARIANTS}
-                    className="text-[11px] md:text-[12px] font-medium uppercase tracking-[0.42em] text-white/70 [text-shadow:0_1px_4px_rgba(0,0,0,0.7)]"
-                  >
-                    Power Zone
-                  </motion.span>
-                  <motion.h1
-                    variants={HERO_ITEM_VARIANTS}
-                    className="mt-5 font-semibold leading-[0.95] text-[clamp(40px,5.5vw,84px)] tracking-[-0.02em] text-white [text-shadow:0_2px_18px_rgba(0,0,0,0.55)]"
-                  >
-                    Diesel Generators
-                    <br />
-                    by Power Zone
-                  </motion.h1>
-                  <motion.p
-                    variants={HERO_ITEM_VARIANTS}
-                    className="mt-5 text-[12px] md:text-[14px] font-medium uppercase tracking-[0.34em] text-white/85 [text-shadow:0_1px_4px_rgba(0,0,0,0.7)]"
-                  >
-                    Reliable Backup Power
-                  </motion.p>
-                  <motion.p
-                    variants={HERO_ITEM_VARIANTS}
-                    className="mt-8 max-w-[36rem] text-[14px] md:text-[15px] leading-relaxed text-white/75 [text-shadow:0_1px_4px_rgba(0,0,0,0.7)]"
-                  >
-                    Power Zone delivers high performance diesel generators and
-                    advanced battery energy storage systems, ensuring
-                    uninterrupted power for industries across Pakistan.
-                  </motion.p>
-                </motion.div>
+            <motion.div
+              variants={HERO_CONTAINER_VARIANTS}
+              initial="hidden"
+              animate="show"
+              className="pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-center px-8 text-center"
+            >
+              <motion.h1
+                variants={HERO_ITEM_VARIANTS}
+                className="mt-5 font-semibold leading-[0.95] text-[clamp(40px,5.5vw,84px)] tracking-[-0.02em] text-white [text-shadow:0_2px_18px_rgba(0,0,0,0.55)]"
+              >
+                Diesel Generators
+                <br />
+                by Power Zone
+              </motion.h1>
+              <motion.p
+                variants={HERO_ITEM_VARIANTS}
+                className="mt-5 text-[12px] md:text-[14px] font-medium uppercase tracking-[0.34em] text-white/85 [text-shadow:0_1px_4px_rgba(0,0,0,0.7)]"
+              >
+                Reliable Backup Power
+              </motion.p>
+            </motion.div>
 
-              </>
-            )}
-          </motion.div>
+            {/* Floor-anchored body paragraph — pinned near the bottom edge. */}
+            <motion.p
+              variants={HERO_ITEM_VARIANTS}
+              initial="hidden"
+              animate="show"
+              transition={{ delay: 0.95 }}
+              className="
+                pointer-events-none absolute left-1/2 bottom-[23vh]
+                -translate-x-1/2 z-20
+                w-[min(40rem,90vw)] px-6 text-center
+                text-[14px] md:text-[20px] leading-relaxed text-white/75
+                [text-shadow:0_1px_4px_rgba(0,0,0,0.7)]
+              "
+            >
+              Power Zone delivers high performance diesel generators and
+              advanced battery energy storage systems, ensuring uninterrupted
+              power for industries across Pakistan.
+            </motion.p>
+          </>
         )}
-        </AnimatePresence>
       </div>
       {videoEnded && <SolutionsSection />}
       {videoEnded && <ProcessSection />}
