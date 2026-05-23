@@ -16,12 +16,6 @@ const NAV_LINKS = [
 type Filter = 'All' | BlogCategory;
 const FILTERS: Filter[] = ['All', 'Hybrid Inverters', 'Diesel Generators'];
 
-// ───────────────────────────────────────────────────────────────────────────
-// SEARCH
-// ───────────────────────────────────────────────────────────────────────────
-// Token-based contains-match across title, excerpt, category, and tags. Each
-// query token must appear in at least one of the searchable fields, so multi
-// word queries narrow rather than broaden.
 function matches(post: BlogPost, query: string, filter: Filter): boolean {
   if (filter !== 'All' && post.category !== filter) return false;
   const q = query.trim().toLowerCase();
@@ -55,25 +49,7 @@ export default function BlogIndex() {
   const rest = filtered.slice(1);
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-[#0F0F0F] text-white">
-      {/* Atmospheric glows */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            'radial-gradient(ellipse 60% 50% at 100% 0%, rgba(220, 38, 38, 0.12) 0%, transparent 65%)',
-        }}
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            'radial-gradient(ellipse 50% 40% at 0% 100%, rgba(255, 255, 255, 0.04) 0%, transparent 70%)',
-        }}
-      />
-
+    <div className="relative min-h-screen w-full overflow-hidden bg-[#F4EFE7] text-black">
       {/* Top-left logo */}
       <Link
         href="/"
@@ -82,20 +58,19 @@ export default function BlogIndex() {
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/images/logo-on-dark.png"
+          src="/images/logo-on-light.png"
           alt="Power Zone"
           draggable={false}
-          className="pointer-events-none h-16 w-auto select-none drop-shadow-[0_2px_10px_rgba(0,0,0,0.75)]"
+          className="pointer-events-none h-16 w-auto select-none"
         />
       </Link>
 
       {/* Top navbar */}
-      <nav className="absolute left-0 right-0 top-0 z-30 h-24 border-b border-white/10 bg-black/30 backdrop-blur-md">
+      <nav className="absolute left-0 right-0 top-0 z-30 h-24 border-b border-black/10 bg-[#F4EFE7]/80 backdrop-blur-md">
         <div
           className="
             flex h-full items-center justify-center gap-3
-            text-sm font-bold uppercase tracking-[0.24em] text-white
-            [text-shadow:0_1px_4px_rgba(0,0,0,0.65)]
+            text-sm font-bold uppercase tracking-[0.24em] text-black
           "
         >
           {NAV_LINKS.map((link) => {
@@ -107,7 +82,7 @@ export default function BlogIndex() {
                 className={`
                   cursor-pointer rounded-full px-5 py-2
                   transition-colors duration-300
-                  ${isActive ? 'bg-red-500/55' : 'hover:bg-red-500/55'}
+                  ${isActive ? 'bg-red-500/20 text-red-600' : 'hover:bg-black/8'}
                 `}
               >
                 {link.label}
@@ -132,16 +107,16 @@ export default function BlogIndex() {
             className="
               mx-auto mt-4 max-w-[60rem]
               text-[clamp(34px,4.4vw,60px)] font-semibold
-              leading-[1.04] tracking-tight text-white
+              leading-[1.04] tracking-tight text-black
             "
             style={{ letterSpacing: '-0.01em' }}
           >
             Knowledge from the
-            <span className="ml-3 font-serif italic font-normal text-white/85">
+            <span className="ml-3 font-serif italic font-normal text-black/70">
               power room.
             </span>
           </h1>
-          <p className="mx-auto mt-5 max-w-[44rem] text-[14px] leading-relaxed text-white/65 md:text-[15px]">
+          <p className="mx-auto mt-5 max-w-[44rem] text-[14px] leading-relaxed text-black/60 md:text-[15px]">
             Practical guides on diesel generators, hybrid inverters, and the
             energy systems we install across Pakistan — written by the people
             who run them.
@@ -167,7 +142,7 @@ export default function BlogIndex() {
                       ${
                         active
                           ? 'bg-red-500/85 text-white'
-                          : 'border border-white/10 bg-white/[0.03] text-white/70 hover:border-red-500/40 hover:text-white'
+                          : 'border border-black/15 bg-white/60 text-black/70 hover:border-red-500/40 hover:text-black'
                       }
                     `}
                   >
@@ -176,13 +151,13 @@ export default function BlogIndex() {
                 );
               })}
             </div>
-            <p className="text-center text-[12px] text-white/40">
+            <p className="text-center text-[12px] text-black/40">
               {filtered.length}{' '}
               {filtered.length === 1 ? 'article' : 'articles'}
               {query ? (
                 <>
                   {' '}
-                  matching <span className="text-white/70">“{query}”</span>
+                  matching <span className="text-black/70">"{query}"</span>
                 </>
               ) : null}
             </p>
@@ -228,11 +203,11 @@ function SearchBar({
     <label
       className="
         group relative flex items-center
-        rounded-full border border-white/10 bg-white/[0.04]
+        rounded-full border border-black/15 bg-white/70
         px-5 py-3.5
         backdrop-blur-md
         transition-colors duration-300
-        focus-within:border-red-500/50 focus-within:bg-white/[0.06]
+        focus-within:border-red-500/50 focus-within:bg-white
       "
     >
       <svg
@@ -242,7 +217,7 @@ function SearchBar({
         strokeWidth={1.7}
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="mr-3 h-5 w-5 shrink-0 text-white/45 transition-colors group-focus-within:text-red-400"
+        className="mr-3 h-5 w-5 shrink-0 text-black/40 transition-colors group-focus-within:text-red-500"
         aria-hidden
       >
         <circle cx="11" cy="11" r="7" />
@@ -254,7 +229,7 @@ function SearchBar({
         onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
         placeholder="Search articles — try &ldquo;battery&rdquo;, &ldquo;cleaning&rdquo;, &ldquo;hybrid inverter&rdquo;…"
         className="
-          flex-1 bg-transparent text-[14px] text-white placeholder:text-white/35
+          flex-1 bg-transparent text-[14px] text-black placeholder:text-black/35
           focus:outline-none md:text-[15px]
         "
       />
@@ -265,8 +240,8 @@ function SearchBar({
           aria-label="Clear search"
           className="
             ml-3 shrink-0 rounded-full
-            p-1 text-white/40 transition-colors
-            hover:bg-white/10 hover:text-white
+            p-1 text-black/40 transition-colors
+            hover:bg-black/10 hover:text-black
           "
         >
           <svg
@@ -292,42 +267,32 @@ function FeaturedCard({ post }: { post: BlogPost }) {
       href={`/blog/${post.slug}`}
       className="
         group relative block overflow-hidden
-        rounded-[2rem] border border-white/10
-        bg-gradient-to-br from-[#1A1A1A] via-[#181818] to-[#141414]
+        rounded-[2rem] border border-black/10
+        bg-white
         p-8 md:p-12
         transition-all duration-500
         hover:-translate-y-0.5 hover:border-red-500/40
-        hover:shadow-[0_30px_80px_-30px_rgba(220,38,38,0.35)]
+        hover:shadow-[0_30px_80px_-30px_rgba(220,38,38,0.20)]
       "
     >
-      {/* Glow accent */}
-      <div
-        aria-hidden
-        className="
-          pointer-events-none absolute -right-24 -top-24 h-72 w-72
-          rounded-full bg-red-500/10 blur-3xl
-          transition-opacity duration-500
-          opacity-60 group-hover:opacity-100
-        "
-      />
       <div className="relative grid gap-8 md:grid-cols-[1.4fr_1fr] md:items-end">
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <CategoryPill category={post.category} />
-            <span className="text-[11px] font-medium uppercase tracking-[0.22em] text-white/45">
+            <span className="text-[11px] font-medium uppercase tracking-[0.22em] text-black/45">
               Featured · {post.readMinutes} min read
             </span>
           </div>
           <h2
             className="
               mt-5 text-[clamp(26px,3.2vw,42px)]
-              font-semibold leading-[1.08] tracking-tight text-white
+              font-semibold leading-[1.08] tracking-tight text-black
             "
             style={{ letterSpacing: '-0.01em' }}
           >
             {post.title}
           </h2>
-          <p className="mt-4 max-w-[44rem] text-[15px] leading-relaxed text-white/65 md:text-[16px]">
+          <p className="mt-4 max-w-[44rem] text-[15px] leading-relaxed text-black/60 md:text-[16px]">
             {post.excerpt}
           </p>
         </div>
@@ -335,8 +300,8 @@ function FeaturedCard({ post }: { post: BlogPost }) {
           <span
             className="
               inline-flex items-center gap-2
-              text-[12px] font-semibold uppercase tracking-[0.22em] text-white
-              transition-colors group-hover:text-red-400
+              text-[12px] font-semibold uppercase tracking-[0.22em] text-black
+              transition-colors group-hover:text-red-600
             "
           >
             Read article
@@ -355,16 +320,16 @@ function PostCard({ post }: { post: BlogPost }) {
       className="
         group relative flex h-full flex-col
         overflow-hidden rounded-2xl
-        border border-white/10 bg-[#181818]
+        border border-black/10 bg-white
         p-7
         transition-all duration-500
         hover:-translate-y-1 hover:border-red-500/40
-        hover:shadow-[0_22px_55px_-25px_rgba(220,38,38,0.45)]
+        hover:shadow-[0_22px_55px_-25px_rgba(220,38,38,0.25)]
       "
     >
       <div className="flex items-center justify-between">
         <CategoryPill category={post.category} />
-        <span className="text-[10px] font-medium uppercase tracking-[0.22em] text-white/40">
+        <span className="text-[10px] font-medium uppercase tracking-[0.22em] text-black/40">
           {post.readMinutes} min
         </span>
       </div>
@@ -372,8 +337,8 @@ function PostCard({ post }: { post: BlogPost }) {
       <h3
         className="
           mt-5 text-[18px] font-semibold leading-[1.25]
-          tracking-tight text-white
-          transition-colors group-hover:text-red-400
+          tracking-tight text-black
+          transition-colors group-hover:text-red-600
           md:text-[19px]
         "
         style={{ letterSpacing: '-0.005em' }}
@@ -381,15 +346,15 @@ function PostCard({ post }: { post: BlogPost }) {
         {post.title}
       </h3>
 
-      <p className="mt-3 line-clamp-3 text-[13.5px] leading-relaxed text-white/60">
+      <p className="mt-3 line-clamp-3 text-[13.5px] leading-relaxed text-black/60">
         {post.excerpt}
       </p>
 
       <span
         className="
           mt-6 inline-flex items-center gap-2
-          text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70
-          transition-colors group-hover:text-red-400
+          text-[11px] font-semibold uppercase tracking-[0.22em] text-black/60
+          transition-colors group-hover:text-red-600
         "
       >
         Read more
@@ -402,8 +367,8 @@ function PostCard({ post }: { post: BlogPost }) {
 function CategoryPill({ category }: { category: BlogCategory }) {
   const styles =
     category === 'Hybrid Inverters'
-      ? 'bg-red-500/15 text-red-300 ring-red-500/25'
-      : 'bg-amber-400/10 text-amber-200 ring-amber-400/20';
+      ? 'bg-red-500/12 text-red-600 ring-red-500/25'
+      : 'bg-amber-500/12 text-amber-700 ring-amber-500/25';
   return (
     <span
       className={`
@@ -448,14 +413,14 @@ function EmptyState({
     <div
       className="
         mx-auto flex max-w-[480px] flex-col items-center
-        rounded-2xl border border-white/10 bg-white/[0.02]
+        rounded-2xl border border-black/10 bg-white
         px-8 py-14 text-center
       "
     >
       <div
         className="
           flex h-12 w-12 items-center justify-center
-          rounded-full border border-white/10 bg-black/30
+          rounded-full border border-black/10 bg-black/5
         "
       >
         <svg
@@ -464,17 +429,17 @@ function EmptyState({
           stroke="currentColor"
           strokeWidth={1.6}
           strokeLinecap="round"
-          className="h-5 w-5 text-white/55"
+          className="h-5 w-5 text-black/50"
           aria-hidden
         >
           <circle cx="11" cy="11" r="7" />
           <path d="m20 20-3.5-3.5" />
         </svg>
       </div>
-      <h3 className="mt-5 text-[18px] font-semibold tracking-tight text-white">
-        Nothing matched{query ? ` “${query}”` : ' your filter'}.
+      <h3 className="mt-5 text-[18px] font-semibold tracking-tight text-black">
+        Nothing matched{query ? ` "${query}"` : ' your filter'}.
       </h3>
-      <p className="mt-2 text-[13.5px] leading-relaxed text-white/55">
+      <p className="mt-2 text-[13.5px] leading-relaxed text-black/55">
         Try a different keyword or clear the filters to see every article.
       </p>
       <button

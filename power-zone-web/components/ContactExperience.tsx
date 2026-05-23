@@ -40,26 +40,7 @@ const OFFICES: Office[] = [
 
 export default function ContactExperience() {
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-[#0F0F0F] text-white lg:h-screen">
-      {/* Subtle red radial glow in the top-right corner for atmosphere */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            'radial-gradient(ellipse 60% 50% at 100% 0%, rgba(220, 38, 38, 0.10) 0%, transparent 65%)',
-        }}
-      />
-      {/* Subtle inverse glow at bottom-left */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            'radial-gradient(ellipse 50% 40% at 0% 100%, rgba(255, 255, 255, 0.04) 0%, transparent 70%)',
-        }}
-      />
-
+    <div className="relative min-h-screen w-full overflow-hidden bg-[#F4EFE7] text-black lg:h-screen">
       {/* Top-left logo */}
       <Link
         href="/"
@@ -68,10 +49,10 @@ export default function ContactExperience() {
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/images/logo-on-dark.png"
+          src="/images/logo-on-light.png"
           alt="Power Zone"
           draggable={false}
-          className="pointer-events-none h-16 w-auto select-none drop-shadow-[0_2px_10px_rgba(0,0,0,0.75)]"
+          className="pointer-events-none h-16 w-auto select-none"
         />
       </Link>
 
@@ -79,14 +60,13 @@ export default function ContactExperience() {
       <nav
         className="
           absolute left-0 right-0 top-0 z-30 h-24
-          border-b border-white/10 bg-black/30 backdrop-blur-md
+          border-b border-black/10 bg-[#F4EFE7]/80 backdrop-blur-md
         "
       >
         <div
           className="
             flex h-full items-center justify-center gap-3
-            text-sm font-bold uppercase tracking-[0.24em] text-white
-            [text-shadow:0_1px_4px_rgba(0,0,0,0.65)]
+            text-sm font-bold uppercase tracking-[0.24em] text-black
           "
         >
           {NAV_LINKS.map((link) => {
@@ -98,11 +78,7 @@ export default function ContactExperience() {
                 className={`
                   cursor-pointer rounded-full px-5 py-2
                   transition-colors duration-300
-                  ${
-                    isActive
-                      ? 'bg-red-500/55'
-                      : 'hover:bg-red-500/55'
-                  }
+                  ${isActive ? 'bg-red-500/20 text-red-600' : 'hover:bg-black/8'}
                 `}
               >
                 {link.label}
@@ -136,18 +112,18 @@ export default function ContactExperience() {
               <h1
                 className="
                   mt-4 text-[clamp(34px,4vw,56px)] font-semibold
-                  leading-[1.04] tracking-tight text-white
+                  leading-[1.04] tracking-tight text-black
                 "
                 style={{ letterSpacing: '-0.01em' }}
               >
                 See how Power Zone can
-                <span className="mt-1 block font-serif italic font-normal text-white/85">
+                <span className="mt-1 block font-serif italic font-normal text-black/70">
                   power your project.
                 </span>
               </h1>
             </div>
 
-            <p className="max-w-md text-[14px] leading-relaxed text-white/65 md:text-[15px]">
+            <p className="max-w-md text-[14px] leading-relaxed text-black/65 md:text-[15px]">
               Learn more about our products, explore use cases, or request a
               customized quote — built around your operational requirements.
             </p>
@@ -196,10 +172,10 @@ function ContactDetail({
 }) {
   return (
     <a href={href} className="group block">
-      <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-white/40">
+      <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-black/40">
         {label}
       </p>
-      <p className="mt-1 text-[15px] text-white transition-colors group-hover:text-red-400 md:text-[16px]">
+      <p className="mt-1 text-[15px] text-black transition-colors group-hover:text-red-600 md:text-[16px]">
         {value}
       </p>
     </a>
@@ -211,7 +187,7 @@ function OfficesSection() {
 
   return (
     <div>
-      <p className="mb-3 text-[10px] font-medium uppercase tracking-[0.32em] text-white/40">
+      <p className="mb-3 text-[10px] font-medium uppercase tracking-[0.32em] text-black/40">
         Our Offices
       </p>
 
@@ -230,8 +206,8 @@ function OfficesSection() {
                 transition-colors duration-200
                 ${
                   isActive
-                    ? 'border-red-500/60 bg-red-500/25 text-white'
-                    : 'border-white/15 bg-white/[0.04] text-white/65 hover:bg-white/[0.08] hover:text-white'
+                    ? 'border-red-500/60 bg-red-500/20 text-red-700'
+                    : 'border-black/15 bg-black/[0.04] text-black/65 hover:bg-black/[0.08] hover:text-black'
                 }
               `}
             >
@@ -242,7 +218,7 @@ function OfficesSection() {
       </div>
 
       {/* Selected city's address */}
-      <div className="mt-3 flex max-w-md items-start gap-2.5 text-[12px] leading-relaxed text-white/55 md:text-[13px]">
+      <div className="mt-3 flex max-w-md items-start gap-2.5 text-[12px] leading-relaxed text-black/55 md:text-[13px]">
         <svg
           aria-hidden
           viewBox="0 0 12 12"
@@ -292,7 +268,7 @@ function ContactForm() {
       onSubmit={handleSubmit}
       className="
         relative rounded-[28px]
-        border border-white/10 bg-white/[0.03]
+        border border-black/10 bg-white
         p-7 backdrop-blur-sm
         md:p-10
       "
@@ -300,7 +276,7 @@ function ContactForm() {
       <p className="text-[11px] font-medium uppercase tracking-[0.32em] text-red-500">
         Get in Touch
       </p>
-      <h2 className="mt-2 text-[22px] font-semibold tracking-tight text-white md:text-[26px]">
+      <h2 className="mt-2 text-[22px] font-semibold tracking-tight text-black md:text-[26px]">
         Send us a message
       </h2>
 
@@ -396,18 +372,18 @@ function FormField({
 
   const fieldClasses = `
     mt-1.5 w-full bg-transparent
-    border-b border-white/20
-    py-2 text-[15px] text-white placeholder-white/30
+    border-b border-black/20
+    py-2 text-[15px] text-black placeholder-black/30
     transition-colors duration-200
     focus:border-red-500 focus:outline-none
   `;
 
   return (
     <div className={className}>
-      <label className="block text-[10px] font-medium uppercase tracking-[0.24em] text-white/55">
+      <label className="block text-[10px] font-medium uppercase tracking-[0.24em] text-black/55">
         {label}
         {optional && (
-          <span className="ml-2 normal-case text-white/30">(optional)</span>
+          <span className="ml-2 normal-case text-black/30">(optional)</span>
         )}
       </label>
       {textarea ? (
@@ -440,7 +416,7 @@ function SuccessPanel({ onReset }: { onReset: () => void }) {
       className="
         relative flex flex-col items-center rounded-[28px]
         border border-red-500/25 bg-red-500/[0.06]
-        p-10 text-center backdrop-blur-sm
+        p-10 text-center
         md:p-14
       "
     >
@@ -456,7 +432,7 @@ function SuccessPanel({ onReset }: { onReset: () => void }) {
           fill="none"
           stroke="currentColor"
           strokeWidth={2}
-          className="h-7 w-7 text-red-400"
+          className="h-7 w-7 text-red-500"
           aria-hidden
         >
           <path
@@ -467,10 +443,10 @@ function SuccessPanel({ onReset }: { onReset: () => void }) {
         </svg>
       </div>
 
-      <h2 className="mt-6 text-[26px] font-semibold tracking-tight text-white">
+      <h2 className="mt-6 text-[26px] font-semibold tracking-tight text-black">
         Message sent.
       </h2>
-      <p className="mt-2 max-w-sm text-[14px] leading-relaxed text-white/65 md:text-[15px]">
+      <p className="mt-2 max-w-sm text-[14px] leading-relaxed text-black/65 md:text-[15px]">
         Thanks for reaching out. A member of our sales team will get back to
         you within 24 hours.
       </p>
@@ -480,10 +456,10 @@ function SuccessPanel({ onReset }: { onReset: () => void }) {
         onClick={onReset}
         className="
           mt-8 inline-flex items-center gap-2 rounded-full
-          border border-white/20 px-6 py-2.5
-          text-[11px] font-bold uppercase tracking-[0.22em] text-white/80
+          border border-black/20 px-6 py-2.5
+          text-[11px] font-bold uppercase tracking-[0.22em] text-black/70
           transition-colors duration-200
-          hover:border-white/40 hover:text-white
+          hover:border-black/40 hover:text-black
         "
       >
         Send another message

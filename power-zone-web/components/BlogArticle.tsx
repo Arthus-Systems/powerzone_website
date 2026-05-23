@@ -16,25 +16,7 @@ export default function BlogArticle({
   related: BlogPost[];
 }) {
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-[#0F0F0F] text-white">
-      {/* Atmospheric glows */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            'radial-gradient(ellipse 60% 50% at 100% 0%, rgba(220, 38, 38, 0.12) 0%, transparent 65%)',
-        }}
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            'radial-gradient(ellipse 50% 40% at 0% 100%, rgba(255, 255, 255, 0.04) 0%, transparent 70%)',
-        }}
-      />
-
+    <div className="relative min-h-screen w-full overflow-hidden bg-[#F4EFE7] text-black">
       {/* Top-left logo */}
       <Link
         href="/"
@@ -43,20 +25,19 @@ export default function BlogArticle({
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/images/logo-on-dark.png"
+          src="/images/logo-on-light.png"
           alt="Power Zone"
           draggable={false}
-          className="pointer-events-none h-16 w-auto select-none drop-shadow-[0_2px_10px_rgba(0,0,0,0.75)]"
+          className="pointer-events-none h-16 w-auto select-none"
         />
       </Link>
 
       {/* Top navbar */}
-      <nav className="absolute left-0 right-0 top-0 z-30 h-24 border-b border-white/10 bg-black/30 backdrop-blur-md">
+      <nav className="absolute left-0 right-0 top-0 z-30 h-24 border-b border-black/10 bg-[#F4EFE7]/80 backdrop-blur-md">
         <div
           className="
             flex h-full items-center justify-center gap-3
-            text-sm font-bold uppercase tracking-[0.24em] text-white
-            [text-shadow:0_1px_4px_rgba(0,0,0,0.65)]
+            text-sm font-bold uppercase tracking-[0.24em] text-black
           "
         >
           {NAV_LINKS.map((link) => {
@@ -68,7 +49,7 @@ export default function BlogArticle({
                 className={`
                   cursor-pointer rounded-full px-5 py-2
                   transition-colors duration-300
-                  ${isActive ? 'bg-red-500/55' : 'hover:bg-red-500/55'}
+                  ${isActive ? 'bg-red-500/20 text-red-600' : 'hover:bg-black/8'}
                 `}
               >
                 {link.label}
@@ -89,8 +70,8 @@ export default function BlogArticle({
           href="/blog"
           className="
             inline-flex items-center gap-2
-            text-[11px] font-semibold uppercase tracking-[0.22em] text-white/55
-            transition-colors hover:text-red-400
+            text-[11px] font-semibold uppercase tracking-[0.22em] text-black/50
+            transition-colors hover:text-red-600
           "
         >
           <svg
@@ -113,20 +94,20 @@ export default function BlogArticle({
         <header className="mt-8">
           <div className="flex flex-wrap items-center gap-3">
             <CategoryPill category={post.category} />
-            <span className="text-[11px] font-medium uppercase tracking-[0.22em] text-white/45">
+            <span className="text-[11px] font-medium uppercase tracking-[0.22em] text-black/45">
               {post.readMinutes} min read
             </span>
           </div>
           <h1
             className="
               mt-6 text-[clamp(28px,3.6vw,46px)]
-              font-semibold leading-[1.06] tracking-tight text-white
+              font-semibold leading-[1.06] tracking-tight text-black
             "
             style={{ letterSpacing: '-0.01em' }}
           >
             {post.title}
           </h1>
-          <p className="mt-5 text-[15px] leading-relaxed text-white/65 md:text-[16px]">
+          <p className="mt-5 text-[15px] leading-relaxed text-black/65 md:text-[16px]">
             {post.excerpt}
           </p>
         </header>
@@ -145,15 +126,15 @@ export default function BlogArticle({
         {/* Tags */}
         {post.tags.length > 0 ? (
           <div className="mt-14 flex flex-wrap items-center gap-2">
-            <span className="text-[10px] font-medium uppercase tracking-[0.22em] text-white/35">
+            <span className="text-[10px] font-medium uppercase tracking-[0.22em] text-black/35">
               Tags
             </span>
             {post.tags.map((tag) => (
               <span
                 key={tag}
                 className="
-                  rounded-full border border-white/10 bg-white/[0.03]
-                  px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-white/55
+                  rounded-full border border-black/10 bg-black/[0.04]
+                  px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-black/55
                 "
               >
                 {tag}
@@ -171,9 +152,9 @@ export default function BlogArticle({
             <p className="text-[11px] font-medium uppercase tracking-[0.32em] text-red-500">
               Keep Reading
             </p>
-            <h2 className="mt-3 text-[clamp(22px,2.6vw,32px)] font-semibold tracking-tight text-white">
+            <h2 className="mt-3 text-[clamp(22px,2.6vw,32px)] font-semibold tracking-tight text-black">
               More on{' '}
-              <span className="font-serif italic font-normal text-white/85">
+              <span className="font-serif italic font-normal text-black/70">
                 {post.category.toLowerCase()}
               </span>
             </h2>
@@ -189,20 +170,16 @@ export default function BlogArticle({
   );
 }
 
-// ───────────────────────────────────────────────────────────────────────────
-// Prose renderer — converts our content array into <h3> for "## " entries
-// and <p> for everything else, with prose styling that matches the dark UI.
-// ───────────────────────────────────────────────────────────────────────────
 function ProseBlocks({ blocks }: { blocks: string[] }) {
   return (
-    <div className="space-y-5 text-[15px] leading-[1.75] text-white/75 md:text-[16.5px]">
+    <div className="space-y-5 text-[15px] leading-[1.75] text-black/70 md:text-[16.5px]">
       {blocks.map((block, i) => {
         if (block.startsWith('## ')) {
           return (
             <h3
               key={i}
               className="
-                mt-10 text-[19px] font-semibold tracking-tight text-white
+                mt-10 text-[19px] font-semibold tracking-tight text-black
                 md:text-[21px]
               "
               style={{ letterSpacing: '-0.005em' }}
@@ -212,7 +189,7 @@ function ProseBlocks({ blocks }: { blocks: string[] }) {
           );
         }
         return (
-          <p key={i} className="text-white/75">
+          <p key={i} className="text-black/70">
             {block}
           </p>
         );
@@ -224,8 +201,8 @@ function ProseBlocks({ blocks }: { blocks: string[] }) {
 function CategoryPill({ category }: { category: BlogCategory }) {
   const styles =
     category === 'Hybrid Inverters'
-      ? 'bg-red-500/15 text-red-300 ring-red-500/25'
-      : 'bg-amber-400/10 text-amber-200 ring-amber-400/20';
+      ? 'bg-red-500/12 text-red-600 ring-red-500/25'
+      : 'bg-amber-500/12 text-amber-700 ring-amber-500/25';
   return (
     <span
       className={`
@@ -248,31 +225,31 @@ function RelatedCard({ post }: { post: BlogPost }) {
       className="
         group flex h-full flex-col
         overflow-hidden rounded-2xl
-        border border-white/10 bg-[#181818]
+        border border-black/10 bg-white
         p-6
         transition-all duration-500
         hover:-translate-y-1 hover:border-red-500/40
-        hover:shadow-[0_22px_55px_-25px_rgba(220,38,38,0.45)]
+        hover:shadow-[0_22px_55px_-25px_rgba(220,38,38,0.25)]
       "
     >
       <div className="flex items-center justify-between">
         <CategoryPill category={post.category} />
-        <span className="text-[10px] font-medium uppercase tracking-[0.22em] text-white/40">
+        <span className="text-[10px] font-medium uppercase tracking-[0.22em] text-black/40">
           {post.readMinutes} min
         </span>
       </div>
       <h3
         className="
           mt-4 text-[16px] font-semibold leading-[1.3]
-          tracking-tight text-white
-          transition-colors group-hover:text-red-400
+          tracking-tight text-black
+          transition-colors group-hover:text-red-600
           md:text-[17px]
         "
         style={{ letterSpacing: '-0.005em' }}
       >
         {post.title}
       </h3>
-      <p className="mt-3 line-clamp-2 text-[13px] leading-relaxed text-white/55">
+      <p className="mt-3 line-clamp-2 text-[13px] leading-relaxed text-black/55">
         {post.excerpt}
       </p>
     </Link>
@@ -284,24 +261,17 @@ function CtaPanel() {
     <div
       className="
         relative mt-16 overflow-hidden
-        rounded-2xl border border-white/10
-        bg-gradient-to-br from-[#1A1A1A] via-[#181818] to-[#141414]
+        rounded-2xl border border-black/10
+        bg-white
         p-8 md:p-10
       "
     >
-      <div
-        aria-hidden
-        className="
-          pointer-events-none absolute -right-20 -top-20 h-64 w-64
-          rounded-full bg-red-500/10 blur-3xl
-        "
-      />
       <div className="relative flex flex-col items-start gap-5 md:flex-row md:items-center md:justify-between">
         <div>
           <p className="text-[11px] font-medium uppercase tracking-[0.32em] text-red-500">
             Need a Specialist?
           </p>
-          <h3 className="mt-3 text-[20px] font-semibold tracking-tight text-white md:text-[22px]">
+          <h3 className="mt-3 text-[20px] font-semibold tracking-tight text-black md:text-[22px]">
             Talk to a Power Zone engineer about your project.
           </h3>
         </div>
