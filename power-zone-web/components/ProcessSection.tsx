@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import type { MotionValue } from 'framer-motion';
 import { useMemo, useRef } from 'react';
@@ -136,6 +137,24 @@ export default function ProcessSection() {
             beyond. Discover resilient power systems tailored to your
             operational needs — with support you can count on.
           </p>
+          <div className="mt-[clamp(12px,4vh,35px)] flex justify-center">
+            <Link
+              href="/applications"
+              className="
+                group inline-flex items-center gap-2.5
+                rounded-full border border-red-600/30 bg-red-600/8
+                px-6 py-2.5
+                text-[14px] font-semibold uppercase tracking-[0.22em] text-red-600
+                transition-all duration-300
+                hover:border-red-600 hover:bg-red-600 hover:text-white
+              "
+            >
+              See more Applications
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3 shrink-0 transition-transform duration-300 group-hover:translate-x-0.5" aria-hidden>
+                <path d="M3 8h10M9 4l4 4-4 4" />
+              </svg>
+            </Link>
+          </div>
         </div>
 
         {/* Cards container — `flex-1 min-h-0` so the cards' absolute
@@ -266,7 +285,7 @@ function ProcessCard({
           {/* Title + description sit at the bottom */}
           <div className="max-w-[36rem]">
             <h3
-              className="font-bold uppercase leading-[1.02] tracking-tight text-white text-[clamp(30px,4.8vh,64px)]"
+              className="font-bold uppercase leading-[1.02] tracking-tight text-white text-[clamp(30px,6.5vh,72px)]"
               style={{ letterSpacing: '-0.01em' }}
             >
               {step.titlePrimary}
@@ -275,7 +294,7 @@ function ProcessCard({
                 {step.titleAccent}
               </span>
             </h3>
-            <p className="mt-[clamp(14px,2vh,28px)] text-[clamp(16px,2.2vh,22px)] leading-relaxed text-white/75">
+            <p className="mt-[clamp(14px,3vh,35px)] text-[clamp(16px,2.8vh,25px)] leading-relaxed text-white/75">
               {step.description}
             </p>
           </div>
