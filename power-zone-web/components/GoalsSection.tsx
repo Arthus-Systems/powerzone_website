@@ -36,31 +36,52 @@ const GOALS: Goal[] = [
       'Harmonic distortion mitigation reduces overheating & improves overall efficiency',
       'Safeguards critical loads against outages, equipment stress & rising energy costs',
     ],
-    backImage: '',
+    backImage: '/images/applications_1.png',
   },
   {
     title: 'Prevent Downtime',
     description:
       'Our systems combine generator sets and battery energy storage to offer a cleaner, more reliable source of outage protection—while reducing electricity bills by up to 30%.',
     icon: 'time',
-    backPoints: [],   // ← INSERT BULLET POINTS HERE for "Prevent Downtime"
-    backImage: '',    // ← INSERT IMAGE PATH HERE, e.g. '/images/prevent-downtime.png'
+    backPoints: [
+      'Responds within milliseconds during outages — zero interruptions, shutdowns, or costly restarts',
+      'Operates intelligently 24/7, not just during emergencies — optimizing energy & correcting power quality continuously',
+      'Seamlessly switches to backup mode, keeping servers & critical equipment running without delays',
+      'Battery + generator combination delivers continuous backup for the full duration of any outage',
+      'Reduces emissions by up to 90% compared to conventional standby generators',
+      'Proven 20+ year lifespan — reliable, scalable, and built for long-term value',
+    ],
+    backImage: '/images/applications_2.png',    // ← INSERT IMAGE PATH HERE, e.g. '/images/prevent-downtime.png'
   },
   {
     title: 'Lower Energy Costs',
     description:
       'Our systems integrate advanced generator sets and battery storage to help lower electricity bills in the short term and create sustained savings over time. These savings can fully offset the system\'s initial investment, delivering strong long-term return on investment for your operation.',
     icon: 'chart',
-    backPoints: [],   // ← INSERT BULLET POINTS HERE for "Lower Energy Costs"
-    backImage: '',    // ← INSERT IMAGE PATH HERE, e.g. '/images/lower-costs.png'
+    backPoints: [
+      'Hybrid generator + battery storage systems cut electricity bills by up to 30%',
+      'Energy Arbitrage — stores energy or runs generators during low-rate periods, deploys during peak-cost windows',
+      'Peak Shaving — reduces maximum demand charges by supplying stored energy during heavy usage',
+      'Offsets grid reliance by integrating renewables, protecting against future price hikes',
+      'Real-time monitoring provides clear visibility into system efficiency and savings',
+      'Engineered for long-term durability, maximizing ROI while minimizing operational costs',
+    ],
+    backImage: '/images/applications_3.png',    // ← INSERT IMAGE PATH HERE, e.g. '/images/lower-costs.png'
   },
   {
     title: 'Reduce Emissions',
     description:
       'We integrate solar energy with advanced inverters, storage, and smart management to power buildings efficiently, lowering energy costs and reducing carbon footprint through clean, sustainable power.',
     icon: 'cloud',
-    backPoints: [],   // ← INSERT BULLET POINTS HERE for "Reduce Emissions"
-    backImage: '',    // ← INSERT IMAGE PATH HERE, e.g. '/images/reduce-emissions.png'
+    backPoints: [
+      'Reduces reliance on fossil-fuel generators by integrating solar energy and smart battery storage',
+      'Peak load shifting and intelligent energy management lower overall carbon footprint',
+      'Extended product lifespans and reduced energy waste minimize environmental impact',
+      'CHINT BESS systems actively reduce diesel and grid dependency during peak demand',
+      'Partner FPT Industrial has offset 16,500+ tons of CO2, with a fully carbon-neutral ePowertrain facility powered by solar and wind',
+      'Supports your sustainability goals without compromising performance or reliability',
+    ],
+    backImage: '/images/applications_4.png',    // ← INSERT IMAGE PATH HERE, e.g. '/images/reduce-emissions.png'
   },
 ];
 
