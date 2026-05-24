@@ -1,10 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type SyntheticEvent } from 'react';
 import { motion } from 'framer-motion';
 import SolutionsSection from '@/components/SolutionsSection';
 import ProcessSection from '@/components/ProcessSection';
+import PeekProductsSection from '@/components/PeekProductsSection';
+import Footer from '@/components/Footer';
 
 const LOGO_ON_DARK = '/images/logo-on-dark.png';
 const BUTTON_IMG = '/images/button.png';
@@ -33,7 +35,13 @@ const COLOR_AMBER = '#ffbf3a';
 const COLOR_GREEN = '#3bd67a';
 const COLOR_MUTED = 'rgba(255, 255, 255, 0.28)';
 
-const READOUT_TARGET = { power: 412, voltage: 415, ampere: 716 };
+// Representative readings for an FPT industrial genset (500 kVA prime,
+// 400 V three-phase at 0.8 PF):
+//   • Power  = kVA × PF = 500 × 0.8 = 400 kW
+//   • Voltage = 400 V line-to-line (industrial 3-phase, IEC)
+//   • Current = S / (√3 × V) = 500000 / (1.732 × 400) ≈ 722 A
+const READOUT_TARGET = { power: 400, voltage: 400, ampere: 722 };
+const INTRO_END_KEY = 'pz:lastFrame';
 
 type StatusLineState = { state: string; color: string };
 
@@ -64,55 +72,57 @@ const NAV_LINKS = [
 const INTRO_SEEN_KEY = 'pz:introSeen';
 
 export default function Home() {
-  // Initialize all state to "intro complete" by default; on the first
-  // visit we override to false in a useEffect below. This lets us SSR
-  // a stable initial render and only deviate on the client where we can
-  // actually read sessionStorage. The trade-off is the very first paint
-  // shows the post-video hero for one frame before flipping back to the
-  // ignition state on a fresh visit; mitigated by `firstVisitChecked`
-  // which keeps everything hidden until we know.
+  // All state initialises to the FRESH-VISIT pre-ignition snapshot
+  // (readings = 0, status = amber, video not played). The useEffect
+  // below flips to the post-intro snapshot on return visits where
+  // sessionStorage records that the user already saw the intro. Doing
+  // it this way (rather than initialising to post-intro and reverting
+  // on first visit) guarantees the meters reliably default to 0 — even
+  // if a re-render races with the first-visit check.
+  // `firstVisitChecked` still render-gates so the wrong post-intro snapshot
+  // never flashes on returning visitors.
   const [firstVisitChecked, setFirstVisitChecked] = useState(false);
-  const [introSeen, setIntroSeen] = useState(true);
-  const [hasPressed, setHasPressed] = useState(true);
+  const [introSeen, setIntroSeen] = useState(false);
+  const [hasPressed, setHasPressed] = useState(false);
   const [isRevealing, setIsRevealing] = useState(false);
-  const [hasLitUp, setHasLitUp] = useState(true);
-  const [videoEnded, setVideoEnded] = useState(true);
-  const [readings, setReadings] = useState({
-    power: READOUT_TARGET.power,
-    voltage: READOUT_TARGET.voltage,
-    ampere: READOUT_TARGET.ampere,
-  });
+  const [hasLitUp, setHasLitUp] = useState(false);
+  const [videoEnded, setVideoEnded] = useState(false);
+  const [readings, setReadings] = useState({ power: 0, voltage: 0, ampere: 0 });
   const [backupStatus, setBackupStatus] = useState<StatusLineState>({
-    state: 'ONLINE',
-    color: COLOR_GREEN,
+    state: 'STANDBY',
+    color: COLOR_AMBER,
   });
   const [autoStartStatus, setAutoStartStatus] = useState<StatusLineState>({
-    state: 'COMPLETE',
-    color: COLOR_GREEN,
+    state: 'READY',
+    color: COLOR_AMBER,
   });
+  // Cached last frame of the intro video, captured on first visit's
+  // `onEnded` and persisted to sessionStorage so subsequent navigations
+  // back to home render a still background instead of a blank slot.
+  const [lastFrame, setLastFrame] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const dieselAudioRef = useRef<HTMLAudioElement | null>(null);
   const timersRef = useRef<number[]>([]);
+  // Marks that the hero text has been revealed, so the early-reveal
+  // onTimeUpdate doesn't fire setState repeatedly across the remaining
+  // ~3 s of playback (and the onEnded backstop doesn't double-fire).
+  const heroShownRef = useRef(false);
 
-  // Decide whether to play the intro on this mount. If the user has
-  // never seen it (sessionStorage), reset to ignition-button state and
-  // let them press it; otherwise leave the post-video hero visible. The
-  // sessionStorage key is set once they hit the ignition button — we
-  // don't want to replay the whole sequence if they navigate away and
-  // come back mid-intro.
+  // Decide whether to play the intro on this mount. Returning visitors
+  // (sessionStorage = seen) skip straight to the post-video hero, with
+  // the cached last frame painted as the static background. Fresh
+  // visitors stay on the ignition-button state and play the full intro.
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const seen = sessionStorage.getItem(INTRO_SEEN_KEY) === 'true';
-    if (!seen) {
-      setIntroSeen(false);
-      setHasPressed(false);
-      setIsRevealing(false);
-      setHasLitUp(false);
-      setVideoEnded(false);
-      setReadings({ power: 0, voltage: 0, ampere: 0 });
-      setBackupStatus({ state: 'STANDBY', color: COLOR_AMBER });
-      setAutoStartStatus({ state: 'READY', color: COLOR_AMBER });
+    if (seen) {
+      setIntroSeen(true);
+      setHasLitUp(true);
+      setVideoEnded(true);
+      heroShownRef.current = true;
     }
+    const cached = sessionStorage.getItem(INTRO_END_KEY);
+    if (cached) setLastFrame(cached);
     setFirstVisitChecked(true);
   }, []);
 
@@ -266,6 +276,55 @@ export default function Home() {
     timersRef.current.push(handoff);
   };
 
+  // Reveal the hero text ~3 s BEFORE the intro video actually ends.
+  // Without this, hero text only appears at onEnded, which feels late;
+  // the user wants the post-intro copy to land while the video is still
+  // tailing off so the dim-down + text-in animations overlap. Guarded
+  // by heroShownRef so we don't fire setState every frame after the
+  // threshold (or after the onEnded backstop also fires).
+  const HERO_LEAD_SECONDS = 3;
+  const handleVideoTimeUpdate = (e: SyntheticEvent<HTMLVideoElement>) => {
+    if (heroShownRef.current) return;
+    const v = e.currentTarget;
+    if (!Number.isFinite(v.duration) || v.duration <= 0) return;
+    if (v.currentTime >= Math.max(0, v.duration - HERO_LEAD_SECONDS)) {
+      heroShownRef.current = true;
+      setVideoEnded(true);
+    }
+  };
+
+  // On the natural end of the intro video, snapshot its last frame to
+  // a JPEG data URL and cache it in sessionStorage. The next visit to
+  // home (via back-nav or in-app navigation) reads this cache and
+  // paints it as a still background, so the hero never sits on a blank
+  // black slot waiting for the (now-unloaded) video to come back.
+  // Same-origin video so the canvas read is not tainted.
+  const handleVideoEnded = () => {
+    if (!heroShownRef.current) {
+      heroShownRef.current = true;
+      setVideoEnded(true);
+    }
+    const v = videoRef.current;
+    if (!v || !v.videoWidth) return;
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = v.videoWidth;
+      canvas.height = v.videoHeight;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
+      const dataURL = canvas.toDataURL('image/jpeg', 0.82);
+      try {
+        sessionStorage.setItem(INTRO_END_KEY, dataURL);
+      } catch {
+        /* sessionStorage quota exceeded — non-fatal */
+      }
+      setLastFrame(dataURL);
+    } catch {
+      /* canvas tainted (shouldn't happen — same-origin video) */
+    }
+  };
+
   // Render-gate. While `firstVisitChecked` is false we don't yet know
   // whether to play the intro or skip to the post-video hero — show a
   // black screen so the wrong state doesn't flash for a frame.
@@ -276,21 +335,52 @@ export default function Home() {
   return (
     <>
       <div className="relative w-screen h-screen overflow-hidden bg-black">
-        {/* Layer 1 — Video. Always rendered so it's visible underneath the
-         * intro panel as it clip-paths away. Plays only after isRevealing
-         * fires (so the first frame shows as soon as the line starts moving).
-         * When introSeen, no src is set — the poster acts as a static bg. */}
-        <video
-          ref={videoRef}
-          className="absolute inset-0 z-0 w-full h-full object-cover [transition:opacity_1200ms_ease-out]"
-          style={{ opacity: videoEnded ? 0.6 : 1 }}
-          src={introSeen ? undefined : '/poweron.mp4'}
-          poster="/images/intro-poster.jpg"
-          muted
-          playsInline
-          preload={introSeen ? 'none' : 'auto'}
-          onEnded={() => setVideoEnded(true)}
-        />
+        {/* Layer 1 — Background.
+         *
+         * Fresh visit: a <video> plays the intro and (3 s before the
+         * actual end) reveals the hero text via onTimeUpdate. onEnded
+         * also captures the final frame to sessionStorage so the next
+         * visit has a still to render in place of the (unloaded) video.
+         *
+         * Return visit: the cached frame is painted as an <img> at the
+         * same 60 % opacity the video lands at after the hero appears.
+         * If the cache is empty (e.g. user left mid-intro on the first
+         * visit) we fall back to the intro poster so the hero never
+         * sits on a blank black background. */}
+        {introSeen ? (
+          lastFrame ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={lastFrame}
+              alt=""
+              draggable={false}
+              className="absolute inset-0 z-0 h-full w-full object-cover"
+              style={{ opacity: 0.6 }}
+            />
+          ) : (
+            <div
+              aria-hidden
+              className="absolute inset-0 z-0 bg-cover bg-center"
+              style={{
+                backgroundImage: 'url(/images/intro-poster.jpg)',
+                opacity: 0.6,
+              }}
+            />
+          )
+        ) : (
+          <video
+            ref={videoRef}
+            className="absolute inset-0 z-0 w-full h-full object-cover [transition:opacity_1200ms_ease-out]"
+            style={{ opacity: videoEnded ? 0.6 : 1 }}
+            src="/poweron.mp4"
+            poster="/images/intro-poster.jpg"
+            muted
+            playsInline
+            preload="auto"
+            onTimeUpdate={handleVideoTimeUpdate}
+            onEnded={handleVideoEnded}
+          />
+        )}
 
         {/* Persistent top-left logo for the post-video state */}
         {hasLitUp && (
@@ -463,7 +553,7 @@ export default function Home() {
             >
               <motion.h1
                 variants={HERO_ITEM_VARIANTS}
-                className="mt-5 font-semibold leading-[0.95] text-[clamp(40px,5.5vw,84px)] tracking-[-0.02em] text-white [text-shadow:0_2px_18px_rgba(0,0,0,0.55)]"
+                className="mt-5 font-semibold leading-[1.02] text-[clamp(36px,5vw,78px)] tracking-[-0.02em] text-white [text-shadow:0_2px_18px_rgba(0,0,0,0.55)]"
               >
                 Diesel Generators
                 <br />
@@ -471,7 +561,7 @@ export default function Home() {
               </motion.h1>
               <motion.p
                 variants={HERO_ITEM_VARIANTS}
-                className="mt-5 text-[12px] md:text-[14px] font-medium uppercase tracking-[0.34em] text-white/85 [text-shadow:0_1px_4px_rgba(0,0,0,0.7)]"
+                className="mt-6 md:mt-7 text-[12px] md:text-[14px] font-medium uppercase tracking-[0.34em] text-white/85 [text-shadow:0_1px_4px_rgba(0,0,0,0.7)]"
               >
                 Reliable Backup Power
               </motion.p>
@@ -484,10 +574,10 @@ export default function Home() {
               animate="show"
               transition={{ delay: 0.95 }}
               className="
-                pointer-events-none absolute left-1/2 bottom-[23vh]
+                pointer-events-none absolute left-1/2 bottom-[clamp(40px,10vh,160px)]
                 -translate-x-1/2 z-20
                 w-[min(40rem,90vw)] px-6 text-center
-                text-[14px] md:text-[20px] leading-relaxed text-white/75
+                text-[13px] md:text-[18px] leading-relaxed text-white/75
                 [text-shadow:0_1px_4px_rgba(0,0,0,0.7)]
               "
             >
@@ -498,8 +588,10 @@ export default function Home() {
           </>
         )}
       </div>
+      {videoEnded && <PeekProductsSection />}
       {videoEnded && <SolutionsSection />}
       {videoEnded && <ProcessSection />}
+      {videoEnded && <Footer />}
     </>
   );
 }

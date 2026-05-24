@@ -19,7 +19,7 @@
  * back on the same generator the user was looking at.
  * -------------------------------------------------------------------------- */
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   bessProducts,
   products as generators,
@@ -40,6 +40,19 @@ const CATEGORIES: ReadonlyArray<{
 export default function ProductsRoot() {
   const [categoryId, setCategoryId] = useState<string>(CATEGORIES[0].id);
   const active = CATEGORIES.find((c) => c.id === categoryId) ?? CATEGORIES[0];
+
+  // Honour a `?category=bess|generators` URL param so the "Peek Our
+  // Products" cards on the landing page land directly on the right
+  // catalog. Read once on mount via window.location to avoid the
+  // Suspense/static-rendering interactions of next/navigation's
+  // useSearchParams — once mounted, the toggle button owns category state.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const param = new URLSearchParams(window.location.search).get("category");
+    if (param && CATEGORIES.some((c) => c.id === param)) {
+      setCategoryId(param);
+    }
+  }, []);
 
   // Per-category memory of the last-visible product index. A ref (not
   // state) so updates don't trigger a re-render of ProductsRoot — only

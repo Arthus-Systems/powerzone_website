@@ -1,26 +1,44 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Geist_Mono, Manrope } from "next/font/google";
+import {
+  Commissioner,
+  Geist_Mono,
+  Saira_Semi_Condensed,
+  Sansation,
+} from "next/font/google";
 import "./globals.css";
 
-// Title face — Bricolage Grotesque. Geometric sans with personality;
-// reads as architectural at display sizes without feeling generic the
-// way Inter / Geist do.
-const display = Bricolage_Grotesque({
+// Headings / titles — Sansation. Friendly geometric sans with a
+// distinctive double-storey "a" that reads as branded display copy
+// without feeling generic.
+const display = Sansation({
   variable: "--font-display",
+  subsets: ["latin"],
+  weight: ["300", "400", "700"],
+  display: "swap",
+});
+
+// Body + subheadings — Commissioner. Variable humanist sans with a
+// generous weight range, premium feel, pairs cleanly with Sansation
+// for paragraphs, captions, and spec copy.
+const body = Commissioner({
+  variable: "--font-body",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+// Action buttons — Saira Semi Condensed. Narrower, slightly technical
+// face that visually distinguishes CTAs from body text at a glance.
+// Applied site-wide to <button> elements via a default rule in
+// globals.css; explicit `font-action` utility available for any other
+// CTA-like element.
+const action = Saira_Semi_Condensed({
+  variable: "--font-action",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
-// Body face — Manrope. Humanist sans, premium feel, pairs cleanly with
-// Bricolage. Generous range of weights for spec copy and lists.
-const body = Manrope({
-  variable: "--font-body",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  display: "swap",
-});
-
+// Mono labels (readouts, counters, eyebrow text).
 const mono = Geist_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
@@ -45,7 +63,7 @@ export default function RootLayout({
       // onto the <html>/<body> before hydration. The mismatch is in
       // those extension-added attributes, not in our markup.
       suppressHydrationWarning
-      className={`${display.variable} ${body.variable} ${mono.variable} h-full antialiased`}
+      className={`${display.variable} ${body.variable} ${action.variable} ${mono.variable} h-full antialiased`}
     >
       <body
         suppressHydrationWarning

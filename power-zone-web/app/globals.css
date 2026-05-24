@@ -1,7 +1,10 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  /* Site-wide cream base. Sections with their own bg (hero black,
+   * SolutionsSection dark) sit on top — this just guarantees the gaps
+   * and any unstyled surface read as warm cream rather than white. */
+  --background: #F4EFE7;
   --foreground: #171717;
 }
 
@@ -9,27 +12,28 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   /* `font-sans` falls back to the body face so any leftover sans utility
-   * picks up Manrope rather than the system stack. */
+   * picks up Commissioner rather than the system stack. */
   --font-sans: var(--font-body);
-  --font-display: var(--font-display);
-  --font-body: var(--font-body);
-  --font-mono: var(--font-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-display: var(--font-display);  /* Sansation — headings/titles */
+  --font-body: var(--font-body);        /* Commissioner — body/subheadings */
+  --font-action: var(--font-action);    /* Saira Semi Condensed — CTAs */
+  --font-mono: var(--font-mono);        /* Geist Mono — readouts/labels */
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   /* `font-body` class on the body element (set in layout.tsx) supplies
-   * the Manrope variable; this fallback is just for SSR before the
+   * the Commissioner variable; this fallback is just for SSR before the
    * font swap completes. */
   font-family: var(--font-body), system-ui, sans-serif;
+}
+
+/* Default CTA face — every <button> picks up Saira Semi Condensed
+ * automatically. Individual components can still override with an
+ * explicit `font-display`, `font-body`, or `font-mono` utility class. */
+button {
+  font-family: var(--font-action), system-ui, sans-serif;
 }
 
 /* Lenis smooth-scroll (see hooks/useLenis.ts) */

@@ -78,11 +78,22 @@ const SECTION_VH_PER_STEP = 100;
 // Plain pixels (avoids the mixed-unit interpolation issue strings can hit).
 const OFF_SCREEN_Y = 1000;
 
-// As newer cards arrive, older cards "recede into the background". Per level
-// (1 level = 1 card behind the front card) we shift up, scale down, and fade.
-const RECEDE_Y = 0;         // px shift per level (set to 0 so receded cards stay hidden behind the front card; bump to e.g. 18 only if you want previous cards' tops to peek above)
-const RECEDE_SCALE = 0.05;  // scale shrink per level   (level 1 = 0.95)
-const RECEDE_OPACITY = 0.0; // opacity drop per level   (level 1 = 0.7)
+// As newer cards arrive, older cards "recede into the background". All three
+// are 0 so the front card always FULLY covers the receded stack behind it —
+// previously `RECEDE_SCALE: 0.05` shrunk receded cards by 5% per level,
+// which revealed the cream section background around their edges and made
+// the front card look semi-transparent during the 4th → 5th transition
+// (and made it appear to "shift back to the first card" once the
+// scroll passed the last checkpoint, because the small clamped scale 0.80
+// of card 0 was visible past the front card's smaller-than-area bounds).
+const RECEDE_Y = 0;
+const RECEDE_SCALE = 0;
+const RECEDE_OPACITY = 0.0;
+
+// Global card scale — applied to every checkpoint so the cards land 15%
+// smaller than the available carousel area. Lets the cream surface
+// breathe around the dark card instead of edge-to-edge filling.
+const BASE_SCALE = 0.85;
 
 export default function ProcessSection() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -91,6 +102,18 @@ export default function ProcessSection() {
     offset: ['start start', 'end end'],
   });
 
+  // Bullet-proof clamp on the scroll progress. framer-motion's
+  // `useScroll` can return values outside [0, 1] as the page scrolls
+  // past the section bottom (during the natural exit AFTER sticky
+  // unsticks), which made the last card's `motion` opacity drift even
+  // though every keyframe was 1.0 — that's the "fifth card becomes
+  // translucent the more you scroll" bug. Clamping here means every
+  // downstream useTransform sees a value strictly in [0, 1] and snaps
+  // to its boundary keyframes.
+  const clampedProgress = useTransform(scrollYProgress, (v) =>
+    Math.max(0, Math.min(1, v)),
+  );
+
   return (
     <section
       ref={containerRef}
@@ -98,32 +121,35 @@ export default function ProcessSection() {
       style={{ height: `${PROCESS_STEPS.length * SECTION_VH_PER_STEP}vh` }}
     >
       <div className="sticky top-0 flex h-screen flex-col overflow-hidden">
-        {/* Section header */}
-        <div className="px-6 pt-16 pb-4 text-center md:pt-20 md:pb-6">
-          <p className="text-[20px] font-medium uppercase tracking-[0.32em] text-red-500">
+        {/* Section header. vh-aware padding shrinks on short laptops
+         * (16:9 / 16:10) so the card area below has enough room for
+         * the step number + title + description without clipping. */}
+        <div className="px-6 pt-[clamp(40px,5vh,80px)] pb-[clamp(6px,1vh,16px)] text-center">
+          <p className="text-[clamp(13px,1.8vh,20px)] font-medium uppercase tracking-[0.32em] text-red-500">
             Our Solutions
           </p>
-          <h2 className="mx-auto mt-4 max-w-[60rem] text-[clamp(24px,3.2vw,46px)] font-semibold leading-[1.1] tracking-tight text-black">
+          <h2 className="mx-auto mt-[clamp(8px,1.5vh,16px)] max-w-[60rem] text-[clamp(22px,3.6vh,46px)] font-semibold leading-[1.1] tracking-tight text-black">
             Power &amp; Backup Solutions for Industry-Specific Demands
           </h2>
-          <p className="mx-auto mt-5 max-w-[44rem] text-[14px] leading-relaxed text-black/60 md:text-[15px]">
+          <p className="mx-auto mt-[clamp(8px,1.5vh,20px)] max-w-[44rem] text-[clamp(12px,1.6vh,15px)] leading-relaxed text-black/60">
             Engineered to perform, trusted by industries across Pakistan and
             beyond. Discover resilient power systems tailored to your
             operational needs — with support you can count on.
           </p>
         </div>
 
-        {/* Cards container — `flex-1` fills the remaining viewport below the
-         * header. Each ProcessCard is `absolute inset-0` inside this slot,
-         * so the card height is naturally smaller than before. */}
-        <div className="relative flex-1">
+        {/* Cards container — `flex-1 min-h-0` so the cards' absolute
+         * `inset-0` resolves to the remaining viewport (not the full
+         * sticky height, which would overlap the header on short
+         * screens). */}
+        <div className="relative flex-1 min-h-0">
           {PROCESS_STEPS.map((step, i) => (
             <ProcessCard
               key={`${step.titlePrimary}-${i}`}
               step={step}
               index={i}
               total={PROCESS_STEPS.length}
-              scrollYProgress={scrollYProgress}
+              scrollYProgress={clampedProgress}
             />
           ))}
         </div>
@@ -178,12 +204,15 @@ function ProcessCard({
         // behind it instead of letting that card bleed through during the
         // fade-in interpolation.
         yValues.push(OFF_SCREEN_Y);
-        scaleValues.push(1);
+        scaleValues.push(BASE_SCALE);
         opacityValues.push(1);
       } else {
-        // Front (level 0) or receded (level > 0)
+        // Front (level 0) or receded (level > 0). With RECEDE_SCALE = 0
+        // every level lands at the same BASE_SCALE so the front card
+        // covers receded ones perfectly via z-index alone — no edges
+        // peeking around a shrunken front card.
         yValues.push(-level * RECEDE_Y);
-        scaleValues.push(1 - level * RECEDE_SCALE);
+        scaleValues.push(BASE_SCALE - level * RECEDE_SCALE);
         opacityValues.push(Math.max(0, 1 - level * RECEDE_OPACITY));
       }
     }
@@ -201,21 +230,18 @@ function ProcessCard({
     transformConfig.inputs,
     transformConfig.scaleValues,
   );
-  const opacity = useTransform(
-    scrollYProgress,
-    transformConfig.inputs,
-    transformConfig.opacityValues,
-  );
+  // Opacity is no longer driven by useTransform — every keyframe was
+  // 1.0 anyway, and removing it eliminates any chance of a float drift
+  // turning the front card translucent when the section exits.
 
   return (
     <motion.div
       initial={{
         y: index === 0 ? 0 : OFF_SCREEN_Y,
-        scale: 1,
-        opacity: index === 0 ? 1 : 0,
+        scale: BASE_SCALE,
       }}
-      style={{ y, scale, opacity, zIndex: 10 + index }}
-      className="pointer-events-none absolute inset-0 flex items-center justify-center px-4 py-6 md:px-10 md:py-6"
+      style={{ y, scale, zIndex: 10 + index }}
+      className="pointer-events-none absolute inset-0 flex items-center justify-center px-3 py-[clamp(6px,1vh,16px)] md:px-8"
     >
       <div
         className="
@@ -227,17 +253,20 @@ function ProcessCard({
           bg-[#1A1A1A]
         "
       >
-        {/* Text side */}
-        <div className="flex flex-col justify-between p-10 md:p-16">
+        {/* Text side. Sizes bumped so the type fills the card properly
+         * (was visibly too small inside the 15%-shrunk card — the card
+         * looked half empty). Padding tightened slightly to give the
+         * larger type more breathing room. */}
+        <div className="flex min-h-0 flex-col justify-between p-[clamp(18px,2.6vh,48px)] md:p-[clamp(22px,3vh,56px)]">
           {/* Step number — italic serif */}
-          <div className="font-serif italic leading-none text-white/65 text-[clamp(56px,7vw,120px)]">
+          <div className="font-serif italic leading-none text-white/65 text-[clamp(56px,9vh,140px)]">
             {String(index + 1).padStart(2, '0')}
           </div>
 
           {/* Title + description sit at the bottom */}
-          <div className="max-w-[34rem]">
+          <div className="max-w-[36rem]">
             <h3
-              className="font-bold uppercase leading-[1.02] tracking-tight text-white text-[clamp(28px,3.4vw,56px)]"
+              className="font-bold uppercase leading-[1.02] tracking-tight text-white text-[clamp(30px,4.8vh,64px)]"
               style={{ letterSpacing: '-0.01em' }}
             >
               {step.titlePrimary}
@@ -246,7 +275,7 @@ function ProcessCard({
                 {step.titleAccent}
               </span>
             </h3>
-            <p className="mt-6 text-[15px] md:text-[17px] leading-relaxed text-white/70">
+            <p className="mt-[clamp(14px,2vh,28px)] text-[clamp(16px,2.2vh,22px)] leading-relaxed text-white/75">
               {step.description}
             </p>
           </div>
