@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import GoalsSection from '@/components/GoalsSection';
+import ApplicationsIndustries from '@/components/ApplicationsIndustries';
 
 export const metadata: Metadata = {
   title: 'Applications — Power Zone',
@@ -116,6 +117,9 @@ export default function ApplicationsPage() {
 
       {/* Operational Goals section — scroll-animated, follows hero */}
       <GoalsSection />
+
+      {/* Industry-specific sections */}
+      <ApplicationsIndustries />
     </div>
   );
 }
