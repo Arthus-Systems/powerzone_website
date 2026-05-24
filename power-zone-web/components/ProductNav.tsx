@@ -3,8 +3,6 @@
 import type { Product } from "@/data/products";
 
 type Props = {
-  /** The catalog whose product slugs are rendered as quick-links.
-   * Mounted by `ProductsRoot` with the active category's items. */
   products: Product[];
 };
 
@@ -17,22 +15,30 @@ export default function ProductNav({ products }: Props) {
 
   return (
     <nav
-      className="
-        fixed right-6 top-6 z-[70] hidden md:flex items-center gap-7
-        text-sm font-bold uppercase tracking-[0.22em] text-white font-display
-        [text-shadow:0_1px_4px_rgba(0,0,0,0.7)]
-      "
+      aria-label="Product list"
+      className="fixed right-6 top-[5.5rem] z-[70] hidden md:block"
     >
-      {products.map((product, i) => (
-        <button
-          key={product.slug}
-          type="button"
-          onClick={() => handleClick(i)}
-          className="cursor-pointer transition-opacity hover:opacity-75"
-        >
-          {product.slug}
-        </button>
-      ))}
+      <div className="flex flex-col overflow-hidden rounded-2xl bg-black/45 backdrop-blur-md ring-1 ring-white/10">
+        {products.map((product, i) => (
+          <button
+            key={product.slug}
+            type="button"
+            onClick={() => handleClick(i)}
+            className="
+              group flex items-center gap-3 px-5 py-3 text-left
+              transition-colors duration-200 hover:bg-white/10
+              [&:not(:last-child)]:border-b [&:not(:last-child)]:border-white/8
+            "
+          >
+            <span className="font-mono text-[10px] text-white/30 transition-colors group-hover:text-white/55">
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/70 transition-colors group-hover:text-white">
+              {product.slug}
+            </span>
+          </button>
+        ))}
+      </div>
     </nav>
   );
 }

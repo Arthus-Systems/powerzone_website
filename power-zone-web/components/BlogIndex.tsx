@@ -7,6 +7,7 @@ import { POSTS } from '@/data/blog';
 import type { BlogCategory, BlogPost } from '@/data/blog';
 
 const NAV_LINKS = [
+  { label: 'Home', href: '/' },
   { label: 'Products', href: '/products' },
   { label: 'Applications', href: '/applications' },
   { label: 'Blog', href: '/blog' },
@@ -50,27 +51,27 @@ export default function BlogIndex() {
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-[#F4EFE7] text-black">
-      {/* Top-left logo */}
-      <Link
-        href="/"
-        aria-label="Power Zone home"
-        className="absolute left-8 top-4 z-40"
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/images/logo-on-light.png"
-          alt="Power Zone"
-          draggable={false}
-          className="pointer-events-none h-16 w-auto select-none"
-        />
-      </Link>
-
       {/* Top navbar */}
-      <nav className="absolute left-0 right-0 top-0 z-30 h-24 border-b border-black/10 bg-[#F4EFE7]/80 backdrop-blur-md">
+      <nav className="absolute left-0 right-0 top-0 z-30 h-20 border-b border-white/10 bg-black/40 backdrop-blur-md">
+        {/* Top-left logo */}
+        <Link
+          href="/"
+          aria-label="Power Zone home"
+          className="absolute left-8 top-1/2 -translate-y-1/2"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/logo-on-dark.png"
+            alt="Power Zone"
+            draggable={false}
+            className="pointer-events-none h-12 w-auto select-none"
+          />
+        </Link>
+
         <div
           className="
             flex h-full items-center justify-center gap-3
-            text-sm font-bold uppercase tracking-[0.24em] text-black
+            text-sm font-bold uppercase tracking-[0.24em]
           "
         >
           {NAV_LINKS.map((link) => {
@@ -81,8 +82,8 @@ export default function BlogIndex() {
                 href={link.href}
                 className={`
                   cursor-pointer rounded-full px-5 py-2
-                  transition-colors duration-300
-                  ${isActive ? 'bg-red-500/20 text-red-600' : 'hover:bg-black/8'}
+                  transition-colors duration-300 text-white
+                  ${isActive ? 'bg-red-500/70' : 'hover:bg-red-500/55'}
                 `}
               >
                 {link.label}
@@ -95,7 +96,7 @@ export default function BlogIndex() {
       <main
         className="
           relative z-10 mx-auto w-full max-w-[1400px]
-          px-6 pb-24 pt-32 md:px-10 lg:px-16
+          px-6 pb-24 pt-28 md:px-10 lg:px-16
         "
       >
         {/* Hero */}

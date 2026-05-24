@@ -15,9 +15,9 @@ type Goal = {
   icon: IconKey;
   // ── BACK CARD CONTENT ─────────────────────────────────────────────────────
   // Set these two fields for each goal to fill in the card's back face.
-  //   backText  → the paragraph shown on the LEFT side of the back face
-  //   backImage → the image shown on the RIGHT side, e.g. '/images/power-quality.png'
-  backText: string;
+  //   backPoints → array of bullet-point strings shown on the LEFT side
+  //   backImage  → image path shown on the RIGHT side, e.g. '/images/power-quality.png'
+  backPoints: string[];
   backImage: string;
 };
 
@@ -27,32 +27,40 @@ const GOALS: Goal[] = [
     description:
       'Our generator sets and battery energy storage systems deliver reliable, uninterrupted power—supporting grid stability, preventing downtime, and safeguarding vital operations.',
     icon: 'power',
-    backText: '',      // ← INSERT BACK TEXT HERE for "Improve Power Quality"
-    backImage: '',     // ← INSERT IMAGE PATH HERE, e.g. '/images/power-quality.png'
+    backPoints: [
+      'Corrects voltage, frequency & harmonic imbalances for stable, clean power',
+      'Rapid charge/discharge response supports grid infrastructure at every level — transmission, distribution & behind the meter',
+      'Seamlessly integrates with solar, wind & chemical storage to improve compatibility',
+      'Power Factor Correction reduces reactive power charges & increases system efficiency',
+      'Voltage Regulation protects critical equipment, minimizing failure risk & extending lifespan',
+      'Harmonic distortion mitigation reduces overheating & improves overall efficiency',
+      'Safeguards critical loads against outages, equipment stress & rising energy costs',
+    ],
+    backImage: '',
   },
   {
     title: 'Prevent Downtime',
     description:
       'Our systems combine generator sets and battery energy storage to offer a cleaner, more reliable source of outage protection—while reducing electricity bills by up to 30%.',
     icon: 'time',
-    backText: '',      // ← INSERT BACK TEXT HERE for "Prevent Downtime"
-    backImage: '',     // ← INSERT IMAGE PATH HERE, e.g. '/images/prevent-downtime.png'
+    backPoints: [],   // ← INSERT BULLET POINTS HERE for "Prevent Downtime"
+    backImage: '',    // ← INSERT IMAGE PATH HERE, e.g. '/images/prevent-downtime.png'
   },
   {
     title: 'Lower Energy Costs',
     description:
-      'Our systems integrate advanced generator sets and battery storage to help lower electricity bills in the short term and create sustained savings over time. These savings can fully offset the system’s initial investment, delivering strong long-term return on investment for your operation.',
+      'Our systems integrate advanced generator sets and battery storage to help lower electricity bills in the short term and create sustained savings over time. These savings can fully offset the system\'s initial investment, delivering strong long-term return on investment for your operation.',
     icon: 'chart',
-    backText: '',      // ← INSERT BACK TEXT HERE for "Lower Energy Costs"
-    backImage: '',     // ← INSERT IMAGE PATH HERE, e.g. '/images/lower-costs.png'
+    backPoints: [],   // ← INSERT BULLET POINTS HERE for "Lower Energy Costs"
+    backImage: '',    // ← INSERT IMAGE PATH HERE, e.g. '/images/lower-costs.png'
   },
   {
     title: 'Reduce Emissions',
     description:
       'We integrate solar energy with advanced inverters, storage, and smart management to power buildings efficiently, lowering energy costs and reducing carbon footprint through clean, sustainable power.',
     icon: 'cloud',
-    backText: '',      // ← INSERT BACK TEXT HERE for "Reduce Emissions"
-    backImage: '',     // ← INSERT IMAGE PATH HERE, e.g. '/images/reduce-emissions.png'
+    backPoints: [],   // ← INSERT BULLET POINTS HERE for "Reduce Emissions"
+    backImage: '',    // ← INSERT IMAGE PATH HERE, e.g. '/images/reduce-emissions.png'
   },
 ];
 
@@ -133,13 +141,14 @@ function GoalCard({
     <motion.div style={{ clipPath, x, opacity }} className="h-full min-h-0">
       {/* Perspective wrapper enables the 3-D flip */}
       <div className="h-full" style={{ perspective: '1200px' }}>
-        {/* Flip container — rotates the whole card on button press */}
+        {/* Flip container — click anywhere on the card to flip */}
         <div
-          className="relative h-full transition-transform duration-700 ease-in-out"
+          className="relative h-full cursor-pointer transition-transform duration-700 ease-in-out"
           style={{
             transformStyle: 'preserve-3d',
             transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
           }}
+          onClick={() => setIsFlipped((f) => !f)}
         >
 
           {/* ── FRONT FACE ─────────────────────────────────────────────── */}
@@ -164,7 +173,7 @@ function GoalCard({
 
             <button
               type="button"
-              onClick={() => setIsFlipped(true)}
+              onClick={(e) => { e.stopPropagation(); setIsFlipped(true); }}
               className="
                 mt-auto inline-flex items-center gap-2
                 text-[12px] font-semibold uppercase tracking-[0.18em] text-black
@@ -205,25 +214,37 @@ function GoalCard({
               transform: 'rotateY(180deg)',
             }}
           >
-            {/* LEFT — text content
-                ↳ Edit `backText` in the GOALS array for this card's paragraph */}
+            {/* LEFT — bullet points
+                ↳ Edit `backPoints` in the GOALS array for this card */}
             <div className="flex flex-1 flex-col justify-between overflow-hidden">
-              <div>
+              <div className="overflow-y-auto pr-1">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-red-500">
                   {goal.title}
                 </p>
-                {/* ↓ backText value comes from GOALS[n].backText above */}
-                <p className="mt-3 text-[13px] leading-relaxed text-black/70 md:text-[14px]">
-                  {goal.backText}
-                </p>
+                {goal.backPoints.length > 0 ? (
+                  <ul className="mt-3 space-y-2">
+                    {goal.backPoints.map((point) => (
+                      <li key={point} className="flex items-start gap-2">
+                        <span className="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full bg-red-500" aria-hidden />
+                        <span className="text-[12px] leading-relaxed text-black/70 md:text-[13px]">
+                          {point}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-3 text-[12px] leading-relaxed text-black/40 md:text-[13px]">
+                    Content coming soon.
+                  </p>
+                )}
               </div>
 
               {/* Flip-back button */}
               <button
                 type="button"
-                onClick={() => setIsFlipped(false)}
+                onClick={(e) => { e.stopPropagation(); setIsFlipped(false); }}
                 className="
-                  inline-flex items-center gap-2
+                  mt-3 inline-flex shrink-0 items-center gap-2
                   text-[11px] font-semibold uppercase tracking-[0.18em] text-black/45
                   transition-colors hover:text-red-600
                 "

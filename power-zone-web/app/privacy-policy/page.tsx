@@ -11,11 +11,11 @@ export default function PrivacyPolicyPage() {
   return (
     <div className="min-h-screen bg-[#F4EFE7]">
       {/* Nav */}
-      <nav className="sticky top-0 z-50 flex h-20 items-center border-b border-black/8 bg-[#F4EFE7]/90 px-6 backdrop-blur-md md:px-12">
+      <nav className="sticky top-0 z-50 flex h-20 items-center border-b border-white/10 bg-black/40 px-6 backdrop-blur-md md:px-12">
         <Link href="/" className="flex items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/images/logo-on-light.png"
+            src="/images/logo-on-dark.png"
             alt="Power Zone"
             draggable={false}
             className="h-10 w-auto select-none"

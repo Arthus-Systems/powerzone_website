@@ -19,6 +19,7 @@
  * back on the same generator the user was looking at.
  * -------------------------------------------------------------------------- */
 
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   bessProducts,
@@ -27,6 +28,14 @@ import {
 } from "@/data/products";
 import ProductExperience from "./ProductExperience";
 import ProductNav from "./ProductNav";
+
+const SITE_NAV = [
+  { label: "Home", href: "/" },
+  { label: "Products", href: "/products" },
+  { label: "Applications", href: "/applications" },
+  { label: "Blog", href: "/blog" },
+  { label: "Contact Us", href: "/contact" },
+];
 
 const CATEGORIES: ReadonlyArray<{
   id: string;
@@ -70,11 +79,53 @@ export default function ProductsRoot() {
 
   return (
     <>
+      {/* ── Site-wide nav ─────────────────────────────────────────────── */}
+      <nav
+        aria-label="Site navigation"
+        className="fixed left-0 right-0 top-0 z-[90] flex h-20 items-center border-b border-white/10 bg-black/40 backdrop-blur-md"
+      >
+        {/* Logo */}
+        <Link
+          href="/"
+          aria-label="Power Zone home"
+          className="absolute left-8"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/logo-on-dark.png"
+            alt="Power Zone"
+            draggable={false}
+            className="pointer-events-none h-12 w-auto select-none"
+          />
+        </Link>
+
+        {/* Center links */}
+        <div className="flex w-full items-center justify-center gap-3 text-sm font-bold uppercase tracking-[0.24em]">
+          {SITE_NAV.map((link) => {
+            const isActive = link.href === "/products";
+            return (
+              <Link
+                key={link.label}
+                href={link.href}
+                className={`
+                  cursor-pointer rounded-full px-5 py-2
+                  transition-colors duration-300 text-white
+                  ${isActive ? "bg-red-500/70" : "hover:bg-red-500/55"}
+                `}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+
       {/* Top-center category toggle. Pill background sits above the
-       * showcase so it's visible against any product accent color. */}
+       * showcase so it's visible against any product accent color.
+       * top-[5.5rem] = 20px below the 80px (h-20) site nav. */}
       <nav
         aria-label="Product category"
-        className="fixed left-1/2 top-6 z-[80] flex -translate-x-1/2 items-center gap-1 rounded-full bg-black/35 p-1 backdrop-blur-md ring-1 ring-white/10"
+        className="fixed left-1/2 top-[5.5rem] z-[80] flex -translate-x-1/2 items-center gap-1 rounded-full bg-black/35 p-1 backdrop-blur-md ring-1 ring-white/10"
       >
         {CATEGORIES.map((c) => {
           const selected = c.id === categoryId;
