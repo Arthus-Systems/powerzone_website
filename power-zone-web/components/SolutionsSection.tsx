@@ -50,8 +50,9 @@ const SOLUTION_CARDS: SolutionCardData[] = [
 //
 // `STATE_VH` is how many viewport-heights of scroll each transition
 // consumes. Section height = 100vh (entry) + STATE_VH * (N+1)vh
-// (carousel). With STATE_VH = 35 and N = 4, the section is 275vh.
-const STATE_VH = 35;
+// (carousel). Bumped to slow the snap pace down — at the previous
+// 35vh the cards flicked past the centre too quickly to read.
+const STATE_VH = 65;
 
 // Coverflow scale curve. `SCALE_DROP_PER_CARD_WIDTH` is how much scale
 // is subtracted for each card-width of distance from viewport centre.
@@ -85,7 +86,7 @@ export default function SolutionsSection() {
 
       gsap.fromTo(
         bgImageRef.current,
-        { scale: 0, opacity: 0, transformOrigin: 'center center' },
+        { scale: 0, opacity: 1, transformOrigin: 'center center' },
         {
           scale: 1,
           opacity: 1,
@@ -93,11 +94,10 @@ export default function SolutionsSection() {
           scrollTrigger: entryTrigger,
         },
       );
-      gsap.fromTo(
-        bgOverlayRef.current,
-        { opacity: 0 },
-        { opacity: 1, ease: 'power2.out', scrollTrigger: entryTrigger },
-      );
+      // Overlay no longer scrubs independently — it lives INSIDE the
+      // image div now so it scales with the picture. Outside the
+      // growing image, the cream surface stays untouched (no more
+      // shadow tint over where the image will eventually sit).
       gsap.fromTo(
         headerRef.current,
         { scale: 0, opacity: 0, transformOrigin: 'center center' },
@@ -165,16 +165,22 @@ export default function SolutionsSection() {
       let lastProgress = 0;
       const updateVisual = (progress: number) => {
         lastProgress = progress;
+        // Bail-out guard at the top — ScrollTrigger can fire one last
+        // onUpdate during a page navigation, after React has nulled
+        // the ref but before ctx.revert() has killed the trigger.
+        // Without this, gsap.set(null, …) throws "GSAP target null
+        // not found" into the console on every cross-page click.
+        const track = trackRef.current;
+        if (!track) return;
+
         const t = progress * (N + 1); // 0 → N+1
         const i = Math.min(Math.floor(t), N);
         const f = t - i;
         const startX = positions[i] ?? 0;
         const endX = positions[i + 1] ?? startX;
         const x = startX + (endX - startX) * f;
-        gsap.set(trackRef.current, { x: -x });
+        gsap.set(track, { x: -x });
 
-        const track = trackRef.current;
-        if (!track) return;
         const vwCenter = window.innerWidth / 2;
         const cards = track.querySelectorAll<HTMLElement>('.pz-sol-card');
         cards.forEach((card) => {
@@ -232,9 +238,13 @@ export default function SolutionsSection() {
       }}
     >
       <div className="sticky top-0 flex h-screen flex-col overflow-hidden">
-        {/* Background image — initial state (scale 0, opacity 0) set
-         * inline so SSR/first paint doesn't flash the full image before
-         * the entry tween takes over. */}
+        {/* Background image — initial state (scale 0) set inline so
+         * SSR / first paint doesn't flash the full image before the
+         * entry tween takes over. The dark legibility overlay lives
+         * INSIDE this div so it scales with the image — without that
+         * nesting, an overlay at z-0 inset-0 would tint the whole
+         * cream surface during the zoom-in, creating a "shadow"
+         * shaped like the future image bounds. */}
         <div
           ref={bgImageRef}
           aria-hidden
@@ -243,15 +253,14 @@ export default function SolutionsSection() {
             backgroundImage: "url('/images/background.png')",
             transform: 'scale(0)',
             transformOrigin: 'center center',
-            opacity: 0,
           }}
-        />
-        <div
-          ref={bgOverlayRef}
-          aria-hidden
-          className="pointer-events-none absolute inset-0 z-0 bg-black/45"
-          style={{ opacity: 0 }}
-        />
+        >
+          <div
+            ref={bgOverlayRef}
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-black/45"
+          />
+        </div>
 
         {/* Section header — scales in alongside the image. */}
         <div

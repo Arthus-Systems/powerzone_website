@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useState, type FormEvent } from 'react';
-import { motion } from 'framer-motion';
 
 // Link columns — keyed to the routes that actually exist on the site.
 // Product links land on `/products?category=…` which `ProductsRoot`
@@ -34,30 +33,6 @@ const SUBSCRIBE_BULLETS = [
   'Op-Eds and insights from our leadership',
 ];
 
-// Entrance animation. Plays once when the footer scrolls into view —
-// children stagger in for a polished arrival.
-const containerVariants = {
-  hidden: { opacity: 0, y: 40 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.7,
-      ease: 'easeOut' as const,
-      staggerChildren: 0.08,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: 'easeOut' as const },
-  },
-};
-
 // ───────────────────────────────────────────────────────────────────────────
 // STICKY REVEAL MECHANIC
 // ───────────────────────────────────────────────────────────────────────────
@@ -77,6 +52,11 @@ const itemVariants = {
 // once it lands. When the user has scrolled all the way through the
 // outer 70vh, the sticky un-sticks and the footer scrolls naturally
 // off the top with the rest of the page.
+//
+// No motion entry animations on the content — those used to fire via
+// whileInView when the footer scrolled into view, which felt jarry.
+// The content is now pre-rendered statically; only the sticky-reveal
+// CSS mechanic above gives the slide.
 export default function Footer() {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
@@ -95,19 +75,10 @@ export default function Footer() {
     >
       <div className="relative h-[calc(100vh+70vh)] -top-[100vh]">
         <div className="sticky top-[calc(100vh-70vh)] h-[70vh]">
-          <motion.footer
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.25 }}
-            variants={containerVariants}
-            className="relative h-full w-full overflow-hidden bg-black text-white"
-          >
+          <footer className="relative h-full w-full overflow-hidden bg-black text-white">
             <div className="mx-auto flex h-full w-full max-w-[1400px] flex-col justify-between px-6 py-[clamp(24px,4vh,56px)] md:px-12">
               {/* ─── Top: Stay in touch + Keep up-to-date ─── */}
-              <motion.div
-                variants={itemVariants}
-                className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-12"
-              >
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-12">
                 {/* Stay in touch */}
                 <div>
                   <h2 className="text-[clamp(22px,3.2vh,36px)] font-semibold leading-[1.08] tracking-tight">
@@ -190,13 +161,10 @@ export default function Footer() {
                     ))}
                   </ul>
                 </div>
-              </motion.div>
+              </div>
 
               {/* CTA buttons */}
-              <motion.div
-                variants={itemVariants}
-                className="mt-[clamp(16px,2.4vh,32px)] flex flex-wrap justify-center gap-3"
-              >
+              <div className="mt-[clamp(16px,2.4vh,32px)] flex flex-wrap justify-center gap-3">
                 <Link
                   href="/blog"
                   className="
@@ -238,19 +206,13 @@ export default function Footer() {
                     <path d="M3 8h10M9 4l4 4-4 4" />
                   </svg>
                 </Link>
-              </motion.div>
+              </div>
 
               {/* Divider */}
-              <motion.div
-                variants={itemVariants}
-                className="my-[clamp(16px,2.4vh,32px)] h-px w-full bg-white/15"
-              />
+              <div className="my-[clamp(16px,2.4vh,32px)] h-px w-full bg-white/15" />
 
               {/* ─── Bottom: brand + columns ─── */}
-              <motion.div
-                variants={itemVariants}
-                className="grid grid-cols-1 gap-8 md:grid-cols-[1.1fr_1.6fr] md:gap-12"
-              >
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-[1.1fr_1.6fr] md:gap-12">
                 {/* Brand block. `items-start` on the column stops the
                  * logo <img> from stretching horizontally — without it
                  * the default flex `align-items: stretch` overrides
@@ -291,9 +253,9 @@ export default function Footer() {
                   <LinkColumn title="Main Pages" links={MAIN_PAGES} />
                   <LinkColumn title="Legal" links={LEGAL_LINKS} />
                 </div>
-              </motion.div>
+              </div>
             </div>
-          </motion.footer>
+          </footer>
         </div>
       </div>
     </div>

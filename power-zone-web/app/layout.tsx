@@ -3,18 +3,27 @@ import {
   Commissioner,
   Geist_Mono,
   Saira_Semi_Condensed,
-  Sansation,
 } from "next/font/google";
+import localFont from "next/font/local";
+import GlobalTransitions from "@/components/GlobalTransitions";
 import "./globals.css";
 
 // Headings / titles — Sansation. Friendly geometric sans with a
 // distinctive double-storey "a" that reads as branded display copy
-// without feeling generic.
-const display = Sansation({
+// without feeling generic. Hosted from /public/fonts/ via
+// next/font/local because Google Fonts doesn't publish CLS-reduction
+// metric data for Sansation (caused the noisy "Failed to find font
+// override values" warning every dev compile). Self-hosting bypasses
+// the metric lookup entirely.
+const display = localFont({
   variable: "--font-display",
-  subsets: ["latin"],
-  weight: ["300", "400", "700"],
+  src: [
+    { path: "../public/fonts/Sansation-Light.woff2", weight: "300", style: "normal" },
+    { path: "../public/fonts/Sansation-Regular.woff2", weight: "400", style: "normal" },
+    { path: "../public/fonts/Sansation-Bold.woff2", weight: "700", style: "normal" },
+  ],
   display: "swap",
+  adjustFontFallback: false,
 });
 
 // Body + subheadings — Commissioner. Variable humanist sans with a
@@ -24,6 +33,7 @@ const body = Commissioner({
   variable: "--font-body",
   subsets: ["latin"],
   display: "swap",
+  adjustFontFallback: false,
 });
 
 // Action buttons — Saira Semi Condensed. Narrower, slightly technical
@@ -36,6 +46,7 @@ const action = Saira_Semi_Condensed({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
+  adjustFontFallback: false,
 });
 
 // Mono labels (readouts, counters, eyebrow text).
@@ -69,7 +80,7 @@ export default function RootLayout({
         suppressHydrationWarning
         className="min-h-full flex flex-col font-body"
       >
-        {children}
+        <GlobalTransitions>{children}</GlobalTransitions>
       </body>
     </html>
   );

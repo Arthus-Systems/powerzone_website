@@ -68,9 +68,9 @@ const PROCESS_STEPS: ProcessStep[] = [
 // Higher = SLOWER (more scrolling per card transition).
 // Lower  = FASTER (less scrolling per card transition).
 //   60  → snappy
-//   100 → balanced (current)
-//   140 → slow / cinematic
-const SECTION_VH_PER_STEP = 100;
+//   100 → balanced
+//   150 → slow / cinematic (current — cards were flicking past at 100)
+const SECTION_VH_PER_STEP = 150;
 
 // ───────────────────────────────────────────────────────────────────────────
 // LOOK / DEPTH KNOBS

@@ -724,6 +724,11 @@ export default function ProductExperience({
         aria-label={
           phase === "detail" ? "Back to products" : "Power Zone home"
         }
+        // While in detail mode the click is hijacked to slide the
+        // detail layer back to the listing — opt out of the global
+        // page-transition interceptor so it doesn't navigate away
+        // before handleLogoClick has a chance to preventDefault.
+        data-no-transition={phase === "detail" ? "true" : undefined}
         className="fixed left-6 top-6 z-[80] mix-blend-difference"
       >
         <Image

@@ -41,7 +41,10 @@ const COLOR_MUTED = 'rgba(255, 255, 255, 0.28)';
 //   • Voltage = 400 V line-to-line (industrial 3-phase, IEC)
 //   • Current = S / (√3 × V) = 500000 / (1.732 × 400) ≈ 722 A
 const READOUT_TARGET = { power: 400, voltage: 400, ampere: 722 };
-const INTRO_END_KEY = 'pz:lastFrame';
+// Pre-rendered final frame of /poweron.mp4 (lives in /public). Used
+// as the hero background on return visits, and as the seamless
+// hand-off image when the intro video finishes on the first visit.
+const INTRO_END_FRAME = '/poweron_final_frame.png';
 
 type StatusLineState = { state: string; color: string };
 
@@ -96,10 +99,6 @@ export default function Home() {
     state: 'READY',
     color: COLOR_AMBER,
   });
-  // Cached last frame of the intro video, captured on first visit's
-  // `onEnded` and persisted to sessionStorage so subsequent navigations
-  // back to home render a still background instead of a blank slot.
-  const [lastFrame, setLastFrame] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const dieselAudioRef = useRef<HTMLAudioElement | null>(null);
   const timersRef = useRef<number[]>([]);
@@ -109,9 +108,10 @@ export default function Home() {
   const heroShownRef = useRef(false);
 
   // Decide whether to play the intro on this mount. Returning visitors
-  // (sessionStorage = seen) skip straight to the post-video hero, with
-  // the cached last frame painted as the static background. Fresh
-  // visitors stay on the ignition-button state and play the full intro.
+  // (sessionStorage = seen) skip straight to the post-video hero with
+  // the pre-rendered `INTRO_END_FRAME` PNG painted as the static
+  // background. Fresh visitors stay on the ignition-button state and
+  // play the full intro video.
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const seen = sessionStorage.getItem(INTRO_SEEN_KEY) === 'true';
@@ -121,8 +121,6 @@ export default function Home() {
       setVideoEnded(true);
       heroShownRef.current = true;
     }
-    const cached = sessionStorage.getItem(INTRO_END_KEY);
-    if (cached) setLastFrame(cached);
     setFirstVisitChecked(true);
   }, []);
 
@@ -293,35 +291,15 @@ export default function Home() {
     }
   };
 
-  // On the natural end of the intro video, snapshot its last frame to
-  // a JPEG data URL and cache it in sessionStorage. The next visit to
-  // home (via back-nav or in-app navigation) reads this cache and
-  // paints it as a still background, so the hero never sits on a blank
-  // black slot waiting for the (now-unloaded) video to come back.
-  // Same-origin video so the canvas read is not tainted.
+  // Backstop in case onTimeUpdate didn't fire before the video ended —
+  // ensures the hero copy reveals no later than the natural end. No
+  // canvas snapshot here anymore: the pre-rendered INTRO_END_FRAME
+  // PNG in /public is used for the post-intro background instead, so
+  // there's nothing to capture or cache.
   const handleVideoEnded = () => {
     if (!heroShownRef.current) {
       heroShownRef.current = true;
       setVideoEnded(true);
-    }
-    const v = videoRef.current;
-    if (!v || !v.videoWidth) return;
-    try {
-      const canvas = document.createElement('canvas');
-      canvas.width = v.videoWidth;
-      canvas.height = v.videoHeight;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-      ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
-      const dataURL = canvas.toDataURL('image/jpeg', 0.82);
-      try {
-        sessionStorage.setItem(INTRO_END_KEY, dataURL);
-      } catch {
-        /* sessionStorage quota exceeded — non-fatal */
-      }
-      setLastFrame(dataURL);
-    } catch {
-      /* canvas tainted (shouldn't happen — same-origin video) */
     }
   };
 
@@ -338,42 +316,30 @@ export default function Home() {
         {/* Layer 1 — Background.
          *
          * Fresh visit: a <video> plays the intro and (3 s before the
-         * actual end) reveals the hero text via onTimeUpdate. onEnded
-         * also captures the final frame to sessionStorage so the next
-         * visit has a still to render in place of the (unloaded) video.
+         * actual end) reveals the hero text via onTimeUpdate.
          *
-         * Return visit: the cached frame is painted as an <img> at the
-         * same 60 % opacity the video lands at after the hero appears.
-         * If the cache is empty (e.g. user left mid-intro on the first
-         * visit) we fall back to the intro poster so the hero never
-         * sits on a blank black background. */}
+         * Return visit: the pre-rendered INTRO_END_FRAME PNG (the
+         * actual last frame of /poweron.mp4 saved to /public) is
+         * painted as an <img> at the same 60 % opacity the video lands
+         * at after the hero appears. No more sessionStorage canvas
+         * snapshot — the PNG is always available, no quota / CORS / DPI
+         * / video-decode edge cases. */}
         {introSeen ? (
-          lastFrame ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={lastFrame}
-              alt=""
-              draggable={false}
-              className="absolute inset-0 z-0 h-full w-full object-cover"
-              style={{ opacity: 0.6 }}
-            />
-          ) : (
-            <div
-              aria-hidden
-              className="absolute inset-0 z-0 bg-cover bg-center"
-              style={{
-                backgroundImage: 'url(/images/intro-poster.jpg)',
-                opacity: 0.6,
-              }}
-            />
-          )
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={INTRO_END_FRAME}
+            alt=""
+            draggable={false}
+            className="absolute inset-0 z-0 h-full w-full object-cover"
+            style={{ opacity: 0.6 }}
+          />
         ) : (
           <video
             ref={videoRef}
             className="absolute inset-0 z-0 w-full h-full object-cover [transition:opacity_1200ms_ease-out]"
             style={{ opacity: videoEnded ? 0.6 : 1 }}
             src="/poweron.mp4"
-            poster="/images/intro-poster.jpg"
+            poster={INTRO_END_FRAME}
             muted
             playsInline
             preload="auto"
