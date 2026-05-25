@@ -16,7 +16,7 @@ export default function ProductNav({ products }: Props) {
   return (
     <nav
       aria-label="Product list"
-      className="fixed right-6 top-[5.5rem] z-[70] hidden md:block"
+      className="fixed right-6 top-[6.5rem] z-[70] hidden md:block"
     >
       <div className="flex flex-col overflow-hidden rounded-2xl bg-black/45 backdrop-blur-md ring-1 ring-white/10">
         {products.map((product, i) => (

@@ -82,7 +82,7 @@ export default function ProductsRoot() {
       {/* ── Site-wide nav ─────────────────────────────────────────────── */}
       <nav
         aria-label="Site navigation"
-        className="fixed left-0 right-0 top-0 z-[90] flex h-20 items-center border-b border-white/10 bg-black/40 backdrop-blur-md"
+        className="fixed left-0 right-0 top-0 z-[90] flex h-24 items-center border-b border-white/10 bg-black/30 backdrop-blur-md"
       >
         {/* Logo */}
         <Link
@@ -100,7 +100,7 @@ export default function ProductsRoot() {
         </Link>
 
         {/* Center links */}
-        <div className="flex w-full items-center justify-center gap-3 text-sm font-bold uppercase tracking-[0.24em]">
+        <div className="flex w-full items-center justify-center gap-3 text-[13px] font-bold uppercase tracking-[0.24em] [text-shadow:0_1px_4px_rgba(0,0,0,0.65)]">
           {SITE_NAV.map((link) => {
             const isActive = link.href === "/products";
             return (
@@ -125,7 +125,7 @@ export default function ProductsRoot() {
        * top-[5.5rem] = 20px below the 80px (h-20) site nav. */}
       <nav
         aria-label="Product category"
-        className="fixed left-1/2 top-[5.5rem] z-[80] flex -translate-x-1/2 items-center gap-1 rounded-full bg-black/35 p-1 backdrop-blur-md ring-1 ring-white/10"
+        className="fixed left-1/2 top-[6.5rem] z-[80] flex -translate-x-1/2 items-center gap-1 rounded-full bg-black/35 p-1 backdrop-blur-md ring-1 ring-white/10"
       >
         {CATEGORIES.map((c) => {
           const selected = c.id === categoryId;

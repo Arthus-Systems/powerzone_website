@@ -489,7 +489,7 @@ export default function Home() {
               <div
                 className="
                   flex h-full items-center justify-center gap-3
-                  text-sm font-bold uppercase tracking-[0.24em]
+                  text-[13px] font-bold uppercase tracking-[0.24em]
                   text-white
                   [text-shadow:0_1px_4px_rgba(0,0,0,0.65)]
                 "
@@ -527,7 +527,7 @@ export default function Home() {
               </motion.h1>
               <motion.p
                 variants={HERO_ITEM_VARIANTS}
-                className="mt-6 md:mt-7 text-[12px] md:text-[14px] font-medium uppercase tracking-[0.34em] text-white/85 [text-shadow:0_1px_4px_rgba(0,0,0,0.7)]"
+                className="mt-6 md:mt-7 text-[15px] md:text-[18px] font-bold uppercase tracking-[0.34em] text-white/90 [text-shadow:0_1px_4px_rgba(0,0,0,0.7)]"
               >
                 Reliable Backup Power
               </motion.p>

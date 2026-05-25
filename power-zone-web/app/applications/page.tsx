@@ -21,7 +21,7 @@ export default function ApplicationsPage() {
   return (
     <div className="relative bg-[#F4EFE7]">
       {/* Sticky nav — persists across all scroll sections */}
-      <nav className="sticky top-0 z-50 h-20 border-b border-white/10 bg-black/40 backdrop-blur-md">
+      <nav className="sticky top-0 z-50 h-24 border-b border-white/10 bg-black/30 backdrop-blur-md">
         {/* Top-left logo */}
         <Link
           href="/"
@@ -40,7 +40,8 @@ export default function ApplicationsPage() {
         <div
           className="
             flex h-full items-center justify-center gap-3
-            text-sm font-bold uppercase tracking-[0.24em]
+            text-[13px] font-bold uppercase tracking-[0.24em]
+            [text-shadow:0_1px_4px_rgba(0,0,0,0.65)]
           "
         >
           {NAV_LINKS.map((link) => {
@@ -63,7 +64,7 @@ export default function ApplicationsPage() {
       </nav>
 
       {/* Hero section — fills the viewport below the sticky nav */}
-      <section className="relative flex h-[calc(100vh-5rem)] flex-col items-center justify-center overflow-hidden px-8 text-center">
+      <section className="relative flex h-[calc(100vh-6rem)] flex-col items-center justify-center overflow-hidden px-8 text-center">
         {/* Background image */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -83,18 +84,18 @@ export default function ApplicationsPage() {
           <h1
             className="
               mx-auto mt-5 max-w-[56rem]
-              text-[clamp(48px,7.5vw,120px)] font-semibold
+              text-[clamp(48px,7.5vw,100px)] font-semibold
               leading-[0.96] tracking-[-0.025em] text-white
             "
           >
-            Applications
+            See where you can use our products
           </h1>
           <p className="mx-auto mt-7 max-w-[40rem] text-[15px] leading-relaxed text-white/65 md:text-[18px]">
             Real-world energy challenges demand proven solutions. <br></br> 
             Scroll to explore how Power Zone systems meet your operational goals.
           </p>
           {/* Scroll cue */}
-          <div className="mt-14 flex flex-col items-center gap-2">
+          {/* <div className="mt-14 flex flex-col items-center gap-2">
             <span className="text-[10px] font-medium uppercase tracking-[0.32em] text-white/40">
               Scroll
             </span>
@@ -111,7 +112,7 @@ export default function ApplicationsPage() {
               <path d="M12 5v14" />
               <path d="M18 13l-6 6-6-6" />
             </svg>
-          </div>
+          </div> */}
         </div>
       </section>
 

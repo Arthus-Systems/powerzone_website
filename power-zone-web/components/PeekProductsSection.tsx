@@ -60,9 +60,9 @@ export default function PeekProductsSection() {
               overlayContent={
                 <div className="flex h-full w-full flex-col justify-end">
                   <div className="bg-gradient-to-t from-black/95 via-black/70 to-transparent px-6 pt-24 pb-7">
-                    <p className="font-mono text-[10px] uppercase tracking-[0.32em] text-red-400 mb-3">
+                    {/* <p className="font-mono text-[10px] uppercase tracking-[0.32em] text-red-400 mb-3">
                       Generators
-                    </p>
+                    </p> */}
                     <p className="text-white text-xl md:text-2xl font-semibold leading-tight tracking-tight">
                       Learn more about
                       <br />
@@ -105,9 +105,9 @@ export default function PeekProductsSection() {
               overlayContent={
                 <div className="flex h-full w-full flex-col justify-end">
                   <div className="bg-gradient-to-t from-black/95 via-black/70 to-transparent px-6 pt-24 pb-7">
-                    <p className="font-mono text-[10px] uppercase tracking-[0.32em] text-red-400 mb-3">
+                    {/* <p className="font-mono text-[10px] uppercase tracking-[0.32em] text-red-400 mb-3">
                       Battery Storage
-                    </p>
+                    </p> */}
                     <p className="text-white text-xl md:text-2xl font-semibold leading-tight tracking-tight">
                       Learn more about our
                       <br />

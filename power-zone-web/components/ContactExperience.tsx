@@ -45,8 +45,8 @@ export default function ContactExperience() {
       {/* Top navbar */}
       <nav
         className="
-          absolute left-0 right-0 top-0 z-30 h-20
-          border-b border-white/10 bg-black/40 backdrop-blur-md
+          absolute left-0 right-0 top-0 z-30 h-24
+          border-b border-white/10 bg-black/30 backdrop-blur-md
         "
       >
         {/* Top-left logo */}
@@ -67,7 +67,8 @@ export default function ContactExperience() {
         <div
           className="
             flex h-full items-center justify-center gap-3
-            text-sm font-bold uppercase tracking-[0.24em]
+            text-[13px] font-bold uppercase tracking-[0.24em]
+            [text-shadow:0_1px_4px_rgba(0,0,0,0.65)]
           "
         >
           {NAV_LINKS.map((link) => {
@@ -93,8 +94,8 @@ export default function ContactExperience() {
       <main
         className="
           relative z-10 flex min-h-screen flex-col
-          px-6 pb-10 pt-28 md:px-10
-          lg:h-screen lg:px-16 lg:pb-12 lg:pt-28
+          px-6 pb-10 pt-32 md:px-10
+          lg:h-screen lg:px-16 lg:pb-12 lg:pt-32
         "
       >
         <div

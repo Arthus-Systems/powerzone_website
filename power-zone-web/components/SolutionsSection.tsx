@@ -305,7 +305,7 @@ export default function SolutionsSection() {
                   // size. Width grows with vw, height with vh — the
                   // portrait ratio holds on every aspect ratio.
                   width: 'clamp(280px, 25vw, 460px)',
-                  height: 'clamp(440px, 70vh, 720px)',
+                  height: 'clamp(440px, 55vh, 720px)',
                 }}
               >
                 <div className="flex h-full flex-col p-[clamp(26px,3.6vh,52px)]">
@@ -324,7 +324,7 @@ export default function SolutionsSection() {
                   </h3>
 
                   {/* Description — bumped to readable body size. */}
-                  <p className="mt-[clamp(18px,2.6vh,32px)] text-[clamp(17px,2.2vh,21px)] leading-relaxed text-black/72">
+                  <p className="mt-[clamp(18px,3.6vh,32px)] text-[clamp(17px,2.2vh,21px)] leading-relaxed text-black/72">
                     {card.description}
                   </p>
                 </div>
