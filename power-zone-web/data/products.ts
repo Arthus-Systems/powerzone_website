@@ -68,7 +68,7 @@ export const products: Product[] = [
   {
     id: 1,
     slug: "FPT",
-    image: "/images/fpt_product_1.png",
+    image: "/images/fpt_product_1.webp",
     title: "FPT Generator",
     subtitle: "Diesel — Italian Engineering",
     category: "Industrial",
@@ -105,7 +105,7 @@ export const products: Product[] = [
   {
     id: 2,
     slug: "Perkins",
-    image: "/images/perkins_product_1.png",
+    image: "/images/perkins_product_1.webp",
     title: "Perkins Generator",
     subtitle: "Diesel — British Engineering",
     category: "Commercial",
@@ -145,7 +145,7 @@ export const products: Product[] = [
   {
     id: 3,
     slug: "Cummins",
-    image: "/images/cummins_product_1.png",
+    image: "/images/cummins_product_1.webp",
     title: "Cummins Generator",
     subtitle: "Diesel — American Power",
     category: "Utility",
@@ -184,7 +184,7 @@ export const products: Product[] = [
   {
     id: 4,
     slug: "Yuchai",
-    image: "/images/yuchai_product_1.png",
+    image: "/images/yuchai_product_1.webp",
     title: "Yuchai Generator",
     subtitle: "Diesel — High Value Performance",
     category: "Industrial",
@@ -234,7 +234,7 @@ export const bessProducts: Product[] = [
   {
     id: 1,
     slug: "Battery",
-    image: "/images/battery_product_1.png",
+    image: "/images/battery_product_1.webp",
     title: "Lithium-ion Battery",
     subtitle: "High-Density Storage Module",
     category: "Energy Storage",
@@ -244,8 +244,8 @@ export const bessProducts: Product[] = [
     rightColor: "#F2F2F2",
     descriptionBgColor: "#000000",
     gallery: [
-      "/images/battery_product_1.png",
-      "/images/battery_product_1.png",
+      "/images/battery_product_1.webp",
+      "/images/battery_product_1.webp",
     ],
     descriptionLong:
       "Lithium iron phosphate (LFP) battery storage in low-voltage and high-voltage configurations. The plug-and-play modular design lets capacity grow with the load — drop in additional units instead of re-engineering the system. The integrated battery management runs round-the-clock, optimizing performance and catching issues early. Built for grid-tied, off-grid, and hybrid renewable installations across commercial, industrial, and residential sites.",
@@ -274,7 +274,7 @@ export const bessProducts: Product[] = [
   {
     id: 2,
     slug: "BESS",
-    image: "/images/bess_product_1.png",
+    image: "/images/bess_product_1.webp",
     title: "BESS Cabinet",
     subtitle: "Battery Energy Storage System",
     category: "Storage System",
@@ -284,8 +284,8 @@ export const bessProducts: Product[] = [
     rightColor: "#EDEDED",
     descriptionBgColor: "#000000",
     gallery: [
-      "/images/bess_product_1.png",
-      "/images/bess_product_1.png",
+      "/images/bess_product_1.webp",
+      "/images/bess_product_1.webp",
     ],
     descriptionLong:
       "A compact, IP65-rated battery energy storage cabinet built around LFP cells. Intelligent battery profiles route energy across operational priorities; redundant dual-path cooling and continuous thermal monitoring keep the system stable under sustained load. The pre-engineered modular architecture means rapid deployment for commercial and industrial sites, and integrates cleanly with existing solar or grid infrastructure.",
@@ -314,7 +314,7 @@ export const bessProducts: Product[] = [
   {
     id: 3,
     slug: "Inverter",
-    image: "/images/inverter_product_1.png",
+    image: "/images/inverter_product_1.webp",
     title: "Hybrid Inverter",
     subtitle: "Bi-directional Power Conversion",
     category: "Power Electronics",
@@ -324,8 +324,8 @@ export const bessProducts: Product[] = [
     rightColor: "#E5E5E5",
     descriptionBgColor: "#000000",
     gallery: [
-      "/images/inverter_product_1.png",
-      "/images/inverter_product_1.png",
+      "/images/inverter_product_1.webp",
+      "/images/inverter_product_1.webp",
     ],
     descriptionLong:
       "A hybrid inverter that integrates solar PV, battery storage, and grid power in a single chassis. Intelligent automatic switching keeps load online when the grid drops; voltage and frequency regulation deliver clean power to sensitive equipment. Built around the same LFP battery architecture and 24/7 BMS as the rest of the Power Zone storage lineup, with modular capacity that grows with the install.",

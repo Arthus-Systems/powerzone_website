@@ -216,7 +216,7 @@ export default function Footer() {
                 <div className="flex flex-col items-start gap-3">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="/images/logo-on-dark.png"
+                    src="/images/logo-on-dark.webp"
                     alt="Power Zone — Engineering & Services"
                     draggable={false}
                     className="h-12 w-auto select-none md:h-14"

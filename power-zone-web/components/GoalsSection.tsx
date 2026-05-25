@@ -16,7 +16,7 @@ type Goal = {
   // ── BACK CARD CONTENT ─────────────────────────────────────────────────────
   // Set these two fields for each goal to fill in the card's back face.
   //   backPoints → array of bullet-point strings shown on the LEFT side
-  //   backImage  → image path shown on the RIGHT side, e.g. '/images/power-quality.png'
+  //   backImage  → image path shown on the RIGHT side, e.g. '/images/power-quality.webp'
   backPoints: string[];
   backImage: string;
 };
@@ -36,7 +36,7 @@ const GOALS: Goal[] = [
       'Harmonic distortion mitigation reduces overheating & improves overall efficiency',
       'Safeguards critical loads against outages, equipment stress & rising energy costs',
     ],
-    backImage: '/images/applications_1.png',
+    backImage: '/images/applications_1.webp',
   },
   {
     title: 'Prevent Downtime',
@@ -51,7 +51,7 @@ const GOALS: Goal[] = [
       'Reduces emissions by up to 90% compared to conventional standby generators',
       'Proven 20+ year lifespan — reliable, scalable, and built for long-term value',
     ],
-    backImage: '/images/applications_2.png',    // ← INSERT IMAGE PATH HERE, e.g. '/images/prevent-downtime.png'
+    backImage: '/images/applications_2.webp',    // ← INSERT IMAGE PATH HERE, e.g. '/images/prevent-downtime.webp'
   },
   {
     title: 'Lower Energy Costs',
@@ -66,7 +66,7 @@ const GOALS: Goal[] = [
       'Real-time monitoring provides clear visibility into system efficiency and savings',
       'Engineered for long-term durability, maximizing ROI while minimizing operational costs',
     ],
-    backImage: '/images/applications_3.png',    // ← INSERT IMAGE PATH HERE, e.g. '/images/lower-costs.png'
+    backImage: '/images/applications_3.webp',    // ← INSERT IMAGE PATH HERE, e.g. '/images/lower-costs.webp'
   },
   {
     title: 'Reduce Emissions',
@@ -81,7 +81,7 @@ const GOALS: Goal[] = [
       'Partner FPT Industrial has offset 16,500+ tons of CO2, with a fully carbon-neutral ePowertrain facility powered by solar and wind',
       'Supports your sustainability goals without compromising performance or reliability',
     ],
-    backImage: '/images/applications_4.png',    // ← INSERT IMAGE PATH HERE, e.g. '/images/reduce-emissions.png'
+    backImage: '/images/applications_4.webp',    // ← INSERT IMAGE PATH HERE, e.g. '/images/reduce-emissions.webp'
   },
 ];
 
@@ -289,7 +289,7 @@ function GoalCard({
 
             {/* RIGHT — image content
                 ↳ Edit `backImage` in the GOALS array for this card's image path
-                   e.g. backImage: '/images/power-quality.png' */}
+                   e.g. backImage: '/images/power-quality.webp' */}
             <div className="w-[38%] shrink-0 overflow-hidden rounded-xl bg-black/5">
               {goal.backImage ? (
                 // eslint-disable-next-line @next/next/no-img-element

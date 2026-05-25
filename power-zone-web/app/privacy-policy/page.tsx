@@ -15,7 +15,7 @@ export default function PrivacyPolicyPage() {
         <Link href="/" className="flex items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/images/logo-on-dark.png"
+            src="/images/logo-on-dark.webp"
             alt="Power Zone"
             draggable={false}
             className="h-10 w-auto select-none"

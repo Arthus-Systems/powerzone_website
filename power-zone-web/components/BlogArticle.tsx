@@ -25,7 +25,7 @@ export default function BlogArticle({
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/images/logo-on-light.png"
+          src="/images/logo-on-light.webp"
           alt="Power Zone"
           draggable={false}
           className="pointer-events-none h-16 w-auto select-none"

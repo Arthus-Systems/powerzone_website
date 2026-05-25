@@ -14,7 +14,7 @@ import { useMemo, useRef } from 'react';
 //   • description  : supporting paragraph below the title
 //   • imageSrc     : path to right-side image. Leave as '' for an empty
 //                    placeholder. Once you drop a file into /public/images/
-//                    set this to e.g. '/images/step-1.png'.
+//                    set this to e.g. '/images/step-1.webp'.
 // ───────────────────────────────────────────────────────────────────────────
 type ProcessStep = {
   titlePrimary: string;
@@ -29,35 +29,35 @@ const PROCESS_STEPS: ProcessStep[] = [
     titleAccent: 'Companies',
     description:
       'Power Zone modernizes utility energy networks with hybrid diesel, battery storage, and intelligent dispatch solutions. Built for sub-transmission and distribution systems, they stabilize frequency, ease grid stress, manage peaks, integrate renewables, ramp quickly, and provide localized backup without overloading central infrastructure.',
-    imageSrc: '/images/utility.png',
+    imageSrc: '/images/utility.webp',
   },
   {
     titlePrimary: 'Data',
     titleAccent: 'Centers',
     description:
       "Power Zone provides integrated diesel, lithium battery, smart control, and service solutions for mission-critical data centers. Deployable on-site or via utility agreements, its platforms unify grid, solar, and generator power while cybersecurity, 24/7 monitoring, and predictive maintenance maximize uptime, scalability, reliability, and compliance.",
-    imageSrc: '/images/datacenter.png',
+    imageSrc: '/images/datacenter.webp',
   },
   {
     titlePrimary: 'Commercial',
     titleAccent: 'Buildings',
     description:
       'Power Zone delivers tailored commercial building power systems combining energy storage, intelligent management, diesel generation, and backup automation. Solutions reduce energy costs up to 30%, lower carbon footprint, ensure outage resilience, and include full design, permitting, installation, monitoring, and maintenance support for long-term returns.',
-    imageSrc: '/images/commercial.png',
+    imageSrc: '/images/commercial.webp',
   },
   {
     titlePrimary: 'Government',
     titleAccent: 'Solutions',
     description:
       'Power Zone provides scalable energy storage and backup systems for public institutions and essential services. Its solutions integrate with existing infrastructure to ensure uninterrupted, clean power during outages and peak demand, helping operators improve resilience, reduce risk, and maintain critical service continuity.',
-    imageSrc: '/images/government.png',
+    imageSrc: '/images/government.webp',
   },
   {
     titlePrimary: 'Residential',
     titleAccent: 'Developers',
     description:
       'Power Zone’s residential platform combines storage, hybrid inverters, C&I BESS, and FPT generators to deliver clean, resilient power for community housing. It lowers costs and emissions, supports grid stability, offsets energy needs, and includes monitoring plus long-term technical support.',
-    imageSrc: '/images/residential.png',
+    imageSrc: '/images/residential.webp',
   },
 ];
 

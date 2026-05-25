@@ -46,7 +46,7 @@ const INDUSTRIES: Industry[] = [
       },
     ],
     placeholder: 'WAREHOUSE IMAGE',
-    imageSrc: '/images/applications_2_1.png',
+    imageSrc: '/images/applications_2_1.webp',
     tint: 'rgba(251,191,36,0.05)',
   },
   {
@@ -73,7 +73,7 @@ const INDUSTRIES: Industry[] = [
       },
     ],
     placeholder: 'SCHOOL IMAGE',
-    imageSrc: '/images/applications_2_2.png',
+    imageSrc: '/images/applications_2_2.webp',
     tint: 'rgba(59,130,246,0.04)',
   },
   {
@@ -100,7 +100,7 @@ const INDUSTRIES: Industry[] = [
       },
     ],
     placeholder: 'FACTORY IMAGE',
-    imageSrc: '/images/applications_2_3.png',
+    imageSrc: '/images/applications_2_3.webp',
     tint: 'rgba(107,114,128,0.05)',
   },
   {
@@ -127,7 +127,7 @@ const INDUSTRIES: Industry[] = [
       },
     ],
     placeholder: 'OFFICE IMAGE',
-    imageSrc: '/images/applications_2_4.png',
+    imageSrc: '/images/applications_2_4.webp',
     tint: 'rgba(139,92,246,0.04)',
   },
   {
@@ -154,7 +154,7 @@ const INDUSTRIES: Industry[] = [
       },
     ],
     placeholder: 'ARENA IMAGE',
-    imageSrc: '/images/applications_2_5.png',
+    imageSrc: '/images/applications_2_5.webp',
     tint: 'rgba(30,27,75,0.04)',
   },
 ];

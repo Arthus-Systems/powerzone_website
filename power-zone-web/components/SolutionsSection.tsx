@@ -250,7 +250,7 @@ export default function SolutionsSection() {
           aria-hidden
           className="pointer-events-none absolute inset-0 z-0 bg-cover bg-center will-change-transform"
           style={{
-            backgroundImage: "url('/images/background.png')",
+            backgroundImage: "url('/images/background.webp')",
             transform: 'scale(0)',
             transformOrigin: 'center center',
           }}

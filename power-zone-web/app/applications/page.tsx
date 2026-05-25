@@ -19,7 +19,7 @@ export default function ApplicationsPage() {
         {/* Background image */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/images/background_application.png"
+          src="/images/background_application.webp"
           alt=""
           aria-hidden
           className="pointer-events-none absolute inset-0 h-full w-full select-none object-cover"

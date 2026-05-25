@@ -732,7 +732,7 @@ export default function ProductExperience({
         className="fixed left-6 top-6 z-[80] mix-blend-difference"
       >
         <Image
-          src="/power-zone-logo.png"
+          src="/power-zone-logo.webp"
           alt="Power Zone"
           width={84}
           height={84}

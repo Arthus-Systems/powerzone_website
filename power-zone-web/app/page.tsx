@@ -8,8 +8,8 @@ import ProcessSection from '@/components/ProcessSection';
 import PeekProductsSection from '@/components/PeekProductsSection';
 import Footer from '@/components/Footer';
 
-const LOGO_ON_DARK = '/images/logo-on-dark.png';
-const BUTTON_IMG = '/images/button.png';
+const LOGO_ON_DARK = '/images/logo-on-dark.webp';
+const BUTTON_IMG = '/images/button.webp';
 const DIESEL_SFX = '/diesel-start.mp3';
 
 // ─── INTRO TIMING (mirrors the reference index.html) ──────────────────────
@@ -44,7 +44,7 @@ const READOUT_TARGET = { power: 400, voltage: 400, ampere: 722 };
 // Pre-rendered final frame of /poweron.mp4 (lives in /public). Used
 // as the hero background on return visits, and as the seamless
 // hand-off image when the intro video finishes on the first visit.
-const INTRO_END_FRAME = '/poweron_final_frame.png';
+const INTRO_END_FRAME = '/poweron_final_frame.webp';
 
 type StatusLineState = { state: string; color: string };
 

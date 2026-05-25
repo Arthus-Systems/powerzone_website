@@ -46,7 +46,7 @@ export default function PeekProductsSection() {
             className="block cursor-pointer"
           >
             <TiltedCard
-              imageSrc="/images/fpt_product_1.png"
+              imageSrc="/images/fpt_product_1.webp"
               altText="FPT diesel generator"
               containerHeight="clamp(380px, 64vh, 620px)"
               containerWidth="clamp(300px, 38vw, 480px)"
@@ -91,7 +91,7 @@ export default function PeekProductsSection() {
             className="block cursor-pointer"
           >
             <TiltedCard
-              imageSrc="/images/bess_product_1.png"
+              imageSrc="/images/bess_product_1.webp"
               altText="Power Zone battery energy storage cabinet"
               containerHeight="clamp(380px, 64vh, 620px)"
               containerWidth="clamp(300px, 38vw, 480px)"

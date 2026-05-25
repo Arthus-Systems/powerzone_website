@@ -60,9 +60,9 @@ export const metadata: Metadata = {
   description:
     "Power Zone Pakistan — diesel generators and battery energy storage solutions for industrial, commercial, and residential power.",
   icons: {
-    icon: '/images/logo-on-light.png',
-    shortcut: '/images/logo-on-light.png',
-    apple: '/images/logo-on-light.png',
+    icon: '/images/logo-on-light.webp',
+    shortcut: '/images/logo-on-light.webp',
+    apple: '/images/logo-on-light.webp',
   },
 };
 

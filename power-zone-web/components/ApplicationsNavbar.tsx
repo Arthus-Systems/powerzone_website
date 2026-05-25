@@ -51,7 +51,7 @@ export default function ApplicationsNavbar() {
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/images/logo-on-dark.png"
+          src="/images/logo-on-dark.webp"
           alt="Power Zone"
           draggable={false}
           className="pointer-events-none h-12 w-auto select-none"
