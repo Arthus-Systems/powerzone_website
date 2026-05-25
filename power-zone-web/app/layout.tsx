@@ -56,9 +56,14 @@ const mono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Power Zone — Generators & Energy Storage",
+  title: "Power Zone — Generators & Batteries",
   description:
     "Power Zone Pakistan — diesel generators and battery energy storage solutions for industrial, commercial, and residential power.",
+  icons: {
+    icon: '/images/logo-on-light.png',
+    shortcut: '/images/logo-on-light.png',
+    apple: '/images/logo-on-light.png',
+  },
 };
 
 export default function RootLayout({

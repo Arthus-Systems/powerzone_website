@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc *)",
+      "WebFetch(domain:powerzone.com.pk)",
+      "Bash(npx eslint *)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(curl -sL \"https://powerzone.com.pk/blog\" -A \"Mozilla/5.0\")",
+      "Bash(curl -sL \"https://powerzone.com.pk/sitemap.xml\" -A \"Mozilla/5.0\")",
+      "Bash(node_modules/.bin/tsc --noEmit)",
+      "Bash(./node_modules/.bin/tsc --noEmit)",
+      "Read(//Users/ArthusSystems/Downloads/powerzone/**)"
+    ]
+  }
+}
