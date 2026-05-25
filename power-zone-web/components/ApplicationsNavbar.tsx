@@ -25,6 +25,15 @@ export default function ApplicationsNavbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Apply scroll-snap to the document scroll container only while this page
+  // is mounted — scopes the snap behaviour to the Applications page only.
+  useEffect(() => {
+    document.documentElement.style.scrollSnapType = 'y proximity';
+    return () => {
+      document.documentElement.style.scrollSnapType = '';
+    };
+  }, []);
+
   return (
     <nav
       className={`

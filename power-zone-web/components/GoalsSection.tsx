@@ -106,7 +106,7 @@ export default function GoalsSection() {
     <section
       ref={containerRef}
       className="relative bg-[#F4EFE7]"
-      style={{ height: `${GOALS.length * SECTION_VH_PER_CARD}vh` }}
+      style={{ height: `${GOALS.length * SECTION_VH_PER_CARD}vh`, scrollSnapAlign: 'start' }}
     >
       <div className="sticky top-0 flex h-screen flex-col overflow-hidden">
         {/* Header */}

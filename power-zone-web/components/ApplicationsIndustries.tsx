@@ -1,14 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useRef, useState, useEffect, useCallback } from 'react';
-import {
-  motion,
-  useScroll,
-  useTransform,
-  useInView,
-  useReducedMotion,
-} from 'framer-motion';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { motion, AnimatePresence, type TargetAndTransition } from 'framer-motion';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types & Data
@@ -166,56 +160,232 @@ const INDUSTRIES: Industry[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Main export
+// Animation config
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Ease curves
+const PANEL_EASE:   [number, number, number, number] = [0.76, 0, 0.24, 1];   // panel enter
+const EXIT_EASE:    [number, number, number, number] = [0.25, 0.46, 0.45, 0.94]; // panel recede
+const CONTENT_EASE: [number, number, number, number] = [0.25, 0.46, 0.45, 0.94]; // inner stagger
+
+// Full-panel slide variants.
+//
+// dir = 1  → scroll down: entering panel rises from bottom (y: 100% → 0%),
+//            exiting panel recedes upward (y: 0% → -15%) and shrinks.
+// dir = -1 → scroll up: mirror — entering from top, exiting recedes downward.
+//
+// The exit does NOT do a full 100% exit — it shrinks and fades so it appears
+// to recede into the background while the new slide comes in on top. The
+// entering slide is naturally above the exiting one because AnimatePresence
+// appends the new child after the exiting child in the DOM.
+//
+// `transition` is embedded per-variant so enter and exit can have
+// independently-tuned durations/easing.
+const PANEL_VARIANTS = {
+  enter: (dir: 1 | -1) => ({
+    y: dir > 0 ? '100%' : '-100%',
+    scale: 1,
+    opacity: 1,
+  }),
+  center: {
+    y: '0%',
+    scale: 1,
+    opacity: 1,
+    transition: {
+      y:       { duration: 0.8, ease: PANEL_EASE },
+      scale:   { duration: 0.8, ease: PANEL_EASE },
+      opacity: { duration: 0.8, ease: PANEL_EASE },
+    },
+  },
+  exit: (dir: 1 | -1) => ({
+    y: dir > 0 ? '-15%' : '15%',
+    scale: 0.95,
+    opacity: 0.6,
+    transition: {
+      duration: 0.7,
+      ease: EXIT_EASE,
+    },
+  }),
+};
+
+// Minimum ms between two navigations. Must comfortably exceed the enter
+// animation duration (0.8 s) so macOS trackpad momentum events (which fire
+// for 1–3 s after a swipe) cannot trigger a second section jump the instant
+// the animation completes.
+const NAV_COOLDOWN_MS = 1200;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Main component
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function ApplicationsIndustries() {
+  const N = INDUSTRIES.length;
+
   const [activeIndex, setActiveIndex] = useState(0);
-  const sectionRefs = useRef<(HTMLElement | null)[]>(Array(INDUSTRIES.length).fill(null));
+  const [direction, setDirection]     = useState<1 | -1>(1);
+  const [dotsVisible, setDotsVisible] = useState(false);
+  // Controls whether IndustrySlide plays its enter stagger. False until the
+  // first navigation fires — keeps the first visible slide static on load.
+  const [hasNavigated, setHasNavigated] = useState(false);
 
-  // Track active section via IntersectionObserver
-  useEffect(() => {
-    const observers = sectionRefs.current.map((el, i) => {
-      if (!el) return null;
-      const obs = new IntersectionObserver(
-        ([entry]) => { if (entry.isIntersecting) setActiveIndex(i); },
-        { rootMargin: '-35% 0px -35% 0px', threshold: 0 },
-      );
-      obs.observe(el);
-      return obs;
-    });
-    return () => observers.forEach((o) => o?.disconnect());
-  }, []);
+  const outerRef  = useRef<HTMLDivElement>(null);
+  // Refs shadow live state so the wheel handler is never stale.
+  const activeRef = useRef(0);
+  // True while the exit animation is running. Cleared by onExitComplete.
+  const animating = useRef(false);
+  // Timestamp of the last navigation (ms). Guards against momentum scroll
+  // firing a second transition the instant animating becomes false.
+  const lastNav   = useRef(-Infinity);
 
-  const handleRef = useCallback(
-    (i: number) => (el: HTMLElement | null) => { sectionRefs.current[i] = el; },
-    [],
+  // ── navigate ──────────────────────────────────────────────────────────────
+  const navigate = useCallback(
+    (dir: 1 | -1) => {
+      const next = activeRef.current + dir;
+      if (next < 0 || next >= N) return;
+
+      animating.current = true;
+      activeRef.current = next;
+      setHasNavigated(true);
+      setDirection(dir);
+      setActiveIndex(next);
+
+      // Advance the main-page scroll by one 100vh step so the sticky outer
+      // container stays in budget-sync and releases cleanly at the boundaries.
+      window.scrollBy(0, dir * window.innerHeight);
+    },
+    [N],
   );
 
-  const scrollToSection = (i: number) => {
-    sectionRefs.current[i]?.scrollIntoView({ behavior: 'smooth' });
+  // ── Wheel interception ────────────────────────────────────────────────────
+  useEffect(() => {
+    const outer = outerRef.current;
+    if (!outer) return;
+
+    const onWheel = (e: WheelEvent) => {
+      const rect = outer.getBoundingClientRect();
+      const vh   = window.innerHeight;
+
+      // Only intercept while the sticky zone is active:
+      //   container top has reached (or passed) viewport top
+      //   AND container bottom is still on-screen.
+      if (rect.top > 0 || rect.bottom < vh) return;
+
+      const dir: 1 | -1 = e.deltaY > 0 ? 1 : -1;
+      const next = activeRef.current + dir;
+
+      if (next >= 0 && next < N) {
+        // Block browser scroll while inside the section.
+        e.preventDefault();
+
+        // Dual gate: animation must be complete AND cooldown must have elapsed.
+        // animating alone isn't enough — trackpad momentum keeps firing after
+        // onExitComplete (0.7 s). lastNav alone isn't enough — it doesn't
+        // prevent a stacked navigate call during the brief window between
+        // onExitComplete and the cooldown expiring.
+        if (animating.current) return;
+        if (Date.now() - lastNav.current < NAV_COOLDOWN_MS) return;
+
+        lastNav.current = Date.now();
+        navigate(dir);
+      }
+      // At first/last boundary (next out of range): fall through so the
+      // browser's natural scroll carries the user out of the section.
+    };
+
+    window.addEventListener('wheel', onWheel, { passive: false });
+    return () => window.removeEventListener('wheel', onWheel);
+  }, [navigate, N]);
+
+  // ── Dot visibility via IntersectionObserver ───────────────────────────────
+  useEffect(() => {
+    const el = outerRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => setDotsVisible(entry.isIntersecting),
+      { threshold: 0 },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  // ── Dot click ─────────────────────────────────────────────────────────────
+  const goToDot = (i: number) => {
+    if (i === activeRef.current || animating.current) return;
+    const el = outerRef.current;
+    if (!el) return;
+
+    // Sync main-page scroll so the sticky section is properly positioned.
+    const containerTop = el.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo({ top: containerTop + i * window.innerHeight, behavior: 'smooth' });
+
+    const dir: 1 | -1 = i > activeRef.current ? 1 : -1;
+    animating.current = true;
+    activeRef.current = i;
+    setHasNavigated(true);
+    setDirection(dir);
+    setActiveIndex(i);
   };
 
   return (
-    <div className="relative">
-      {INDUSTRIES.map((industry, i) => (
-        <IndustrySection
-          key={industry.id}
-          industry={industry}
-          onRef={handleRef(i)}
-        />
-      ))}
+    // Outer container provides N × 100vh of scroll budget for the sticky
+    // section. scrollSnapAlign ensures the viewport snaps cleanly to the top
+    // of this section when transitioning from the section above.
+    <div
+      ref={outerRef}
+      style={{ height: `${N * 100}vh`, scrollSnapAlign: 'start' }}
+      className="relative"
+    >
+      {/* Sticky viewport — overflow:hidden clips both the entering and exiting
+          panels so nothing bleeds outside the visible area. */}
+      <div className="sticky top-0 h-screen overflow-hidden">
+        <AnimatePresence
+          initial={false}
+          custom={direction}
+          onExitComplete={() => { animating.current = false; }}
+        >
+          <motion.div
+            key={activeIndex}
+            custom={direction}
+            variants={PANEL_VARIANTS}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            className="absolute inset-0 will-change-transform"
+          >
+            <IndustrySlide
+              industry={INDUSTRIES[activeIndex]}
+              direction={direction}
+              animated={hasNavigated}
+            />
+          </motion.div>
+        </AnimatePresence>
+      </div>
 
-      {/* ── Vertical dot navigation ────────────────────────────────────── */}
+      {/* ── Dot navigation (left side) ────────────────────────────────── */}
       <nav
         aria-label="Industry sections"
-        className="fixed right-6 top-1/2 z-[60] hidden -translate-y-1/2 flex-col gap-3.5 md:flex"
+        className={`
+          fixed left-6 top-1/2 z-[60] hidden -translate-y-1/2 flex-col gap-3.5 md:flex
+          transition-opacity duration-300
+          ${dotsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}
+        `}
       >
         {INDUSTRIES.map((industry, i) => (
-          <div key={industry.id} className="group relative flex items-center justify-end">
-            {/* Tooltip */}
+          <div key={industry.id} className="group relative flex items-center">
+            <button
+              type="button"
+              onClick={() => goToDot(i)}
+              aria-label={`Go to ${industry.label}`}
+              className={`
+                block rounded-full transition-all duration-300
+                ${activeIndex === i
+                  ? 'h-3.5 w-3.5 bg-red-600 shadow-[0_0_0_3px_rgba(220,38,38,0.18)]'
+                  : 'h-2.5 w-2.5 bg-black/25 hover:bg-black/50'
+                }
+              `}
+            />
             <span className="
-              pointer-events-none absolute right-full mr-3 whitespace-nowrap
+              pointer-events-none absolute left-full ml-3 whitespace-nowrap
               rounded-full bg-[#1A1A1A]/85 px-3 py-1.5
               text-[10px] font-semibold uppercase tracking-[0.2em] text-white
               opacity-0 transition-all duration-200
@@ -223,19 +393,6 @@ export default function ApplicationsIndustries() {
             ">
               {industry.label}
             </span>
-            {/* Dot */}
-            <button
-              type="button"
-              onClick={() => scrollToSection(i)}
-              aria-label={`Go to ${industry.label}`}
-              className={`
-                block rounded-full transition-all duration-300
-                ${activeIndex === i
-                  ? 'h-3.5 w-3.5 bg-red-600 shadow-[0_0_0_3px_rgba(220,38,38,0.18)]'
-                  : 'h-2.5 w-2.5 bg-black/20 hover:bg-black/45'
-                }
-              `}
-            />
           </div>
         ))}
       </nav>
@@ -244,75 +401,65 @@ export default function ApplicationsIndustries() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// IndustrySection
+// IndustrySlide — purely presentational, no scroll logic
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// `animated` is false only for the first slide (no stagger on initial load).
+// After the first navigation it becomes true and all subsequent slides play
+// the full choreographed enter animation.
+//
+// `direction` determines the axis of the inner stagger:
+//   dir =  1 (entering from below) → elements rise  upward   (y: +N → 0)
+//   dir = -1 (entering from above) → elements settle downward (y: -N → 0)
 // ─────────────────────────────────────────────────────────────────────────────
 
-function IndustrySection({
+function IndustrySlide({
   industry,
-  onRef,
+  direction,
+  animated,
 }: {
   industry: Industry;
-  onRef: (el: HTMLElement | null) => void;
+  direction: 1 | -1;
+  animated: boolean;
 }) {
-  const shouldReduce = useReducedMotion();
-  const sectionRef = useRef<HTMLElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
+  // dir > 0 → elements start below (+y) and rise to 0
+  // dir < 0 → elements start above (-y) and settle to 0
+  const d = direction > 0 ? 1 : -1;
 
-  // Forward ref to parent after mount
-  useEffect(() => {
-    onRef(sectionRef.current);
-    return () => onRef(null);
-  }, [onRef]);
-
-  // Parallax — image moves at ~60% of normal scroll speed
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ['start end', 'end start'],
-  });
-  const imageY = useTransform(
-    scrollYProgress,
-    [0, 1],
-    shouldReduce ? [0, 0] : [80, -80],
-  );
-
-  // Staggered content reveal
-  const isInView = useInView(contentRef, { once: true, amount: 0.25 });
-
-  const anim = (delay: number) => ({
-    initial: { opacity: 0, y: shouldReduce ? 0 : 22 },
-    animate: isInView ? { opacity: 1, y: 0 } : {},
-    transition: { duration: 0.55, delay, ease: [0.22, 1, 0.36, 1] as const },
-  });
+  // When `animated` is false (first slide), pass `false` as `initial` so
+  // Framer Motion starts the element in its `animate` (final) state
+  // with no transition — the slide appears static on load.
+  const init = (props: TargetAndTransition): TargetAndTransition | false =>
+    animated ? props : false;
 
   return (
     <section
-      ref={sectionRef}
-      id={industry.id}
       aria-label={industry.label}
-      // Mobile: stacked (image then content). Desktop: side-by-side.
-      className="relative flex h-auto flex-col-reverse overflow-hidden md:h-screen md:flex-row"
+      className="relative flex h-full w-full flex-col md:flex-row"
       style={{ backgroundColor: '#F4EFE7' }}
     >
-      {/* Subtle per-industry tint on the left panel region */}
+      {/* Per-industry colour tint on the content side */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-y-0 left-0 w-full md:w-[45%]"
         style={{ backgroundColor: industry.tint }}
       />
 
-      {/* ── Left panel (content) ──────────────────────────────────────── */}
+      {/* ── Left panel (text + benefits) ────────────────────────────────── */}
       <div
-        ref={contentRef}
         className="
           relative z-10 flex w-full flex-col justify-center
+          bg-[#F4EFE7]
           px-6 py-12
           md:w-[45%] md:px-10 md:py-14
           lg:px-16 lg:py-16
         "
       >
-        {/* Label */}
+        {/* Category label */}
         <motion.p
-          {...anim(0)}
+          initial={init({ opacity: 0, y: d * 20 })}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.08, ease: CONTENT_EASE }}
           className="text-[11px] font-semibold uppercase tracking-[0.32em] text-red-600"
         >
           {industry.label}
@@ -320,7 +467,9 @@ function IndustrySection({
 
         {/* Headline */}
         <motion.h2
-          {...anim(0.1)}
+          initial={init({ opacity: 0, y: d * 28 })}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.14, ease: CONTENT_EASE }}
           className="mt-4 max-w-[30rem] text-[clamp(24px,2.8vw,38px)] font-bold leading-[1.1] tracking-tight text-[#1A1A1A]"
         >
           {industry.headline}
@@ -328,18 +477,22 @@ function IndustrySection({
 
         {/* Description */}
         <motion.p
-          {...anim(0.2)}
+          initial={init({ opacity: 0, y: d * 18 })}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.2, ease: CONTENT_EASE }}
           className="mt-4 max-w-[30rem] text-[clamp(13px,1.4vw,15px)] leading-relaxed text-[#555]"
         >
           {industry.description}
         </motion.p>
 
-        {/* Benefit cards */}
+        {/* Benefit cards — staggered */}
         <div className="mt-6 flex flex-col gap-2.5">
           {industry.benefits.map((benefit, bi) => (
             <motion.div
               key={bi}
-              {...anim(0.3 + bi * 0.1)}
+              initial={init({ opacity: 0, y: d * 14 })}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.26 + bi * 0.06, ease: CONTENT_EASE }}
               className="
                 flex items-center gap-4 rounded-xl bg-white
                 px-4 py-3.5
@@ -348,7 +501,6 @@ function IndustrySection({
                 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(0,0,0,0.10)]
               "
             >
-              {/* Icon */}
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-50">
                 <svg
                   viewBox="0 0 24 24"
@@ -363,7 +515,6 @@ function IndustrySection({
                   <path d={benefit.iconPath} />
                 </svg>
               </div>
-              {/* Text */}
               <div>
                 <p className="text-[15px] font-bold leading-tight text-[#1A1A1A]">
                   {benefit.stat}
@@ -376,8 +527,13 @@ function IndustrySection({
           ))}
         </div>
 
-        {/* CTA */}
-        <motion.div {...anim(0.6)} className="mt-8">
+        {/* CTA — last to arrive */}
+        <motion.div
+          initial={init({ opacity: 0, y: d * 12 })}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.48, ease: CONTENT_EASE }}
+          className="mt-8"
+        >
           <Link
             href="/contact"
             className="
@@ -406,19 +562,17 @@ function IndustrySection({
         </motion.div>
       </div>
 
-      {/* ── Right panel (parallax image) ──────────────────────────────── */}
-      {/* On mobile: fixed height, parallax off. On desktop: fills remaining width. */}
-      <div className="relative h-[45vw] w-full overflow-hidden md:h-auto md:flex-1">
+      {/* ── Right panel (image with zoom-settle) ────────────────────────── */}
+      {/* overflow:hidden on the parent clips the 1.06→1.0 scale so edges
+          never peek outside the panel boundary. */}
+      <div className="relative hidden flex-1 overflow-hidden md:block">
         <motion.div
-          style={{ y: imageY }}
-          className="absolute inset-x-0 -top-[10%] bottom-[-10%] will-change-transform"
+          initial={animated ? { scale: 1.06 } : false}
+          animate={{ scale: 1 }}
+          transition={{ duration: 0.9, delay: 0, ease: CONTENT_EASE }}
+          className="absolute inset-0 will-change-transform"
+          style={{ transformOrigin: 'center center' }}
         >
-          {/* Grey placeholder — swap for <img> once images are ready */}
-          {/* <div className="flex h-full w-full items-center justify-center bg-zinc-200/80">
-            <span className="select-none text-[10px] font-medium uppercase tracking-[0.3em] text-zinc-400">
-              {industry.placeholder}
-            </span>
-          </div> */}
           {industry.imageSrc ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img

@@ -52,6 +52,7 @@ const SUBSCRIBE_BULLETS = [
 // whileInView when the footer scrolled into view, which felt jarry.
 // The content is now pre-rendered statically; only the sticky-reveal
 // CSS mechanic above gives the slide.
+
 export default function Footer() {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
