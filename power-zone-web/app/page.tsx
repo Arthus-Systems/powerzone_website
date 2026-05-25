@@ -90,6 +90,7 @@ export default function Home() {
   const [isRevealing, setIsRevealing] = useState(false);
   const [hasLitUp, setHasLitUp] = useState(false);
   const [videoEnded, setVideoEnded] = useState(false);
+  const [navHidden, setNavHidden] = useState(false);
   const [readings, setReadings] = useState({ power: 0, voltage: 0, ampere: 0 });
   const [backupStatus, setBackupStatus] = useState<StatusLineState>({
     state: 'STANDBY',
@@ -198,6 +199,15 @@ export default function Home() {
     rafId = requestAnimationFrame(step);
     return () => cancelAnimationFrame(rafId);
   }, [hasPressed]);
+
+  useEffect(() => {
+    if (!videoEnded) return;
+    const handleScroll = () => {
+      setNavHidden(window.scrollY > window.innerHeight * 0.8);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [videoEnded]);
 
   // Smoothly ramps the diesel-start clip to silence over `durationMs` and
   // then stops it. We restore the original volume on the audio element so a
@@ -348,17 +358,6 @@ export default function Home() {
           />
         )}
 
-        {/* Persistent top-left logo for the post-video state */}
-        {hasLitUp && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={LOGO_ON_DARK}
-            alt="PowerZone"
-            draggable={false}
-            className="pointer-events-none absolute left-[clamp(12px,2vw,32px)] top-[clamp(8px,1.5vh,20px)] z-40 h-[clamp(40px,6vh,72px)] w-auto select-none drop-shadow-[0_2px_10px_rgba(0,0,0,0.75)]"
-          />
-        )}
-
         {/* Layer 2 — Intro panel. Sits above the video and clip-paths away
          * from top to bottom over REVEAL_DURATION (linear). Once VIDEO_START_AT
          * fires it's removed entirely so the video takes the screen. */}
@@ -473,19 +472,33 @@ export default function Home() {
         {videoEnded && (
           <>
             <motion.nav
-              initial={{ opacity: 0, y: -12 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: -48 }}
+              animate={{ opacity: 1, y: navHidden ? '-100%' : 0 }}
               transition={{
-                duration: 0.9,
-                delay: 0.3,
-                ease: [0.22, 1, 0.36, 1],
+                opacity: { duration: 0.9, delay: 0.3, ease: [0.22, 1, 0.36, 1] },
+                y: { duration: 0.3, ease: 'easeInOut' },
               }}
               className="
-                absolute left-0 right-0 top-0 z-30 h-24
+                fixed left-0 right-0 top-0 z-[90] h-24
                 bg-black/30 backdrop-blur-md
                 border-b border-white/10
               "
             >
+              {/* Logo */}
+              <Link
+                href="/"
+                aria-label="Power Zone home"
+                className="absolute left-8 top-1/2 -translate-y-1/2"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={LOGO_ON_DARK}
+                  alt="Power Zone"
+                  draggable={false}
+                  className="pointer-events-none h-12 w-auto select-none"
+                />
+              </Link>
+
               <div
                 className="
                   flex h-full items-center justify-center gap-3

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import GoalsSection from '@/components/GoalsSection';
 import ApplicationsIndustries from '@/components/ApplicationsIndustries';
+import ApplicationsNavbar from '@/components/ApplicationsNavbar';
 
 export const metadata: Metadata = {
   title: 'Applications — Power Zone',
@@ -9,62 +9,13 @@ export const metadata: Metadata = {
     'Discover how Power Zone systems meet key operational goals across industries — from power quality to emissions reduction.',
 };
 
-const NAV_LINKS = [
-  { label: 'Home', href: '/' },
-  { label: 'Products', href: '/products' },
-  { label: 'Applications', href: '/applications' },
-  { label: 'Blog', href: '/blog' },
-  { label: 'Contact Us', href: '/contact' },
-];
-
 export default function ApplicationsPage() {
   return (
     <div className="relative bg-[#F4EFE7]">
-      {/* Sticky nav — persists across all scroll sections */}
-      <nav className="sticky top-0 z-50 h-24 border-b border-white/10 bg-black/30 backdrop-blur-md">
-        {/* Top-left logo */}
-        <Link
-          href="/"
-          aria-label="Power Zone home"
-          className="absolute left-8 top-1/2 -translate-y-1/2"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/images/logo-on-dark.png"
-            alt="Power Zone"
-            draggable={false}
-            className="pointer-events-none h-12 w-auto select-none"
-          />
-        </Link>
+      <ApplicationsNavbar />
 
-        <div
-          className="
-            flex h-full items-center justify-center gap-3
-            text-[13px] font-bold uppercase tracking-[0.24em]
-            [text-shadow:0_1px_4px_rgba(0,0,0,0.65)]
-          "
-        >
-          {NAV_LINKS.map((link) => {
-            const isActive = link.href === '/applications';
-            return (
-              <Link
-                key={link.label}
-                href={link.href}
-                className={`
-                  cursor-pointer rounded-full px-5 py-2
-                  transition-colors duration-300 text-white
-                  ${isActive ? 'bg-red-500/70' : 'hover:bg-red-500/55'}
-                `}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
-
-      {/* Hero section — fills the viewport below the sticky nav */}
-      <section className="relative flex h-[calc(100vh-6rem)] flex-col items-center justify-center overflow-hidden px-8 text-center">
+      {/* Hero section — full viewport height, nav floats above it */}
+      <section className="relative flex h-screen flex-col items-center justify-center overflow-hidden px-8 text-center">
         {/* Background image */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -88,7 +39,7 @@ export default function ApplicationsPage() {
               leading-[0.96] tracking-[-0.025em] text-white
             "
           >
-            See where you can use our products
+            Built for Every Industry.
           </h1>
           <p className="mx-auto mt-7 max-w-[40rem] text-[15px] leading-relaxed text-white/65 md:text-[18px]">
             Real-world energy challenges demand proven solutions. <br></br> 
