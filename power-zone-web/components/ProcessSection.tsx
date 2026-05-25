@@ -141,16 +141,16 @@ export default function ProcessSection() {
             <Link
               href="/applications"
               className="
-                group inline-flex items-center gap-2.5
-                rounded-full border border-red-600/30 bg-red-600/8
-                px-6 py-2.5
-                text-[14px] font-semibold uppercase tracking-[0.22em] text-red-600
+                group inline-flex items-center gap-3
+                rounded-full border border-black/20
+                px-7 py-3
+                text-[11px] font-semibold uppercase tracking-[0.3em] text-black/50
                 transition-all duration-300
-                hover:border-red-600 hover:bg-red-600 hover:text-white
+                hover:border-black/45 hover:text-black
               "
             >
               See more Applications
-              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3 shrink-0 transition-transform duration-300 group-hover:translate-x-0.5" aria-hidden>
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3 shrink-0 transition-transform duration-300 group-hover:translate-x-1" aria-hidden>
                 <path d="M3 8h10M9 4l4 4-4 4" />
               </svg>
             </Link>

@@ -7,18 +7,18 @@ import { useState, type FormEvent } from 'react';
 // Product links land on `/products?category=…` which `ProductsRoot`
 // reads on mount to pre-select the right catalog tab.
 const QUICK_LINKS = [
-  { label: 'Home', href: '/' },
+  // { label: 'Home', href: '/' },
   { label: 'Applications', href: '/applications' },
   { label: 'Contact Us', href: '/contact' },
-  { label: 'Hybrid Inverters', href: '/products?category=bess' },
+  // { label: 'Hybrid Inverters', href: '/products?category=bess' },
   // { label: 'Chint Power Inverters', href: '/products?category=bess' },
 ];
 
 const MAIN_PAGES = [
-  { label: 'FPT Generator', href: '/products?category=generators' },
-  { label: 'Yuchai Generator', href: '/products?category=generators' },
-  { label: 'Perkins Generator', href: '/products?category=generators' },
-  { label: 'Cummins Generator', href: '/products?category=generators' },
+  { label: 'Generators', href: '/products?category=generators' },
+  // { label: 'Yuchai Generator', href: '/products?category=generators' },
+  // { label: 'Perkins Generator', href: '/products?category=generators' },
+  // { label: 'Cummins Generator', href: '/products?category=generators' },
   { label: 'Li-ion Batteries', href: '/products?category=bess' },
 ];
 
