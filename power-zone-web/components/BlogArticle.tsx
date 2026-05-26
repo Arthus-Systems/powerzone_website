@@ -1,12 +1,7 @@
 import Link from 'next/link';
 import type { BlogCategory, BlogPost } from '@/data/blog';
-
-const NAV_LINKS = [
-  { label: 'Products', href: '/products' },
-  { label: 'Applications', href: '/applications' },
-  { label: 'Blog', href: '/blog' },
-  { label: 'Contact Us', href: '/contact' },
-];
+import Navbar from '@/components/Navbar';
+import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 
 export default function BlogArticle({
   post,
@@ -17,47 +12,9 @@ export default function BlogArticle({
 }) {
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-[#F4EFE7] text-black">
-      {/* Top-left logo */}
-      <Link
-        href="/"
-        aria-label="Power Zone home"
-        className="absolute left-8 top-4 z-40"
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/images/logo-on-light.webp"
-          alt="Power Zone"
-          draggable={false}
-          className="pointer-events-none h-16 w-auto select-none"
-        />
-      </Link>
-
-      {/* Top navbar */}
-      <nav className="absolute left-0 right-0 top-0 z-30 h-24 border-b border-black/10 bg-[#F4EFE7]/80 backdrop-blur-md">
-        <div
-          className="
-            flex h-full items-center justify-center gap-3
-            text-sm font-bold uppercase tracking-[0.24em] text-black
-          "
-        >
-          {NAV_LINKS.map((link) => {
-            const isActive = link.href === '/blog';
-            return (
-              <Link
-                key={link.label}
-                href={link.href}
-                className={`
-                  cursor-pointer rounded-full px-5 py-2
-                  transition-colors duration-300
-                  ${isActive ? 'bg-red-500/20 text-red-600' : 'hover:bg-black/8'}
-                `}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
+      <div className="absolute left-0 right-0 top-0 z-30">
+        <Navbar />
+      </div>
 
       <main
         className="
@@ -275,30 +232,11 @@ function CtaPanel() {
             Talk to a Power Zone engineer about your project.
           </h3>
         </div>
-        <Link
-          href="/contact"
-          className="
-            inline-flex items-center gap-2
-            rounded-full bg-red-500/85 px-5 py-2.5
-            text-[11px] font-semibold uppercase tracking-[0.22em] text-white
-            transition-colors hover:bg-red-500
-          "
-        >
-          Contact Sales
-          <svg
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={1.6}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-3.5 w-3.5"
-            aria-hidden
-          >
-            <path d="M3 8h10" />
-            <path d="M9 4l4 4-4 4" />
-          </svg>
-        </Link>
+        <div className="text-black">
+          <InteractiveHoverButton href="/contact">
+            Contact Sales
+          </InteractiveHoverButton>
+        </div>
       </div>
     </div>
   );

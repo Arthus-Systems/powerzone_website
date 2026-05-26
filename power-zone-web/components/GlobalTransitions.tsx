@@ -5,16 +5,17 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 /**
- * Three transition routes, auto-detected per click:
+ * Two transition routes, auto-detected per click:
  *
- *   • Link href === '/'        →  CURTAIN FROM LEFT
- *       Logos and any "Home" link (Footer column, etc.). Panel
- *       sweeps in from the LEFT edge, covers, sweeps back left.
- *
- *   • Link inside any <nav>    →  CURTAIN FROM RIGHT
- *       Top navbar items going to non-home pages. Panel sweeps in
- *       from the RIGHT edge, covers, sweeps back right. (Pattern
- *       from https://codepen.io/thecalicoder.)
+ *   • Link inside any <nav>    →  CURTAIN, direction by relative index
+ *       Direction is chosen by comparing the clicked link's index
+ *       within its parent <nav> to the index of the currently-active
+ *       link in the same nav. Clicking a link to the LEFT of the
+ *       active one sweeps the curtain in from the LEFT; clicking one
+ *       to the RIGHT sweeps it in from the RIGHT. (Pattern from
+ *       https://codepen.io/thecalicoder.) When the active index can't
+ *       be resolved (e.g. on a page whose route isn't in the nav) we
+ *       default to RIGHT so the motion still feels intentional.
  *
  *   • Link anywhere else       →  RADIAL CLIP REVEAL
  *       In-page CTAs (PeekProducts cards, Footer non-home links).
@@ -22,8 +23,7 @@ import { useEffect, useRef, useState } from 'react';
  *       then collapses back to the same point — revealing the new
  *       page from outside in, around the cursor.
  *
- * Per-link opt-out via `data-no-transition` (e.g. ProductExperience
- * logo in detail mode, which has its own click handler).
+ * Per-link opt-out via `data-no-transition`.
  *
  * Same-URL clicks (already on this route) bail out before any
  * transition starts — clicking the currently-active nav button is a
@@ -101,18 +101,33 @@ export default function GlobalTransitions({
       e.preventDefault();
       e.stopImmediatePropagation();
 
-      const isHome = url.pathname === '/';
-      const isNavbar = link.closest('nav') !== null;
+      const nav = link.closest('nav');
       lockedRef.current = true;
 
-      if (isHome) {
-        // Logo (and any other "Home" link) — curtain from LEFT.
-        runCurtain(router, href, 'left', setState, () => {
-          lockedRef.current = false;
+      if (nav) {
+        // Compute curtain direction from the clicked link's order
+        // within the nav vs the currently-active link. Target to the
+        // LEFT of current → curtain from LEFT; target to the RIGHT →
+        // curtain from RIGHT. Unknown active falls back to RIGHT.
+        const navLinks = Array.from(nav.querySelectorAll('a'));
+        const targetIdx = navLinks.indexOf(link);
+        const currentIdx = navLinks.findIndex((a) => {
+          const aHref = a.getAttribute('href');
+          if (!aHref) return false;
+          try {
+            return (
+              new URL(aHref, window.location.href).pathname ===
+              window.location.pathname
+            );
+          } catch {
+            return false;
+          }
         });
-      } else if (isNavbar) {
-        // Navbar item heading to a non-home page — curtain from RIGHT.
-        runCurtain(router, href, 'right', setState, () => {
+
+        const direction: 'left' | 'right' =
+          currentIdx !== -1 && targetIdx < currentIdx ? 'left' : 'right';
+
+        runCurtain(router, href, direction, setState, () => {
           lockedRef.current = false;
         });
       } else {
@@ -134,6 +149,33 @@ export default function GlobalTransitions({
     return () =>
       document.removeEventListener('click', handler, { capture: true });
   }, [router]);
+
+  // Imperative API — in-page interactions that aren't real navigations
+  // (e.g. the Generators ↔ BESS catalog switch on the products page)
+  // dispatch a `pz:runRadial` event with `{ x, y, onCovered }`; we play
+  // the same radial reveal a CTA click would and run `onCovered` while
+  // the overlay fully covers the screen, so the caller can flip state
+  // out of sight.
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const ce = e as CustomEvent<{
+        x: number;
+        y: number;
+        onCovered: () => void;
+        onDone?: () => void;
+      }>;
+      const detail = ce.detail;
+      if (!detail) return;
+      if (lockedRef.current) return;
+      lockedRef.current = true;
+      runRadialCallback(detail.x, detail.y, detail.onCovered, setState, () => {
+        lockedRef.current = false;
+        detail.onDone?.();
+      });
+    };
+    window.addEventListener('pz:runRadial', handler);
+    return () => window.removeEventListener('pz:runRadial', handler);
+  }, []);
 
   return (
     <>
@@ -188,6 +230,32 @@ function runRadial(
     router.push(href);
     requestAnimationFrame(() => {
       window.scrollTo(0, 0);
+      requestAnimationFrame(() => {
+        setState({ kind: 'radial', phase: 'uncovering', x, y });
+        window.setTimeout(() => {
+          setState({ kind: 'idle' });
+          done();
+        }, RADIAL_MS + 60);
+      });
+    });
+  }, RADIAL_MS + 40);
+}
+
+/** Variant for in-page state swaps that should feel like a navigation.
+ * Covers the screen with the same radial disc, runs `onCovered` while
+ * the screen is fully obscured, then uncovers — revealing whatever new
+ * state the callback put in place. No router.push, no scroll reset. */
+function runRadialCallback(
+  x: number,
+  y: number,
+  onCovered: () => void,
+  setState: (s: State) => void,
+  done: () => void,
+) {
+  setState({ kind: 'radial', phase: 'covering', x, y });
+  window.setTimeout(() => {
+    onCovered();
+    requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         setState({ kind: 'radial', phase: 'uncovering', x, y });
         window.setTimeout(() => {

@@ -17,25 +17,33 @@
  * Per-category memory: the last-viewed product index per category is
  * tracked here, so swapping from Generators → BESS → Generators lands
  * back on the same generator the user was looking at.
+ *
+ * Top-chrome swipe (navbar + category toggle + progress bar): handled
+ * by `PhaseSwipeWrapper`, which subscribes to the `pz:phaseChange`
+ * event ProductExperience emits. Each chrome element subscribes on its
+ * own — ProductsRoot itself does NOT hold phase state, because a
+ * re-render of ProductsRoot mid-transition causes ProductExperience to
+ * re-render too, which dropped state and crashed the detail → next-
+ * product handoff.
  * -------------------------------------------------------------------------- */
 
-import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type MouseEvent as ReactMouseEvent,
+  type ReactNode,
+} from "react";
+import { motion } from "framer-motion";
 import {
   bessProducts,
   products as generators,
   type Product,
 } from "@/data/products";
+import Navbar from "./Navbar";
 import ProductExperience from "./ProductExperience";
 import ProductNav from "./ProductNav";
-
-const SITE_NAV = [
-  { label: "Home", href: "/" },
-  { label: "Products", href: "/products" },
-  { label: "Applications", href: "/applications" },
-  { label: "Blog", href: "/blog" },
-  { label: "Contact Us", href: "/contact" },
-];
 
 const CATEGORIES: ReadonlyArray<{
   id: string;
@@ -45,6 +53,121 @@ const CATEGORIES: ReadonlyArray<{
   { id: "generators", label: "Generators", items: generators },
   { id: "bess", label: "BESS", items: bessProducts },
 ];
+
+/** Wrap top-chrome elements so they animate up off-screen while the
+ * user is inside a product detail layer. Each instance owns its own
+ * phase state — that way none of them force ProductsRoot to re-render
+ * mid-transition (re-rendering ProductsRoot also re-renders
+ * ProductExperience, which corrupts the GSAP detail → showcase
+ * handoff). */
+function PhaseSwipeWrapper({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  const [hidden, setHidden] = useState(false);
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const ce = e as CustomEvent<{ phase: "showcase" | "detail" }>;
+      setHidden(ce.detail?.phase === "detail");
+    };
+    window.addEventListener("pz:phaseChange", handler);
+    return () => window.removeEventListener("pz:phaseChange", handler);
+  }, []);
+
+  return (
+    <motion.div
+      animate={{ y: hidden ? "-130%" : "0%" }}
+      transition={{ duration: 0.45, ease: [0.76, 0, 0.24, 1] }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/** Discreet "switch to the other catalog" affordance. Renders as a
+ * thin mono-spaced label in the bottom-right corner, much quieter
+ * than the old top-center pill. Clicking it plays the same radial
+ * transition a CTA button does (via the imperative API
+ * `GlobalTransitions` registers on `window.__pzRadial`), so the
+ * catalog swap feels like a page navigation rather than an in-place
+ * toggle. The radial fully covers the screen at the moment we flip
+ * `categoryId`, so the showcase's GSAP teardown/rebuild happens out
+ * of sight. */
+function CategoryToggle({
+  categoryId,
+  onChange,
+}: {
+  categoryId: string;
+  onChange: (id: string) => void;
+}) {
+  const [hidden, setHidden] = useState(false);
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const ce = e as CustomEvent<{ phase: "showcase" | "detail" }>;
+      setHidden(ce.detail?.phase === "detail");
+    };
+    window.addEventListener("pz:phaseChange", handler);
+    return () => window.removeEventListener("pz:phaseChange", handler);
+  }, []);
+
+  const other = CATEGORIES.find((c) => c.id !== categoryId) ?? CATEGORIES[1];
+
+  const handleClick = (e: ReactMouseEvent<HTMLButtonElement>) => {
+    // Hand off to GlobalTransitions via custom event. It plays the
+    // same radial reveal a CTA navigation would and calls back at
+    // peak coverage so we can flip the category invisibly.
+    window.dispatchEvent(
+      new CustomEvent("pz:runRadial", {
+        detail: {
+          x: e.clientX,
+          y: e.clientY,
+          onCovered: () => onChange(other.id),
+        },
+      }),
+    );
+  };
+
+  return (
+    <motion.div
+      animate={{ y: hidden ? "-100vh" : "0%" }}
+      transition={{ duration: 0.45, ease: [0.76, 0, 0.24, 1] }}
+      className="fixed right-8 top-[22px] z-[110]"
+    >
+      <button
+        type="button"
+        onClick={handleClick}
+        aria-label={`Switch to ${other.label}`}
+        className="
+          group inline-flex items-center gap-2
+          font-mono text-[10px] uppercase tracking-[0.32em]
+          text-white opacity-70 transition-opacity duration-200
+          hover:opacity-100
+          mix-blend-difference
+          px-2 py-1
+        "
+      >
+        <span className="hidden sm:inline">View</span>
+        <span className="font-semibold tracking-[0.28em]">{other.label}</span>
+        <svg
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.5}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="h-3 w-3 transition-transform duration-300 group-hover:translate-x-0.5"
+          aria-hidden
+        >
+          <path d="M3 8h10M9 4l4 4-4 4" />
+        </svg>
+      </button>
+    </motion.div>
+  );
+}
 
 export default function ProductsRoot() {
   const [categoryId, setCategoryId] = useState<string>(CATEGORIES[0].id);
@@ -80,80 +203,36 @@ export default function ProductsRoot() {
   return (
     <>
       {/* ── Site-wide nav ─────────────────────────────────────────────── */}
-      <nav
-        aria-label="Site navigation"
-        className="fixed left-0 right-0 top-0 z-[90] flex h-24 items-center border-b border-white/10 bg-black/30 backdrop-blur-md"
-      >
-        {/* Logo */}
-        <Link
-          href="/"
-          aria-label="Power Zone home"
-          className="absolute left-8"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/images/logo-on-dark.webp"
-            alt="Power Zone"
-            draggable={false}
-            className="pointer-events-none h-12 w-auto select-none"
-          />
-        </Link>
-
-        {/* Center links */}
-        <div className="flex w-full items-center justify-center gap-3 text-[13px] font-bold uppercase tracking-[0.24em] [text-shadow:0_1px_4px_rgba(0,0,0,0.65)]">
-          {SITE_NAV.map((link) => {
-            const isActive = link.href === "/products";
-            return (
-              <Link
-                key={link.label}
-                href={link.href}
-                className={`
-                  cursor-pointer rounded-full px-5 py-2
-                  transition-colors duration-300 text-white
-                  ${isActive ? "bg-red-500/70" : "hover:bg-red-500/55"}
-                `}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
+      {/* On the products page the showcase is GSAP-pinned, so a page-
+       * relative (absolute) nav would scroll away the moment the wipe
+       * starts. We pin it to the viewport here, and the swipe wrapper
+       * lifts it off-screen while the user is inside a product detail
+       * layer. */}
+      <PhaseSwipeWrapper className="fixed left-0 right-0 top-0 z-[90]">
+        <Navbar />
+      </PhaseSwipeWrapper>
 
       {/* Top-center category toggle. Pill background sits above the
        * showcase so it's visible against any product accent color.
-       * top-[5.5rem] = 20px below the 80px (h-20) site nav. */}
-      <nav
-        aria-label="Product category"
-        className="fixed left-1/2 top-[6.5rem] z-[80] flex -translate-x-1/2 items-center gap-1 rounded-full bg-black/35 p-1 backdrop-blur-md ring-1 ring-white/10"
-      >
-        {CATEGORIES.map((c) => {
-          const selected = c.id === categoryId;
-          return (
-            <button
-              key={c.id}
-              type="button"
-              onClick={() => setCategoryId(c.id)}
-              aria-pressed={selected}
-              className={`
-                rounded-full px-5 py-2
-                font-mono text-[11px] uppercase tracking-[0.28em]
-                transition-colors
-                ${
-                  selected
-                    ? "bg-white text-black"
-                    : "text-white/75 hover:text-white"
-                }
-              `}
-            >
-              {c.label}
-            </button>
-          );
-        })}
-      </nav>
+       * Pinned just below the shared 62px navbar.
+       *
+       * Not using PhaseSwipeWrapper here: this element needs to be
+       * x-centered via translate(-50%), but framer-motion writes a
+       * `transform: translateY(...)` inline style when animating `y`,
+       * which clobbers the Tailwind `-translate-x-1/2` class. We
+       * instead drive both x and y through motion's animate prop so
+       * the X centering survives the swipe-up. The hidden distance is
+       * `-100vh` (vs the navbar's `-130%`) because the toggle sits
+       * 5rem down — a percentage of its own height isn't enough to
+       * clear that offset; a viewport-relative distance always does. */}
+      <CategoryToggle
+        categoryId={categoryId}
+        onChange={setCategoryId}
+      />
 
       {/* Brand quick-links — keyed on category so the buttons re-mount
-       * when the active catalog changes. */}
+       * when the active catalog changes. ProductNav handles its own
+       * phase-driven swipe internally so it doesn't need a wrapper. */}
       <ProductNav key={`nav-${categoryId}`} products={active.items} />
 
       <ProductExperience

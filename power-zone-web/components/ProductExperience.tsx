@@ -50,7 +50,6 @@ import { flushSync } from "react-dom";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
-import Link from "next/link";
 import { useLenis } from "@/hooks/useLenis";
 import { textOn, type Product } from "@/data/products";
 import ImageReel from "./ImageReel";
@@ -119,7 +118,26 @@ export default function ProductExperience({
   onActiveChangeRef.current = onActiveChange;
   useEffect(() => {
     onActiveChangeRef.current?.(currentVisibleIdx);
+    // Also broadcast for the right-side progress indicator (ProductNav)
+    // which subscribes via a window event so we don't have to thread
+    // current-index state through ProductsRoot.
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("pz:productIndexChange", {
+          detail: { index: currentVisibleIdx },
+        }),
+      );
+    }
   }, [currentVisibleIdx]);
+
+  // Broadcast phase changes so ProductsRoot can swipe the site navbar
+  // up on entry to the detail layer and slide it back down on return.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.dispatchEvent(
+      new CustomEvent("pz:phaseChange", { detail: { phase } }),
+    );
+  }, [phase]);
 
   // ---- Refs ---------------------------------------------------------------
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -428,6 +446,19 @@ export default function ProductExperience({
       // back to 0 here and let the timeline reveal it again later.
       gsap.set(detailLayerRef.current, { autoAlpha: 0 });
 
+      // Tell the top-chrome (navbar + category toggle + ProductNav) to
+      // swipe up RIGHT NOW so it animates in tandem with the middle
+      // card's own swipe below, rather than waiting until the entire
+      // entry choreography finishes (the React-state `setPhase("detail")`
+      // call at `onComplete` is what otherwise drives them, far too
+      // late). The chrome wrappers each subscribe to this event in
+      // ProductsRoot / ProductNav.
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(
+          new CustomEvent("pz:phaseChange", { detail: { phase: "detail" } }),
+        );
+      }
+
       const tl = gsap.timeline({
         onComplete: () => {
           // Tear down showcase, build detail.
@@ -684,19 +715,6 @@ export default function ProductExperience({
     return () => window.removeEventListener("popstate", handler);
   }, [exitToShowcase]);
 
-  // Top-left logo click. In showcase, navigates to landing. In detail,
-  // exits to the listing (same product).
-  const handleLogoClick = useCallback(
-    (e: React.MouseEvent<HTMLAnchorElement>) => {
-      if (phaseRef.current === "detail") {
-        e.preventDefault();
-        if (transitioningRef.current) return;
-        exitToShowcase(activeIdxRef.current);
-      }
-    },
-    [exitToShowcase],
-  );
-
   // -----------------------------------------------------------------------
   // RENDER
   // -----------------------------------------------------------------------
@@ -714,22 +732,29 @@ export default function ProductExperience({
       className="relative w-screen overflow-hidden"
       style={{ backgroundColor: "#EFEAE0" }}
     >
-      {/* Top-left logo. In showcase phase it's a normal link to the
-       * landing page. In detail phase the click handler intercepts and
-       * exits to the listing instead, so the logo doubles as a back
-       * affordance once you're inside a product. */}
-      <Link
-        href="/"
-        onClick={handleLogoClick}
-        aria-label={
-          phase === "detail" ? "Back to products" : "Power Zone home"
-        }
-        // While in detail mode the click is hijacked to slide the
-        // detail layer back to the listing — opt out of the global
-        // page-transition interceptor so it doesn't navigate away
-        // before handleLogoClick has a chance to preventDefault.
-        data-no-transition={phase === "detail" ? "true" : undefined}
-        className="fixed left-6 top-6 z-[80] mix-blend-difference"
+      {/* Top-left back affordance — always mounted so the GSAP timelines
+       * that run during the showcase↔detail transition don't see their
+       * surrounding DOM children appear/disappear (which triggers an
+       * `insertBefore` NotFoundError when React reconciles around GSAP-
+       * managed nodes). Visibility is toggled via opacity + pointer-
+       * events instead. The button is a no-op in showcase mode — the
+       * shared site navbar handles branding there. In detail mode it
+       * slides the detail layer back to the listing. */}
+      <button
+        type="button"
+        onClick={() => {
+          if (phaseRef.current !== "detail") return;
+          if (transitioningRef.current) return;
+          exitToShowcase(activeIdxRef.current);
+        }}
+        aria-label="Back to products"
+        aria-hidden={phase !== "detail"}
+        tabIndex={phase === "detail" ? 0 : -1}
+        className={`fixed left-6 top-6 z-[80] mix-blend-difference transition-opacity duration-200 ${
+          phase === "detail"
+            ? "cursor-pointer opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
+        }`}
       >
         <Image
           src="/power-zone-logo.webp"
@@ -739,7 +764,7 @@ export default function ProductExperience({
           priority
           className="h-[72px] w-[72px] object-contain"
         />
-      </Link>
+      </button>
 
       <section
         ref={showcasePinRef}

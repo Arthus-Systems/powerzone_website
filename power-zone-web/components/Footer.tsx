@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState, type FormEvent } from 'react';
+import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 
 // Link columns — keyed to the routes that actually exist on the site.
 // Product links land on `/products?category=…` which `ProductsRoot`
@@ -160,48 +161,14 @@ export default function Footer() {
               </div>
 
               {/* CTA buttons */}
-              <div className="mt-[clamp(16px,2.4vh,32px)] flex flex-wrap justify-center gap-3">
-                <Link
-                  href="/blog"
-                  className="
-                    group inline-flex items-center gap-2.5
-                    rounded-full border border-white/20 bg-white/[0.05]
-                    px-6 py-3
-                    text-[12px] font-semibold uppercase tracking-[0.22em] text-white/80
-                    backdrop-blur-sm
-                    transition-all duration-300
-                    hover:border-white/40 hover:bg-white/[0.10] hover:text-white
-                  "
-                >
-                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 shrink-0" aria-hidden>
-                    <path d="M2 4h12M2 8h8M2 12h5" />
-                  </svg>
+              <div className="mt-[clamp(16px,2.4vh,32px)] flex flex-wrap justify-center gap-3 text-white">
+                <InteractiveHoverButton href="/blog">
                   From the Power Room
-                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3 shrink-0 transition-transform duration-300 group-hover:translate-x-0.5" aria-hidden>
-                    <path d="M3 8h10M9 4l4 4-4 4" />
-                  </svg>
-                </Link>
+                </InteractiveHoverButton>
 
-                <Link
-                  href="/contact"
-                  className="
-                    group inline-flex items-center gap-2.5
-                    rounded-full bg-red-600
-                    px-6 py-3
-                    text-[12px] font-semibold uppercase tracking-[0.22em] text-white
-                    transition-all duration-300
-                    hover:bg-red-500 hover:shadow-[0_6px_24px_-6px_rgba(220,38,38,0.6)]
-                  "
-                >
-                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 shrink-0" aria-hidden>
-                    <path d="M13 10.5c0 .3-.1.6-.2.9l-1 2a1 1 0 01-.9.6H4a1 1 0 01-.9-.6l-1-2A2 2 0 012 10.5V5a1 1 0 011-1h10a1 1 0 011 1v5.5z" />
-                    <path d="M2 6h12M6 6V4M10 6V4" />
-                  </svg>
-                  Let's Power Your Project
-                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3 shrink-0 transition-transform duration-300 group-hover:translate-x-0.5" aria-hidden>
-                    <path d="M3 8h10M9 4l4 4-4 4" />
-                  </svg>
-                </Link>
+                <InteractiveHoverButton href="/contact">
+                  Let&apos;s Power Your Project
+                </InteractiveHoverButton>
               </div>
 
               {/* Divider */}

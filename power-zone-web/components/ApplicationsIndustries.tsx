@@ -1,8 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence, type TargetAndTransition } from 'framer-motion';
+import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types & Data
@@ -532,33 +532,11 @@ function IndustrySlide({
           initial={init({ opacity: 0, y: d * 12 })}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.48, ease: CONTENT_EASE }}
-          className="mt-8"
+          className="mt-8 text-white"
         >
-          <Link
-            href="/contact"
-            className="
-              inline-flex items-center gap-2.5
-              rounded-full bg-red-600
-              px-7 py-3
-              text-[11px] font-semibold uppercase tracking-[0.22em] text-white
-              transition-all duration-300
-              hover:bg-red-500 hover:shadow-[0_6px_24px_-6px_rgba(220,38,38,0.55)]
-            "
-          >
+          <InteractiveHoverButton href="/contact">
             Contact Sales
-            <svg
-              viewBox="0 0 16 16"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={1.6}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-3 w-3 shrink-0"
-              aria-hidden
-            >
-              <path d="M3 8h10M9 4l4 4-4 4" />
-            </svg>
-          </Link>
+          </InteractiveHoverButton>
         </motion.div>
       </div>
 

@@ -29,19 +29,21 @@ function EmbossedPZ({ accentColor, idBase, index }: EmbossedPZProps) {
   const shadowFilterId = `${idBase}-shadow-${index}`;
   const highlightFilterId = `${idBase}-highlight-${index}`;
 
-  // Center the monogram in the actual card. The previous lifted y-position
-  // made the PZ sit against the top edge on wide cards. Keeping the text at
-  // geometric center, with a tiny dy correction and slightly smaller size,
-  // leaves breathing room for the emboss shadows on all sides.
+  // Anchored to the SVG viewBox center; the wrapping <g> below adds a
+  // small downward translate so the rendered PZ sits at the visual
+  // middle of the card (dominantBaseline="middle" lands the em-box
+  // middle on the y coord, which for caps-only text reads slightly
+  // high). preserveAspectRatio="xMidYMid meet" on the SVG keeps the
+  // (1000, 260) coord system centered for every viewport aspect.
   const sharedTextProps = {
     x: "50%",
     y: "50%",
-    dy: "0.04em",
+    dy: "0",
     textAnchor: "middle" as const,
     dominantBaseline: "middle" as const,
-    fontSize: 205,
-    fontWeight: 900,
-    letterSpacing: -18,
+    fontSize: 183,
+    fontWeight: 700,
+    letterSpacing: -17,
   };
 
   return (
@@ -50,7 +52,9 @@ function EmbossedPZ({ accentColor, idBase, index }: EmbossedPZProps) {
       className="pointer-events-none absolute inset-0 z-[1] h-full w-full select-none overflow-visible"
       viewBox="0 0 1000 260"
       preserveAspectRatio="xMidYMid meet"
-      style={{ fontFamily: "inherit" }}
+      // Render the embossed PZ in Sansation (the site's display face)
+      // so it visually matches the rest of the brand display copy.
+      style={{ fontFamily: "var(--font-display), system-ui, sans-serif" }}
     >
       <defs>
         <filter
@@ -61,7 +65,7 @@ function EmbossedPZ({ accentColor, idBase, index }: EmbossedPZProps) {
           height="170%"
           colorInterpolationFilters="sRGB"
         >
-          <feGaussianBlur stdDeviation="5" />
+          <feGaussianBlur stdDeviation="4.5" />
         </filter>
         <filter
           id={highlightFilterId}
@@ -86,12 +90,12 @@ function EmbossedPZ({ accentColor, idBase, index }: EmbossedPZProps) {
         The final letter body uses the card's own accent color, so the PZ
         reads as molded card material rather than printed ink.
       */}
-      <g>
+      <g transform="translate(0 12)">
         <text
           {...sharedTextProps}
           fill="#000000"
           opacity="0.17"
-          transform="translate(10 10)"
+          transform="translate(9 9)"
           filter={`url(#${shadowFilterId})`}
         >
           PZ
@@ -100,7 +104,7 @@ function EmbossedPZ({ accentColor, idBase, index }: EmbossedPZProps) {
           {...sharedTextProps}
           fill="#ffffff"
           opacity="0.13"
-          transform="translate(-8 -8)"
+          transform="translate(-7 -7)"
           filter={`url(#${highlightFilterId})`}
         >
           PZ
@@ -109,7 +113,7 @@ function EmbossedPZ({ accentColor, idBase, index }: EmbossedPZProps) {
           {...sharedTextProps}
           fill="#000000"
           opacity="0.28"
-          transform="translate(3.5 3.5)"
+          transform="translate(3 3)"
         >
           PZ
         </text>
@@ -117,7 +121,7 @@ function EmbossedPZ({ accentColor, idBase, index }: EmbossedPZProps) {
           {...sharedTextProps}
           fill="#ffffff"
           opacity="0.22"
-          transform="translate(-2.8 -2.8)"
+          transform="translate(-2.5 -2.5)"
         >
           PZ
         </text>
@@ -236,7 +240,13 @@ export default function ProductCard({
             ref={(el) => {
               panelRefs.current[i] = el;
             }}
-            className="absolute inset-0 flex items-end overflow-hidden will-change-transform"
+            // Title and subtitle now anchor to opposite corners
+            // (top-left / bottom-left) via absolute positioning rather
+            // than flex alignment — that way each one holds its corner
+            // consistently regardless of card height (the old flex
+            // approach drifted on 16:10 because the available row
+            // height changed with viewport aspect).
+            className="absolute inset-0 overflow-hidden will-change-transform"
             style={{
               backgroundColor: surfaceColor,
               zIndex: products.length - i,
@@ -261,50 +271,76 @@ export default function ProductCard({
               }}
             />
 
-            <div
+            {/* Title — pinned tight to TOP-LEFT. Multi-word titles
+             * (e.g. "Li-ion Battery", "Hybrid Inverter") render with
+             * each whitespace-separated word on its own line via one
+             * TextStaggerHover per word (the underlying component only
+             * accepts string children, so we can't put block spans
+             * inside a single instance). Single-word titles stay on
+             * one line. */}
+            <h2
               className="
-                relative z-10 flex w-full items-end justify-between
-                gap-3 px-4 pb-3 md:px-6 md:pb-4
+                absolute top-2 left-3 md:top-3 md:left-4
+                z-10 max-w-[60%] text-left
+                font-semibold leading-[0.95]
+                text-[clamp(17px,2.2vw,28px)]
+                font-display
               "
-              // Card text adapts to the panel's accent color via
-              // textOn(...) — every current accent (generators + BESS)
-              // is dark so this resolves to white, but if a future
-              // catalog ships a light-accent product the text stays
-              // legible.
-              style={{ color: textOn(surfaceColor) }}
+              style={{ color: textOn(surfaceColor), letterSpacing: "-0.02em" }}
             >
-              <div className="max-w-[72%]">
+              {product.title.split(/\s+/).map((word, idx) => (
                 <TextStaggerHover
-                  as="h2"
-                  className="
-                    align-baseline font-semibold leading-[0.95]
-                    text-[clamp(17px,2.2vw,28px)]
-                    whitespace-nowrap font-display
-                  "
-                  style={{ letterSpacing: "-0.02em" }}
+                  key={`t-${idx}`}
+                  as="span"
+                  className="block whitespace-nowrap"
                 >
                   <TextStaggerHoverActive
                     animation="top"
                     className="opacity-90 origin-top"
                   >
-                    {product.title}
+                    {word}
                   </TextStaggerHoverActive>
                   <TextStaggerHoverHidden
                     animation="bottom"
                     className="origin-bottom"
                   >
-                    {product.title}
+                    {word}
                   </TextStaggerHoverHidden>
                 </TextStaggerHover>
-                <p className="mt-1 text-[11px] md:text-[12px] uppercase tracking-[0.12em] opacity-80 whitespace-nowrap font-body">
-                  {product.subtitle}
-                </p>
-              </div>
-              <div className="flex flex-col items-end gap-0.5 text-right text-[11px] md:text-[12px] uppercase tracking-[0.12em] opacity-80 font-body">
-                <span>{product.category}</span>
-                <span>{product.year}</span>
-              </div>
-            </div>
+              ))}
+            </h2>
+
+            {/* Bottom-left — short type label (Diesel / Storage / Hybrid). */}
+            <p
+              className="
+                absolute bottom-2 left-3 md:bottom-3 md:left-4
+                z-10 max-w-[40%] text-left
+                text-[9px] md:text-[10px] uppercase tracking-[0.14em]
+                opacity-80 whitespace-nowrap font-body
+              "
+              style={{ color: textOn(surfaceColor) }}
+            >
+              {product.subtitle}
+            </p>
+
+            {/* Bottom-right — origin, rendered with each whitespace-
+             * separated word stacked on its own line (e.g. "Italian"
+             * over "Engineering", "Pakistan" over "Engineered"). */}
+            <p
+              className="
+                absolute bottom-2 right-3 md:bottom-3 md:right-4
+                z-10 max-w-[40%] text-right
+                text-[9px] md:text-[10px] uppercase tracking-[0.14em] leading-[1.15]
+                opacity-80 font-body
+              "
+              style={{ color: textOn(surfaceColor) }}
+            >
+              {product.origin.split(/\s+/).map((word, idx) => (
+                <span key={`o-${idx}`} className="block">
+                  {word}
+                </span>
+              ))}
+            </p>
           </section>
         );
       })}

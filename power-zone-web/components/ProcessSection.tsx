@@ -1,9 +1,9 @@
 'use client';
 
-import Link from 'next/link';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import type { MotionValue } from 'framer-motion';
 import { useMemo, useRef } from 'react';
+import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 
 // ───────────────────────────────────────────────────────────────────────────
 // PROCESS STEPS — EDIT THIS ARRAY TO CHANGE TEXT AND IMAGES
@@ -137,23 +137,10 @@ export default function ProcessSection() {
             beyond. Discover resilient power systems tailored to your
             operational needs — with support you can count on.
           </p>
-          <div className="mt-[clamp(12px,4vh,35px)] flex justify-center">
-            <Link
-              href="/applications"
-              className="
-                group inline-flex items-center gap-3
-                rounded-full border border-black/20
-                px-7 py-3
-                text-[11px] font-semibold uppercase tracking-[0.3em] text-black/50
-                transition-all duration-300
-                hover:border-black/45 hover:text-black
-              "
-            >
+          <div className="mt-[clamp(12px,4vh,35px)] flex justify-center text-black">
+            <InteractiveHoverButton href="/applications">
               See more Applications
-              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3 shrink-0 transition-transform duration-300 group-hover:translate-x-1" aria-hidden>
-                <path d="M3 8h10M9 4l4 4-4 4" />
-              </svg>
-            </Link>
+            </InteractiveHoverButton>
           </div>
         </div>
 

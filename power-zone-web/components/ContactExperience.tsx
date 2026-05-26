@@ -1,16 +1,9 @@
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
-
-const NAV_LINKS = [
-  { label: 'Home', href: '/' },
-  { label: 'Products', href: '/products' },
-  { label: 'Applications', href: '/applications' },
-  { label: 'Blog', href: '/blog' },
-  { label: 'Contact Us', href: '/contact' },
-];
+import Navbar from '@/components/Navbar';
+import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 
 type Office = { city: string; address: string };
 
@@ -42,53 +35,9 @@ const OFFICES: Office[] = [
 export default function ContactExperience() {
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-[#F4EFE7] text-black lg:h-screen">
-      {/* Top navbar */}
-      <nav
-        className="
-          absolute left-0 right-0 top-0 z-30 h-24
-          border-b border-white/10 bg-black/30 backdrop-blur-md
-        "
-      >
-        {/* Top-left logo */}
-        <Link
-          href="/"
-          aria-label="Power Zone home"
-          className="absolute left-8 top-1/2 -translate-y-1/2"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/images/logo-on-dark.webp"
-            alt="Power Zone"
-            draggable={false}
-            className="pointer-events-none h-12 w-auto select-none"
-          />
-        </Link>
-
-        <div
-          className="
-            flex h-full items-center justify-center gap-3
-            text-[13px] font-bold uppercase tracking-[0.24em]
-            [text-shadow:0_1px_4px_rgba(0,0,0,0.65)]
-          "
-        >
-          {NAV_LINKS.map((link) => {
-            const isActive = link.href === '/contact';
-            return (
-              <Link
-                key={link.label}
-                href={link.href}
-                className={`
-                  cursor-pointer rounded-full px-5 py-2
-                  transition-colors duration-300 text-white
-                  ${isActive ? 'bg-red-500/70' : 'hover:bg-red-500/55'}
-                `}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
+      <div className="absolute left-0 right-0 top-0 z-30">
+        <Navbar />
+      </div>
 
       {/* Main content */}
       <main
@@ -315,34 +264,11 @@ function ContactForm() {
         />
       </div>
 
-      <button
-        type="submit"
-        className="
-          group mt-7 inline-flex items-center gap-3 rounded-full
-          bg-red-500 px-7 py-3
-          text-[12px] font-bold uppercase tracking-[0.22em] text-white
-          transition-all duration-300
-          hover:bg-red-600
-          hover:shadow-[0_8px_24px_-8px_rgba(220,38,38,0.6)]
-        "
-      >
-        Send Message
-        <svg
-          viewBox="0 0 16 16"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2}
-          className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1"
-          aria-hidden
-        >
-          <path d="M3 8 H13" strokeLinecap="round" />
-          <path
-            d="M9 4 L13 8 L9 12"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </button>
+      <div className="mt-7 text-black">
+        <InteractiveHoverButton type="submit">
+          Send Message
+        </InteractiveHoverButton>
+      </div>
     </form>
   );
 }

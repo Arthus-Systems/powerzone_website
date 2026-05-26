@@ -5,14 +5,8 @@ import { useMemo, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { POSTS } from '@/data/blog';
 import type { BlogCategory, BlogPost } from '@/data/blog';
-
-const NAV_LINKS = [
-  { label: 'Home', href: '/' },
-  { label: 'Products', href: '/products' },
-  { label: 'Applications', href: '/applications' },
-  { label: 'Blog', href: '/blog' },
-  { label: 'Contact Us', href: '/contact' },
-];
+import Navbar from '@/components/Navbar';
+import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 
 type Filter = 'All' | BlogCategory;
 const FILTERS: Filter[] = ['All', 'Hybrid Inverters', 'Diesel Generators'];
@@ -51,48 +45,9 @@ export default function BlogIndex() {
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-[#F4EFE7] text-black">
-      {/* Top navbar */}
-      <nav className="absolute left-0 right-0 top-0 z-30 h-24 border-b border-white/10 bg-black/30 backdrop-blur-md">
-        {/* Top-left logo */}
-        <Link
-          href="/"
-          aria-label="Power Zone home"
-          className="absolute left-8 top-1/2 -translate-y-1/2"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/images/logo-on-dark.webp"
-            alt="Power Zone"
-            draggable={false}
-            className="pointer-events-none h-12 w-auto select-none"
-          />
-        </Link>
-
-        <div
-          className="
-            flex h-full items-center justify-center gap-3
-            text-[13px] font-bold uppercase tracking-[0.24em]
-            [text-shadow:0_1px_4px_rgba(0,0,0,0.65)]
-          "
-        >
-          {NAV_LINKS.map((link) => {
-            const isActive = link.href === '/blog';
-            return (
-              <Link
-                key={link.label}
-                href={link.href}
-                className={`
-                  cursor-pointer rounded-full px-5 py-2
-                  transition-colors duration-300 text-white
-                  ${isActive ? 'bg-red-500/70' : 'hover:bg-red-500/55'}
-                `}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
+      <div className="absolute left-0 right-0 top-0 z-30">
+        <Navbar />
+      </div>
 
       <main
         className="
@@ -265,16 +220,12 @@ function SearchBar({
 
 function FeaturedCard({ post }: { post: BlogPost }) {
   return (
-    <Link
-      href={`/blog/${post.slug}`}
+    <div
       className="
-        group relative block overflow-hidden
+        relative block overflow-hidden
         rounded-[2rem] border border-black/10
         bg-white
         p-8 md:p-12
-        transition-all duration-500
-        hover:-translate-y-0.5 hover:border-red-500/40
-        hover:shadow-[0_30px_80px_-30px_rgba(220,38,38,0.20)]
       "
     >
       <div className="relative grid gap-8 md:grid-cols-[1.4fr_1fr] md:items-end">
@@ -298,35 +249,24 @@ function FeaturedCard({ post }: { post: BlogPost }) {
             {post.excerpt}
           </p>
         </div>
-        <div className="flex md:justify-end">
-          <span
-            className="
-              inline-flex items-center gap-2
-              text-[12px] font-semibold uppercase tracking-[0.22em] text-black
-              transition-colors group-hover:text-red-600
-            "
-          >
+        <div className="flex md:justify-end text-black">
+          <InteractiveHoverButton href={`/blog/${post.slug}`}>
             Read article
-            <Arrow />
-          </span>
+          </InteractiveHoverButton>
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
 
 function PostCard({ post }: { post: BlogPost }) {
   return (
-    <Link
-      href={`/blog/${post.slug}`}
+    <div
       className="
-        group relative flex h-full flex-col
+        relative flex h-full flex-col
         overflow-hidden rounded-2xl
         border border-black/10 bg-white
         p-7
-        transition-all duration-500
-        hover:-translate-y-1 hover:border-red-500/40
-        hover:shadow-[0_22px_55px_-25px_rgba(220,38,38,0.25)]
       "
     >
       <div className="flex items-center justify-between">
@@ -340,7 +280,6 @@ function PostCard({ post }: { post: BlogPost }) {
         className="
           mt-5 text-[18px] font-semibold leading-[1.25]
           tracking-tight text-black
-          transition-colors group-hover:text-red-600
           md:text-[19px]
         "
         style={{ letterSpacing: '-0.005em' }}
@@ -352,17 +291,12 @@ function PostCard({ post }: { post: BlogPost }) {
         {post.excerpt}
       </p>
 
-      <span
-        className="
-          mt-6 inline-flex items-center gap-2
-          text-[11px] font-semibold uppercase tracking-[0.22em] text-black/60
-          transition-colors group-hover:text-red-600
-        "
-      >
-        Read more
-        <Arrow />
-      </span>
-    </Link>
+      <div className="mt-6 text-black">
+        <InteractiveHoverButton href={`/blog/${post.slug}`}>
+          Read more
+        </InteractiveHoverButton>
+      </div>
+    </div>
   );
 }
 

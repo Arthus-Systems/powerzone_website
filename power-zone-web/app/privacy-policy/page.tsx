@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Navbar from '@/components/Navbar';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy — Power Zone Engineering & Services',
@@ -9,19 +10,10 @@ export const metadata: Metadata = {
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="min-h-screen bg-[#F4EFE7]">
-      {/* Nav */}
-      <nav className="sticky top-0 z-50 flex h-24 items-center border-b border-white/10 bg-black/30 px-6 backdrop-blur-md md:px-12">
-        <Link href="/" className="flex items-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/images/logo-on-dark.webp"
-            alt="Power Zone"
-            draggable={false}
-            className="h-10 w-auto select-none"
-          />
-        </Link>
-      </nav>
+    <div className="relative min-h-screen bg-[#F4EFE7]">
+      <div className="absolute left-0 right-0 top-0 z-50">
+        <Navbar />
+      </div>
 
       {/* Content */}
       <main className="mx-auto max-w-[800px] px-6 py-16 md:px-8 md:py-24">

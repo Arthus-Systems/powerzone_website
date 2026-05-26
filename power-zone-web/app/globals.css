@@ -4,7 +4,7 @@
   /* Site-wide cream base. Sections with their own bg (hero black,
    * SolutionsSection dark) sit on top — this just guarantees the gaps
    * and any unstyled surface read as warm cream rather than white. */
-  --background: #F4EFE7;
+  --background: #F5EFE5;
   --foreground: #171717;
 }
 
@@ -31,9 +31,12 @@ body {
 
 /* Default CTA face — every <button> picks up Saira Semi Condensed
  * automatically. Individual components can still override with an
- * explicit `font-display`, `font-body`, or `font-mono` utility class. */
-button {
-  font-family: var(--font-action), system-ui, sans-serif;
+ * explicit `font-display`, `font-body`, or `font-mono` utility class —
+ * the rule lives in @layer base so Tailwind's utility layer always wins. */
+@layer base {
+  button {
+    font-family: var(--font-action), system-ui, sans-serif;
+  }
 }
 
 /* Lenis smooth-scroll (see hooks/useLenis.ts) */

@@ -1,8 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useRef, useState, type SyntheticEvent } from 'react';
 import { motion } from 'framer-motion';
+import Navbar from '@/components/Navbar';
 import SolutionsSection from '@/components/SolutionsSection';
 import ProcessSection from '@/components/ProcessSection';
 import PeekProductsSection from '@/components/PeekProductsSection';
@@ -65,13 +65,6 @@ const HERO_ITEM_VARIANTS = {
   },
 };
 
-const NAV_LINKS = [
-  { label: 'Products', href: '/products' },
-  { label: 'Applications', href: '/applications' },
-  { label: 'Blog', href: '/blog' },
-  { label: 'Contact Us', href: '/contact' },
-];
-
 const INTRO_SEEN_KEY = 'pz:introSeen';
 
 export default function Home() {
@@ -90,7 +83,6 @@ export default function Home() {
   const [isRevealing, setIsRevealing] = useState(false);
   const [hasLitUp, setHasLitUp] = useState(false);
   const [videoEnded, setVideoEnded] = useState(false);
-  const [navHidden, setNavHidden] = useState(false);
   const [readings, setReadings] = useState({ power: 0, voltage: 0, ampere: 0 });
   const [backupStatus, setBackupStatus] = useState<StatusLineState>({
     state: 'STANDBY',
@@ -199,15 +191,6 @@ export default function Home() {
     rafId = requestAnimationFrame(step);
     return () => cancelAnimationFrame(rafId);
   }, [hasPressed]);
-
-  useEffect(() => {
-    if (!videoEnded) return;
-    const handleScroll = () => {
-      setNavHidden(window.scrollY > window.innerHeight * 0.8);
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [videoEnded]);
 
   // Smoothly ramps the diesel-start clip to silence over `durationMs` and
   // then stops it. We restore the original volume on the audio element so a
@@ -471,58 +454,14 @@ export default function Home() {
         {/* Hero punchline — appears only after the video finishes. */}
         {videoEnded && (
           <>
-            <motion.nav
+            <motion.div
               initial={{ opacity: 0, y: -48 }}
-              animate={{ opacity: 1, y: navHidden ? '-100%' : 0 }}
-              transition={{
-                opacity: { duration: 0.9, delay: 0.3, ease: [0.22, 1, 0.36, 1] },
-                y: { duration: 0.3, ease: 'easeInOut' },
-              }}
-              className="
-                fixed left-0 right-0 top-0 z-[90] h-24
-                bg-black/30 backdrop-blur-md
-                border-b border-white/10
-              "
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.9, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute left-0 right-0 top-0 z-[90]"
             >
-              {/* Logo */}
-              <Link
-                href="/"
-                aria-label="Power Zone home"
-                className="absolute left-8 top-1/2 -translate-y-1/2"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={LOGO_ON_DARK}
-                  alt="Power Zone"
-                  draggable={false}
-                  className="pointer-events-none h-12 w-auto select-none"
-                />
-              </Link>
-
-              <div
-                className="
-                  flex h-full items-center justify-center gap-3
-                  text-[13px] font-bold uppercase tracking-[0.24em]
-                  text-white
-                  [text-shadow:0_1px_4px_rgba(0,0,0,0.65)]
-                "
-              >
-                {NAV_LINKS.map((link) => (
-                  <Link
-                    key={link.label}
-                    href={link.href}
-                    className="
-                      cursor-pointer
-                      rounded-full px-5 py-2
-                      transition-colors duration-300
-                      hover:bg-red-500/55
-                    "
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
-            </motion.nav>
+              <Navbar />
+            </motion.div>
 
             <motion.div
               variants={HERO_CONTAINER_VARIANTS}
