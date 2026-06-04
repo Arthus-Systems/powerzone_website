@@ -86,15 +86,13 @@ const GOALS: Goal[] = [
 // ───────────────────────────────────────────────────────────────────────────
 // SCROLL SPEED
 // ───────────────────────────────────────────────────────────────────────────
-const SECTION_VH_PER_CARD = 25; // 4 cards × 25vh = 100vh — section is single-screen, no scroll-driven reveal
-
 export default function GoalsSection() {
   return (
     <section
       className="relative bg-[#F4EFE7]"
-      style={{ height: `${GOALS.length * SECTION_VH_PER_CARD}vh`, scrollSnapAlign: 'start' }}
+      style={{ scrollSnapAlign: 'start' }}
     >
-      <div className="sticky top-0 flex h-screen flex-col overflow-hidden">
+      <div className="flex min-h-screen flex-col">
         {/* Header */}
         <div className="px-8 pt-20 text-center md:pt-24">
           <p className="font-tiny text-[20px] font-medium uppercase tracking-[0.32em] text-red-600">
@@ -109,7 +107,7 @@ export default function GoalsSection() {
         </div>
 
         {/* Single-row 4-column card grid */}
-        <div className="flex flex-1 items-stretch px-6 pb-10 pt-6 md:px-10 lg:px-14">
+        <div className="flex flex-1 items-stretch px-6 pb-10 pt-6 md:px-10 lg:px-14" style={{ minHeight: '520px' }}>
           <div className="mx-auto grid h-full w-full max-w-[1400px] grid-cols-4 grid-rows-1 gap-5 lg:gap-6">
             {GOALS.map((goal) => (
               <GoalCard
