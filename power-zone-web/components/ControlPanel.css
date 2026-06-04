@@ -6,7 +6,7 @@
 
    - --pz-* tokens are declared at :root so any pz-* descendant can pick them up.
    - The generator-blueprint mask URL has been remapped to the project's
-     /images/fpt_generator_blueprint.png path.
+     /images/fpt_generator_blueprint.webp path.
    ========================================================================== */
 
 :root {
@@ -404,8 +404,8 @@
   position: absolute;
   inset: 9% 7%;
   z-index: 1;
-  -webkit-mask: url('/images/fpt_generator_blueprint.png') center/contain no-repeat;
-          mask: url('/images/fpt_generator_blueprint.png') center/contain no-repeat;
+  -webkit-mask: url('/images/fpt_generator_blueprint.webp') center/contain no-repeat;
+          mask: url('/images/fpt_generator_blueprint.webp') center/contain no-repeat;
   background: linear-gradient(180deg, #ff5a5f, #ff070f 45%, #8a0a0e);
   opacity: 0.8;
   filter: drop-shadow(0 0 10px rgba(255, 7, 15, 0.6));

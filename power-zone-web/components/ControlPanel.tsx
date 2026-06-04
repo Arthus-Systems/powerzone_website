@@ -102,8 +102,8 @@ const ZEROS: Readings = {
 
 /* ── Asset paths (mapped to /public per project conventions) ─────────────── */
 const LOGO_SRC = '/images/logo-on-dark.webp';
-const BLUEPRINT_SRC = '/images/fpt_generator_blueprint.png';
-const MESH_SRC = '/images/mesh_grill.png';
+const BLUEPRINT_SRC = '/images/fpt_generator_blueprint.webp';
+const MESH_SRC = '/images/mesh_grill.webp';
 
 export type ControlPanelProps = {
   onHero?: () => void;
@@ -311,9 +311,9 @@ export default function ControlPanel({ onHero }: ControlPanelProps) {
                   armed={phase === 'arming'}
                   running={online}
                   onPress={arm}
-                  offSrc="/images/initiate_transfer_button_off.png"
-                  pressedSrc="/images/initiate_transfer_button_pressed.png"
-                  onSrc="/images/initiate_transfer_button_on.png"
+                  offSrc="/images/initiate_transfer_button_off.webp"
+                  pressedSrc="/images/initiate_transfer_button_pressed.webp"
+                  onSrc="/images/initiate_transfer_button_on.webp"
                 />
               </div>
               <div className="pz-col-data pz-panel pz-fade-out">
