@@ -14,9 +14,9 @@
   /* `font-sans` falls back to the body face so any leftover sans utility
    * picks up Commissioner rather than the system stack. */
   --font-sans: var(--font-body);
-  --font-display: var(--font-display);  /* Sansation — headings/titles */
+  --font-heading: var(--font-heading);  /* Sansation — headings/titles */
   --font-body: var(--font-body);        /* Commissioner — body/subheadings */
-  --font-action: var(--font-action);    /* Saira Semi Condensed — CTAs */
+  --font-tiny: var(--font-tiny);        /* Saira Semi Condensed — CTAs/micro-copy */
   --font-mono: var(--font-mono);        /* Geist Mono — readouts/labels */
 }
 
@@ -31,12 +31,14 @@ body {
 
 /* Default CTA face — every <button> picks up Saira Semi Condensed
  * automatically. Individual components can still override with an
- * explicit `font-display`, `font-body`, or `font-mono` utility class —
- * the rule lives in @layer base so Tailwind's utility layer always wins. */
+ * explicit `font-heading`, `font-body`, `font-tiny`, or `font-mono`
+ * utility class — the rule lives in @layer base so Tailwind's utility
+ * layer always wins. */
 @layer base {
-  button {
-    font-family: var(--font-action), system-ui, sans-serif;
-  }
+  html { font-family: var(--font-body), system-ui, sans-serif; }
+  body { font-family: var(--font-body), system-ui, sans-serif; }
+  h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading), system-ui, sans-serif; }
+  button { font-family: var(--font-tiny), system-ui, sans-serif; }
 }
 
 /* Lenis smooth-scroll (see hooks/useLenis.ts) */

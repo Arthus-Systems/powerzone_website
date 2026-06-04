@@ -50,7 +50,7 @@ export type InteractiveHoverButtonProps = AsButton | AsLink;
 // over at sub-pixel rounding, leaving the top edge missing on dark
 // surfaces).
 const SHARED_CLASS = cn(
-  '!font-body',
+  '!font-tiny',
   'group relative inline-flex items-center cursor-pointer overflow-hidden',
   'rounded-full ring-1 ring-inset ring-current bg-transparent',
   'pl-9 pr-7 py-3',

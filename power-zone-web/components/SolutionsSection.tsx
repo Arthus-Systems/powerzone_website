@@ -272,10 +272,10 @@ export default function SolutionsSection() {
             opacity: 0,
           }}
         >
-          <p className="text-[clamp(13px,1.6vh,17px)] font-medium uppercase tracking-[0.32em] text-white">
+          <p className="font-tiny text-[clamp(16px,1.9vh,20px)] font-medium uppercase tracking-[0.32em] text-white">
             Why Power Zone
           </p>
-          <h2 className="mt-[clamp(8px,1.8vh,18px)] text-[clamp(24px,4vh,52px)] font-semibold leading-[1.05] tracking-tight text-white">
+          <h2 className="font-heading mt-[clamp(8px,1.8vh,18px)] text-[clamp(29px,4.8vh,62px)] font-semibold leading-[1.05] tracking-tight text-white">
             What sets Power Zone&apos;s
             <br />
             Solutions Apart?
@@ -312,19 +312,19 @@ export default function SolutionsSection() {
                   {/* Counter pill at the top */}
                   <div className="flex items-center gap-3">
                     <span aria-hidden className="h-px w-14 bg-red-600" />
-                    <span className="font-mono text-[12px] uppercase tracking-[0.32em] text-red-600">
+                    <span className="font-tiny text-[12px] uppercase tracking-[0.32em] text-red-600">
                       {String(i + 1).padStart(2, '0')} /{' '}
                       {String(SOLUTION_CARDS.length).padStart(2, '0')}
                     </span>
                   </div>
 
                   {/* Title — bumped so it fills the wider card. */}
-                  <h3 className="mt-[clamp(24px,3.6vh,48px)] font-bold uppercase leading-[1.06] tracking-tight text-black text-[clamp(28px,3.8vh,44px)]">
+                  <h3 className="font-heading mt-[clamp(24px,3.6vh,48px)] font-bold uppercase leading-[1.06] tracking-tight text-black text-[clamp(28px,3.8vh,44px)]">
                     {card.title}
                   </h3>
 
                   {/* Description — bumped to readable body size. */}
-                  <p className="mt-[clamp(18px,3.6vh,32px)] text-[clamp(17px,2.2vh,21px)] leading-relaxed text-black/72">
+                  <p className="font-body mt-[clamp(18px,3.6vh,32px)] text-[clamp(17px,2.2vh,21px)] leading-relaxed text-black/72">
                     {card.description}
                   </p>
                 </div>

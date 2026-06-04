@@ -131,39 +131,69 @@ function CategoryToggle({
     );
   };
 
+  const label = `View ${other.label}`;
+
   return (
     <motion.div
-      animate={{ y: hidden ? "-100vh" : "0%" }}
+      animate={{ y: hidden ? "100vh" : "0%" }}
       transition={{ duration: 0.45, ease: [0.76, 0, 0.24, 1] }}
-      className="fixed right-8 top-[22px] z-[110]"
+      className="fixed bottom-[clamp(20px,3vh,40px)] right-[clamp(20px,3vw,48px)] z-40 text-black"
     >
       <button
         type="button"
         onClick={handleClick}
         aria-label={`Switch to ${other.label}`}
-        className="
-          group inline-flex items-center gap-2
-          font-mono text-[10px] uppercase tracking-[0.32em]
-          text-white opacity-70 transition-opacity duration-200
-          hover:opacity-100
-          mix-blend-difference
-          px-2 py-1
-        "
+        className="!font-tiny group relative inline-flex items-center cursor-pointer overflow-hidden rounded-full ring-1 ring-inset ring-current bg-transparent pl-9 pr-7 py-3 text-[12px] font-semibold uppercase tracking-[0.2em] no-underline"
       >
-        <span className="hidden sm:inline">View</span>
-        <span className="font-semibold tracking-[0.28em]">{other.label}</span>
-        <svg
-          viewBox="0 0 16 16"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={1.5}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="h-3 w-3 transition-transform duration-300 group-hover:translate-x-0.5"
+        {/* Brand-red dot — idle bullet, expands to full pill on hover. */}
+        <span
           aria-hidden
+          className="
+            pointer-events-none absolute left-3 top-1/2 z-10
+            h-2 w-2 -translate-y-1/2 rounded-full
+            bg-[#e8302a]
+            transition-all duration-300 ease-out
+            group-hover:left-0 group-hover:top-0
+            group-hover:h-full group-hover:w-full
+            group-hover:translate-y-0
+          "
+        />
+
+        {/* Resting label — slides out + fades on hover. */}
+        <span
+          className="
+            relative z-20 inline-block
+            transition-all duration-300 ease-out
+            group-hover:translate-x-12 group-hover:opacity-0
+          "
         >
-          <path d="M3 8h10M9 4l4 4-4 4" />
-        </svg>
+          {label}
+        </span>
+
+        {/* Hover label + arrow — flies in from the right. */}
+        <span
+          className="
+            pointer-events-none absolute inset-0 z-20
+            flex items-center justify-center gap-2
+            translate-x-12 opacity-0 text-white
+            transition-all duration-300 ease-out
+            group-hover:translate-x-0 group-hover:opacity-100
+          "
+        >
+          <span>{label}</span>
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-4 w-4 shrink-0"
+            aria-hidden
+          >
+            <path d="M5 12h14M13 5l7 7-7 7" />
+          </svg>
+        </span>
       </button>
     </motion.div>
   );
@@ -212,19 +242,16 @@ export default function ProductsRoot() {
         <Navbar />
       </PhaseSwipeWrapper>
 
-      {/* Top-center category toggle. Pill background sits above the
-       * showcase so it's visible against any product accent color.
-       * Pinned just below the shared 62px navbar.
+      {/* Bottom-left category toggle. Styled as a full InteractiveHover
+       * pill (matches the contact page's "Send Message" CTA), pinned to
+       * the viewport bottom-left via fixed positioning. z-40 keeps it
+       * below the page-transition radial curtain. `mix-blend-difference`
+       * on the wrapper inverts the white ring/text against whatever
+       * product accent color is currently behind it.
        *
-       * Not using PhaseSwipeWrapper here: this element needs to be
-       * x-centered via translate(-50%), but framer-motion writes a
-       * `transform: translateY(...)` inline style when animating `y`,
-       * which clobbers the Tailwind `-translate-x-1/2` class. We
-       * instead drive both x and y through motion's animate prop so
-       * the X centering survives the swipe-up. The hidden distance is
-       * `-100vh` (vs the navbar's `-130%`) because the toggle sits
-       * 5rem down — a percentage of its own height isn't enough to
-       * clear that offset; a viewport-relative distance always does. */}
+       * Hides during the detail phase by sliding DOWN (`+100vh`) since
+       * the toggle is anchored to the bottom edge — sliding up would
+       * leave it visible mid-viewport. */}
       <CategoryToggle
         categoryId={categoryId}
         onChange={setCategoryId}

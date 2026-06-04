@@ -3,15 +3,17 @@
 /* -----------------------------------------------------------------------------
  * Navbar — single source of truth for the site nav.
  *
- * Auto-color is per-CHARACTER: each glyph in every link, plus the logo
- * image, samples the page background under its own centre and snaps
- * to either white (on dark) or black (on light) independently. So if
- * a single link straddles a light/dark seam, half the letters can go
- * white and the other half black, and the bar stays readable end-to-
- * end. Sampling is throttled with rAF and re-runs on scroll, resize,
- * and the `pz:productIndexChange`/`pz:phaseChange` events the
- * products page emits when its background shifts without the page
- * actually scrolling.
+ * Auto-color uses `mix-blend-difference` — the same compositor effect
+ * that drives the PowerZone logo in the products-page detail view.
+ * Every pixel of the navbar (text + logo) is inverted against the
+ * pixel directly behind it, so a glyph straddling a light/dark seam
+ * picks up the correct contrast on both halves with no JS sampling.
+ * Pure white text + white-pixel logo art give the cleanest inversion
+ * (white on dark → white, white on light → black). The nav element
+ * MUST NOT introduce `isolation: isolate`, and no fixed-positioned
+ * ancestor should create a stacking context that traps the blend
+ * against itself — otherwise the inversion samples against the
+ * transparent wrapper instead of the page underneath.
  *
  * The bar is purely text + logo (no background, no border, no blur),
  * short (≈62px), with an animated underline for hover + active.
@@ -26,14 +28,6 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type CSSProperties,
-} from 'react';
 
 export const NAV_LINKS = [
   { label: 'Home', href: '/' },
@@ -43,176 +37,6 @@ export const NAV_LINKS = [
   { label: 'Contact Us', href: '/contact' },
 ] as const;
 
-type SampleTheme = 'light' | 'dark';
-
-/** Sample the rendered page bg directly under (x, y). Returns 'dark'
- * if the closest opaque ancestor's background is dark enough to need
- * light text, otherwise 'light'. Skips the nav itself so it doesn't
- * sample its own (transparent) box. */
-function sampleAt(x: number, y: number): SampleTheme {
-  const elements = document.elementsFromPoint(x, y);
-  for (const el of elements) {
-    if (el.closest('nav[aria-label="Site navigation"]')) continue;
-    let cur: Element | null = el;
-    while (cur) {
-      const bg = getComputedStyle(cur).backgroundColor;
-      if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') {
-        const m = bg.match(/(\d+(?:\.\d+)?)/g);
-        if (m && m.length >= 3) {
-          const r = +m[0];
-          const g = +m[1];
-          const b = +m[2];
-          // YIQ luminance — matches the existing `textOn()` helper.
-          const lum = (r * 299 + g * 587 + b * 114) / 1000;
-          return lum < 140 ? 'dark' : 'light';
-        }
-      }
-      cur = cur.parentElement;
-    }
-  }
-  return 'light';
-}
-
-/** Subscribe a list of refs to background-aware colour updates. The
- * hook returns one theme per ref, matching index order. Each ref is
- * sampled at its bounding-rect centre. Re-samples on scroll, resize,
- * and products-page chrome events. */
-function usePerElementTheme(
-  refs: React.RefObject<HTMLElement | null>[],
-): SampleTheme[] {
-  const [themes, setThemes] = useState<SampleTheme[]>(() =>
-    refs.map(() => 'light'),
-  );
-
-  const sample = useCallback(() => {
-    if (typeof document === 'undefined') return;
-    const next: SampleTheme[] = refs.map((ref) => {
-      const el = ref.current;
-      if (!el) return 'light';
-      const rect = el.getBoundingClientRect();
-      if (rect.width === 0 || rect.height === 0) return 'light';
-      const x = Math.round(rect.left + rect.width / 2);
-      const y = Math.round(rect.top + rect.height / 2);
-      return sampleAt(x, y);
-    });
-    setThemes((prev) => {
-      if (
-        prev.length === next.length &&
-        prev.every((v, i) => v === next[i])
-      ) {
-        return prev;
-      }
-      return next;
-    });
-  }, [refs]);
-
-  useEffect(() => {
-    let raf = 0;
-    const schedule = () => {
-      if (raf) return;
-      raf = requestAnimationFrame(() => {
-        raf = 0;
-        sample();
-      });
-    };
-    schedule();
-    window.addEventListener('scroll', schedule, { passive: true });
-    window.addEventListener('resize', schedule);
-    window.addEventListener('pz:productIndexChange', schedule);
-    window.addEventListener('pz:phaseChange', schedule);
-    return () => {
-      if (raf) cancelAnimationFrame(raf);
-      window.removeEventListener('scroll', schedule);
-      window.removeEventListener('resize', schedule);
-      window.removeEventListener('pz:productIndexChange', schedule);
-      window.removeEventListener('pz:phaseChange', schedule);
-    };
-  }, [sample]);
-
-  return themes;
-}
-
-/** A single nav link with per-character colour sampling. Each glyph
- * is its own `<span>` with its own ref, sampled independently. */
-function AutoColorLink({
-  href,
-  label,
-  active,
-}: {
-  href: string;
-  label: string;
-  active: boolean;
-}) {
-  const chars = useMemo(() => Array.from(label), [label]);
-  const refs = useMemo(
-    () => chars.map(() => ({ current: null as HTMLSpanElement | null })),
-    [chars],
-  );
-  const themes = usePerElementTheme(
-    refs as React.RefObject<HTMLElement | null>[],
-  );
-
-  return (
-    <Link
-      href={href}
-      aria-current={active ? 'page' : undefined}
-      className={`
-        relative inline-flex py-1
-        after:pointer-events-none after:absolute after:left-0 after:right-0 after:-bottom-0.5
-        after:h-px after:origin-left after:scale-x-0 after:bg-current
-        after:transition-transform after:duration-300 after:ease-out
-        hover:after:scale-x-100
-        ${active ? 'after:scale-x-100' : ''}
-      `}
-    >
-      {chars.map((char, i) => {
-        const theme = themes[i] ?? 'light';
-        const style: CSSProperties = {
-          color: theme === 'dark' ? '#ffffff' : '#000000',
-          transition: 'color 180ms ease-out',
-        };
-        return (
-          <span
-            key={i}
-            ref={(el) => {
-              refs[i].current = el;
-            }}
-            style={style}
-            className="inline-block whitespace-pre"
-          >
-            {char === ' ' ? ' ' : char}
-          </span>
-        );
-      })}
-    </Link>
-  );
-}
-
-/** Logo image with bg-aware variant swap. */
-function AutoColorLogo() {
-  const ref = useRef<HTMLImageElement | null>(null);
-  const refs = useMemo(() => [ref], []);
-  const [theme] = usePerElementTheme(
-    refs as unknown as React.RefObject<HTMLElement | null>[],
-  );
-  const isDark = theme === 'dark';
-  return (
-    <div
-      aria-hidden
-      className="absolute left-8 top-1/2 -translate-y-1/2 select-none"
-    >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        ref={ref}
-        src={isDark ? '/images/logo-on-dark.webp' : '/images/logo-on-light.webp'}
-        alt=""
-        draggable={false}
-        className="pointer-events-none h-12 w-auto select-none transition-opacity duration-200"
-      />
-    </div>
-  );
-}
-
 export default function Navbar({ className = '' }: { className?: string }) {
   const pathname = usePathname() || '/';
 
@@ -221,31 +45,79 @@ export default function Navbar({ className = '' }: { className?: string }) {
   const isActive = (href: string) =>
     href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`);
 
+  // Routes that need the high-contrast halo treatment: white text with a
+  // multi-layer text-shadow so the nav stays readable over arbitrary photo
+  // / video backgrounds without an opaque navbar background.
+  const isHaloNavRoute =
+    pathname === '/products' ||
+    pathname.startsWith('/products/') ||
+    pathname === '/applications' ||
+    pathname.startsWith('/applications/');
+  const isBlackTextRoute =
+    pathname === '/blog' ||
+    pathname.startsWith('/blog/') ||
+    pathname === '/contact' ||
+    pathname.startsWith('/contact/') ||
+    pathname === '/privacy' ||
+    pathname.startsWith('/privacy/') ||
+    pathname === '/privacy-policy' ||
+    pathname.startsWith('/privacy-policy/');
+
   return (
     <nav
       aria-label="Site navigation"
       className={`
         relative h-[62px] w-full
+        ${isHaloNavRoute ? '' : isBlackTextRoute ? 'text-black' : 'text-white mix-blend-difference'}
         ${className}
       `.trim()}
     >
-      <AutoColorLogo />
+      {/* Logo — visual only. Sits inside the mix-blend-difference scope
+       * so its light pixels invert against whatever page surface is
+       * behind, matching how the detail-view logo behaves. */}
+      <div
+        aria-hidden
+        className="absolute left-8 top-1/2 -translate-y-1/2 select-none"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/images/logo-on-dark.webp"
+          alt=""
+          draggable={false}
+          className="pointer-events-none h-12 w-auto select-none"
+        />
+      </div>
 
       <ul
-        className="
+        className={`
           flex h-full items-center justify-center gap-8
-          text-[12px] font-bold uppercase tracking-[0.24em]
-        "
+          font-tiny text-[14px] font-bold uppercase tracking-[0.24em]
+          ${isHaloNavRoute ? 'text-white [text-shadow:0_0_10px_rgba(0,0,0,0.95),_0_0_3px_rgba(0,0,0,1),_0_2px_6px_rgba(0,0,0,0.7)]' : ''}
+        `.trim()}
       >
-        {NAV_LINKS.map((link) => (
-          <li key={link.href}>
-            <AutoColorLink
-              href={link.href}
-              label={link.label}
-              active={isActive(link.href)}
-            />
-          </li>
-        ))}
+        {NAV_LINKS.map((link) => {
+          const active = isActive(link.href);
+          return (
+            <li key={link.href}>
+              <Link
+                href={link.href}
+                aria-current={active ? 'page' : undefined}
+                className={`
+                  relative inline-block py-1
+                  after:pointer-events-none after:absolute after:left-0 after:right-0 after:-bottom-0.5
+                  after:h-px after:origin-left after:scale-x-0
+                  after:bg-current
+                  ${isHaloNavRoute ? 'after:[box-shadow:0_0_8px_rgba(0,0,0,0.9),_0_0_2px_rgba(0,0,0,1)]' : ''}
+                  after:transition-transform after:duration-300 after:ease-out
+                  hover:after:scale-x-100
+                  ${active ? 'after:scale-x-100' : ''}
+                `}
+              >
+                {link.label}
+              </Link>
+            </li>
+          );
+        })}
       </ul>
     </nav>
   );

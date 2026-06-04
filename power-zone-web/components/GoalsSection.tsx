@@ -1,8 +1,6 @@
 'use client';
 
-import { motion, useScroll, useTransform } from 'framer-motion';
-import type { MotionValue } from 'framer-motion';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 
 // ───────────────────────────────────────────────────────────────────────────
 // GOALS — edit text, icons, and back-card content here
@@ -88,23 +86,11 @@ const GOALS: Goal[] = [
 // ───────────────────────────────────────────────────────────────────────────
 // SCROLL SPEED
 // ───────────────────────────────────────────────────────────────────────────
-const SECTION_VH_PER_CARD = 75; // total = 4 × 75 = 300vh
-
-// All four cards reveal simultaneously over this scroll-progress window.
-// Adjust REVEAL_END to control how quickly they all appear.
-const REVEAL_START = 0.05;
-const REVEAL_END = 1.00;
+const SECTION_VH_PER_CARD = 25; // 4 cards × 25vh = 100vh — section is single-screen, no scroll-driven reveal
 
 export default function GoalsSection() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ['start start', 'end end'],
-  });
-
   return (
     <section
-      ref={containerRef}
       className="relative bg-[#F4EFE7]"
       style={{ height: `${GOALS.length * SECTION_VH_PER_CARD}vh`, scrollSnapAlign: 'start' }}
     >
@@ -122,14 +108,13 @@ export default function GoalsSection() {
           </h2>
         </div>
 
-        {/* 2 × 2 card grid */}
+        {/* Single-row 4-column card grid */}
         <div className="flex flex-1 items-stretch px-6 pb-10 pt-6 md:px-10 lg:px-14">
-          <div className="mx-auto grid h-full w-full max-w-[1400px] grid-cols-2 grid-rows-2 gap-5 lg:gap-6">
+          <div className="mx-auto grid h-full w-full max-w-[1400px] grid-cols-4 grid-rows-1 gap-5 lg:gap-6">
             {GOALS.map((goal) => (
               <GoalCard
                 key={goal.title}
                 goal={goal}
-                scrollYProgress={scrollYProgress}
               />
             ))}
           </div>
@@ -141,25 +126,13 @@ export default function GoalsSection() {
 
 function GoalCard({
   goal,
-  scrollYProgress,
 }: {
   goal: Goal;
-  scrollYProgress: MotionValue<number>;
 }) {
   const [isFlipped, setIsFlipped] = useState(false);
 
-  // All cards share the same reveal window — no per-card stagger
-  const reveal = useTransform(scrollYProgress, [REVEAL_START, REVEAL_END], [0, 1]);
-
-  const clipPath = useTransform(
-    reveal,
-    (v) => `inset(0 ${(1 - v) * 100}% 0 0)`,
-  );
-  const x = useTransform(reveal, [0, 1], [36, 0]);
-  const opacity = useTransform(reveal, [0, 1], [0.35, 1]);
-
   return (
-    <motion.div style={{ clipPath, x, opacity }} className="h-full min-h-0">
+    <div className="h-full min-h-0">
       {/* Perspective wrapper enables the 3-D flip */}
       <div className="h-full" style={{ perspective: '1200px' }}>
         {/* Flip container — click anywhere on the card to flip */}
@@ -311,7 +284,7 @@ function GoalCard({
 
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 

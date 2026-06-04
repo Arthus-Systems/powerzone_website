@@ -126,13 +126,13 @@ export default function ProcessSection() {
          * (16:9 / 16:10) so the card area below has enough room for
          * the step number + title + description without clipping. */}
         <div className="px-6 pt-[clamp(40px,5vh,80px)] pb-[clamp(6px,1vh,16px)] text-center">
-          <p className="text-[clamp(13px,1.8vh,20px)] font-medium uppercase tracking-[0.32em] text-red-500">
+          <p className="font-tiny text-[clamp(13px,1.8vh,20px)] font-medium uppercase tracking-[0.32em] text-red-500">
             Our Solutions
           </p>
-          <h2 className="mx-auto mt-[clamp(8px,1.5vh,16px)] max-w-[60rem] text-[clamp(22px,3.6vh,46px)] font-semibold leading-[1.1] tracking-tight text-black">
+          <h2 className="font-heading mx-auto mt-[clamp(8px,1.5vh,16px)] max-w-[60rem] text-[clamp(26px,4.3vh,56px)] font-semibold leading-[1.1] tracking-tight text-black">
             Power &amp; Backup Solutions for Industry-Specific Demands
           </h2>
-          <p className="mx-auto mt-[clamp(8px,1.5vh,20px)] max-w-[44rem] text-[clamp(12px,1.6vh,15px)] leading-relaxed text-black/60">
+          <p className="font-tiny mx-auto mt-[clamp(8px,1.5vh,20px)] max-w-[44rem] text-[clamp(12px,1.6vh,15px)] leading-relaxed text-black/60">
             Engineered to perform, trusted by industries across Pakistan and
             beyond. Discover resilient power systems tailored to your
             operational needs — with support you can count on.
@@ -265,23 +265,23 @@ function ProcessCard({
          * larger type more breathing room. */}
         <div className="flex min-h-0 flex-col justify-between p-[clamp(18px,2.6vh,48px)] md:p-[clamp(22px,3vh,56px)]">
           {/* Step number — italic serif */}
-          <div className="font-serif italic leading-none text-white/65 text-[clamp(56px,9vh,140px)]">
+          <div className="font-heading italic leading-none text-white/65 text-[clamp(56px,9vh,140px)]">
             {String(index + 1).padStart(2, '0')}
           </div>
 
           {/* Title + description sit at the bottom */}
           <div className="max-w-[36rem]">
             <h3
-              className="font-bold uppercase leading-[1.02] tracking-tight text-white text-[clamp(30px,6.5vh,72px)]"
+              className="font-heading font-bold uppercase leading-[1.02] tracking-tight text-white text-[clamp(30px,6.5vh,72px)]"
               style={{ letterSpacing: '-0.01em' }}
             >
               {step.titlePrimary}
               <br />
-              <span className="font-serif italic font-normal">
+              <span className="font-heading italic font-normal">
                 {step.titleAccent}
               </span>
             </h3>
-            <p className="mt-[clamp(14px,3vh,35px)] text-[clamp(16px,2.8vh,25px)] leading-relaxed text-white/75">
+            <p className="font-body mt-[clamp(14px,3vh,35px)] text-[clamp(16px,2.8vh,25px)] leading-relaxed text-white/75">
               {step.description}
             </p>
           </div>

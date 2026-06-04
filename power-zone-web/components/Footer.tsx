@@ -78,17 +78,17 @@ export default function Footer() {
               <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-12">
                 {/* Stay in touch */}
                 <div>
-                  <h2 className="text-[clamp(22px,3.2vh,36px)] font-semibold leading-[1.08] tracking-tight">
+                  <h2 className="font-heading text-[clamp(22px,3.2vh,36px)] font-semibold leading-[1.08] tracking-tight">
                     Stay in touch
                   </h2>
-                  <p className="mt-3 max-w-md text-[13px] leading-relaxed text-white/65 md:text-[14px]">
+                  <p className="font-tiny mt-3 max-w-md text-[13px] leading-relaxed text-white/65 md:text-[14px]">
                     Be the first to hear about new installations, product
                     launches, and energy insights from Power Zone.
                   </p>
 
                   {submitted ? (
                     <div className="mt-5 max-w-md rounded-2xl border border-white/15 bg-white/[0.04] px-5 py-3">
-                      <p className="text-[13px] text-white/85">
+                      <p className="font-tiny text-[13px] text-white/85">
                         Thanks — you’re on the list.
                       </p>
                     </div>
@@ -108,7 +108,7 @@ export default function Footer() {
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="name@email.com"
                         className="
-                          flex-1 bg-transparent px-4 py-2 text-[14px]
+                          font-body flex-1 bg-transparent px-4 py-2 text-[14px]
                           text-white placeholder:text-white/45
                           focus:outline-none
                         "
@@ -117,7 +117,7 @@ export default function Footer() {
                       <button
                         type="submit"
                         className="
-                          cursor-pointer rounded-xl bg-red-600 px-5 py-2
+                          font-tiny cursor-pointer rounded-xl bg-red-600 px-5 py-2
                           text-[13px] font-semibold text-white
                           transition-colors duration-200 hover:bg-red-500
                         "
@@ -130,7 +130,7 @@ export default function Footer() {
 
                 {/* Keep up-to-date */}
                 <div>
-                  <h2 className="text-[clamp(22px,3.2vh,36px)] font-semibold leading-[1.08] tracking-tight">
+                  <h2 className="font-heading text-[clamp(22px,3.2vh,36px)] font-semibold leading-[1.08] tracking-tight">
                     Keep up-to-date with the future of energy
                   </h2>
                   <ul className="mt-5 space-y-3">
@@ -151,7 +151,7 @@ export default function Footer() {
                             strokeLinejoin="round"
                           />
                         </svg>
-                        <span className="text-[13px] text-white/80 md:text-[14px]">
+                        <span className="font-tiny text-[13px] text-white/80 md:text-[14px]">
                           {bullet}
                         </span>
                       </li>
@@ -188,7 +188,7 @@ export default function Footer() {
                     draggable={false}
                     className="h-12 w-auto select-none md:h-14"
                   />
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-white/55">
+                  <p className="font-tiny text-[11px] uppercase tracking-[0.18em] text-white/55">
                     © Powerzone 2025 — All Rights Reserved
                   </p>
                   <div className="flex items-center gap-2 pt-1">
@@ -234,7 +234,7 @@ function LinkColumn({
 }) {
   return (
     <div>
-      <h3 className="text-[14px] font-semibold text-white md:text-[15px]">
+      <h3 className="font-tiny text-[14px] font-semibold text-white md:text-[15px]">
         {title}
       </h3>
       <ul className="mt-3 space-y-2">
@@ -243,7 +243,7 @@ function LinkColumn({
             <Link
               href={link.href}
               className="
-                text-[13px] text-white/65 transition-colors duration-200
+                font-tiny text-[13px] text-white/65 transition-colors duration-200
                 hover:text-white md:text-[14px]
               "
             >

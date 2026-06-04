@@ -4,9 +4,10 @@ import { useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 
 /**
- * Thin Applications-page wrapper around the shared Navbar. Only role left
- * is to scope `scroll-snap-type: y proximity` to the document while this
- * page is mounted — the navbar itself stays in place on scroll.
+ * Thin Applications-page wrapper around the shared Navbar. Scopes
+ * `scroll-snap-type: y proximity` to the document for the duration of this
+ * page, and pins the navbar to the viewport (fixed) so it stays in view
+ * across all the snap-scrolled industry sections.
  */
 export default function ApplicationsNavbar() {
   useEffect(() => {
@@ -17,7 +18,7 @@ export default function ApplicationsNavbar() {
   }, []);
 
   return (
-    <div className="absolute left-0 right-0 top-0 z-50">
+    <div className="fixed left-0 right-0 top-0 z-[90]">
       <Navbar />
     </div>
   );

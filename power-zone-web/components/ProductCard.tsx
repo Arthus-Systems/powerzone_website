@@ -213,9 +213,9 @@ export default function ProductCard({
         aria-hidden
         className="
           pointer-events-none absolute top-3 right-3 z-50
-          h-8 w-8 rounded-full
+          h-8 w-8
           flex items-center justify-center
-          bg-black/10 text-white backdrop-blur-sm
+          text-white
         "
       >
         <svg

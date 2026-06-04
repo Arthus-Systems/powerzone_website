@@ -589,27 +589,6 @@ export default function ProductExperience({
       lenisRef.current?.scrollTo(0, { immediate: true, force: true });
       setupShowcase();
 
-      // Position showcase at nextProduct's slot. Use the small
-      // `nextIdx / totalTransitions` progress (lands near scroll=0)
-      // rather than mid-pin. Mid-pin requires scrolling to a very large
-      // pixel position which the freshly-added showcase pin spacer
-      // hasn't reliably laid out yet — Lenis would clamp the scroll,
-      // window.scrollY would stay near 0, and the next ScrollTrigger
-      // update would compute progress ≈ 0 and render FPT (panel 0).
-      // This matches the proven pre-mid-pin implementation.
-      const st = ScrollTrigger.getById(SHOWCASE_ST_ID);
-      if (st) {
-        const totalTransitions = N * SHOWCASE_CYCLES;
-        const targetProgress = nextIdx / totalTransitions;
-        const targetScroll =
-          st.start + targetProgress * (st.end - st.start);
-        lenisRef.current?.scrollTo(targetScroll, {
-          immediate: true,
-          force: true,
-        });
-      }
-      ScrollTrigger.update();
-
       // Hide detail. Showcase now showing nextProduct hero.
       gsap.set(detailLayerRef.current, { autoAlpha: 0 });
 
@@ -627,6 +606,15 @@ export default function ProductExperience({
 
       setPhase("showcase");
       phaseRef.current = "showcase";
+
+      const st = ScrollTrigger.getById(SHOWCASE_ST_ID);
+      if (st) {
+        const totalTransitions = N * SHOWCASE_CYCLES;
+        const targetProgress = nextIdx / totalTransitions;
+        const targetScroll = st.start + targetProgress * (st.end - st.start);
+        lenisRef.current?.scrollTo(targetScroll, { immediate: true, force: true });
+      }
+      ScrollTrigger.update();
       transitioningRef.current = false;
       lenisRef.current?.start();
     },

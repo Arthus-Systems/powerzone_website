@@ -236,22 +236,34 @@ export default function ApplicationsIndustries() {
   // Timestamp of the last navigation (ms). Guards against momentum scroll
   // firing a second transition the instant animating becomes false.
   const lastNav   = useRef(-Infinity);
+  // Whether we should eat the very first wheel event after the sticky range
+  // becomes active. Without this, scrolling down from GoalsSection fires a
+  // wheel event the same frame the section activates, immediately advancing
+  // past panel 0 to panel 1.
+  const justActivated = useRef(true);
+  // Tracks the previous in-range state so we can detect the boundary cross.
+  const wasActive = useRef(false);
 
   // ── navigate ──────────────────────────────────────────────────────────────
   const navigate = useCallback(
     (dir: 1 | -1) => {
       const next = activeRef.current + dir;
+      // At an edge — let the page scroll naturally past this section.
       if (next < 0 || next >= N) return;
 
       animating.current = true;
       activeRef.current = next;
+      lastNav.current = Date.now();
       setHasNavigated(true);
       setDirection(dir);
       setActiveIndex(next);
 
-      // Advance the main-page scroll by one 100vh step so the sticky outer
-      // container stays in budget-sync and releases cleanly at the boundaries.
-      window.scrollBy(0, dir * window.innerHeight);
+      // NOTE: We intentionally do NOT call window.scrollBy here. The wheel
+      // handler preventDefaults the event when it actually drives a panel
+      // change, so the page scroll stays pinned at the sticky-range entry.
+      // Calling scrollBy here was causing overshoot when navigating up from
+      // a middle panel — it would push the page out of the sticky range and
+      // cause subsequent wheel events to bail (skipping panels 0-2).
     },
     [N],
   );
@@ -265,16 +277,35 @@ export default function ApplicationsIndustries() {
       const rect = outer.getBoundingClientRect();
       const vh   = window.innerHeight;
 
-      // Only intercept while the sticky zone is active:
+      // Determine whether the sticky zone is active this frame:
       //   container top has reached (or passed) viewport top
       //   AND container bottom is still on-screen.
-      if (rect.top > 0 || rect.bottom < vh) return;
+      const isActive = rect.top <= 0 && rect.bottom >= vh;
+
+      // Boundary cross: section just became active. Eat this first wheel
+      // event so the same gesture that brought us into the section doesn't
+      // immediately fire a panel advance (skipping panel 0).
+      if (isActive && !wasActive.current) {
+        wasActive.current = true;
+        justActivated.current = true;
+        return;
+      }
+      if (!isActive) {
+        wasActive.current = false;
+        return;
+      }
+      if (justActivated.current) {
+        justActivated.current = false;
+        return;
+      }
 
       const dir: 1 | -1 = e.deltaY > 0 ? 1 : -1;
       const next = activeRef.current + dir;
 
       if (next >= 0 && next < N) {
-        // Block browser scroll while inside the section.
+        // Block browser scroll while inside the section so the page scroll
+        // stays pinned at the sticky-range entry. This is what makes the
+        // wheel handler the sole driver of panel changes within the section.
         e.preventDefault();
 
         // Dual gate: animation must be complete AND cooldown must have elapsed.
@@ -285,7 +316,6 @@ export default function ApplicationsIndustries() {
         if (animating.current) return;
         if (Date.now() - lastNav.current < NAV_COOLDOWN_MS) return;
 
-        lastNav.current = Date.now();
         navigate(dir);
       }
       // At first/last boundary (next out of range): fall through so the
@@ -361,40 +391,37 @@ export default function ApplicationsIndustries() {
         </AnimatePresence>
       </div>
 
-      {/* ── Dot navigation (left side) ────────────────────────────────── */}
+      {/* ── Scroll indicators (left side, same visual style as Products page) ─────── */}
       <nav
         aria-label="Industry sections"
         className={`
-          fixed left-6 top-1/2 z-[60] hidden -translate-y-1/2 flex-col gap-3.5 md:flex
+          pointer-events-auto fixed left-7 top-1/2 z-[70] -translate-y-1/2
+          hidden flex-col items-center gap-2.5
+          mix-blend-difference
+          md:flex
           transition-opacity duration-300
           ${dotsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}
         `}
       >
-        {INDUSTRIES.map((industry, i) => (
-          <div key={industry.id} className="group relative flex items-center">
+        {INDUSTRIES.map((industry, i) => {
+          const active = activeIndex === i;
+          return (
             <button
+              key={industry.id}
               type="button"
               onClick={() => goToDot(i)}
               aria-label={`Go to ${industry.label}`}
               className={`
-                block rounded-full transition-all duration-300
-                ${activeIndex === i
-                  ? 'h-3.5 w-3.5 bg-red-600 shadow-[0_0_0_3px_rgba(220,38,38,0.18)]'
-                  : 'h-2.5 w-2.5 bg-black/25 hover:bg-black/50'
+                block rounded-full
+                transition-all duration-500 ease-out
+                ${active
+                  ? 'h-3 w-[3px] bg-white'
+                  : 'h-[3px] w-[3px] bg-white/35'
                 }
               `}
             />
-            <span className="
-              pointer-events-none absolute left-full ml-3 whitespace-nowrap
-              rounded-full bg-[#1A1A1A]/85 px-3 py-1.5
-              text-[10px] font-semibold uppercase tracking-[0.2em] text-white
-              opacity-0 transition-all duration-200
-              group-hover:opacity-100
-            ">
-              {industry.label}
-            </span>
-          </div>
-        ))}
+          );
+        })}
       </nav>
     </div>
   );
@@ -532,7 +559,7 @@ function IndustrySlide({
           initial={init({ opacity: 0, y: d * 12 })}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.48, ease: CONTENT_EASE }}
-          className="mt-8 text-white"
+          className="mt-8 text-black"
         >
           <InteractiveHoverButton href="/contact">
             Contact Sales
