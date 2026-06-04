@@ -708,11 +708,17 @@ export default function ProductExperience({
   // -----------------------------------------------------------------------
   const activeProduct = products[activeIdx];
   const nextProduct = products[(activeIdx + 1) % N];
-  // True when the product has actual gallery images distinct from its
-  // hero photo. BESS products currently fall back to the main image,
-  // and we don't want to re-use the hero in mid-scroll panels — so we
-  // render tonal placeholder cards in those slots instead.
-  const hasGallery = activeProduct.gallery[0] !== activeProduct.image;
+  // Per-slot check — each gallery slot is independent of the other and
+  // independent of the hero image. A slot is considered "real" if it
+  // differs from the primary hero photo; otherwise we drop in a tonal
+  // placeholder so the layout still breathes without re-using the hero.
+  //
+  // (Replaces the prior single `hasGallery` boolean, which gated BOTH
+  // slots off as soon as gallery[0] matched the hero — that hid e.g.
+  // the Hybrid Inverter's distinct gallery[1] photo even though it was
+  // a perfectly good unique image.)
+  const hasGalleryImage0 = activeProduct.gallery[0] !== activeProduct.image;
+  const hasGalleryImage1 = activeProduct.gallery[1] !== activeProduct.image;
 
   return (
     <div
@@ -728,6 +734,12 @@ export default function ProductExperience({
        * events instead. The button is a no-op in showcase mode — the
        * shared site navbar handles branding there. In detail mode it
        * slides the detail layer back to the listing. */}
+      {/* Detail-view brand mark — matches the site Navbar's logo slot
+          exactly: same left offset (left-8 = 32 px), same vertical band
+          (h-[62px] starting at top-0 with flex centring), same render
+          size (h-12 = 48 px). Visually the detail logo now sits where
+          the navbar logo would, just acting as a back-to-listing button
+          while the navbar itself is swiped off-screen. */}
       <button
         type="button"
         onClick={() => {
@@ -738,7 +750,7 @@ export default function ProductExperience({
         aria-label="Back to products"
         aria-hidden={phase !== "detail"}
         tabIndex={phase === "detail" ? 0 : -1}
-        className={`fixed left-6 top-6 z-[80] mix-blend-difference transition-opacity duration-200 ${
+        className={`fixed left-8 top-0 z-[80] flex h-[62px] items-center mix-blend-difference transition-opacity duration-200 ${
           phase === "detail"
             ? "cursor-pointer opacity-100 pointer-events-auto"
             : "opacity-0 pointer-events-none"
@@ -747,10 +759,10 @@ export default function ProductExperience({
         <Image
           src="/power-zone-logo.webp"
           alt="Power Zone"
-          width={84}
-          height={84}
+          width={50}
+          height={50}
           priority
-          className="h-[72px] w-[72px] object-contain"
+          className="h-auto w-auto"
         />
       </button>
 
@@ -927,17 +939,18 @@ export default function ProductExperience({
                     {activeProduct.descriptionLong}
                   </p>
                 </div>
-                {hasGallery ? (
-                  <div
-                    className="pz-anim relative h-[58vh] overflow-hidden"
-                    style={{ backgroundColor: activeProduct.leftColor }}
-                  >
+                {hasGalleryImage0 ? (
+                  // No backgroundColor → no visible frame around the photo.
+                  // The Image with object-contain sits on the panel's own
+                  // descriptionBgColor so the photo reads as floating
+                  // content, not as a framed insert.
+                  <div className="pz-anim relative h-[58vh] overflow-hidden">
                     <Image
                       src={activeProduct.gallery[0]}
                       alt={`${activeProduct.title} — supporting view 1`}
                       fill
                       sizes="50vw"
-                      className="object-cover"
+                      className="object-contain"
                     />
                   </div>
                 ) : (
@@ -1048,17 +1061,17 @@ export default function ProductExperience({
               }}
             >
               <div className="grid w-full max-w-[110rem] grid-cols-1 gap-12 md:grid-cols-[1fr_1fr] md:gap-16 items-center">
-                {hasGallery ? (
-                  <div
-                    className="pz-anim relative h-[64vh] overflow-hidden"
-                    style={{ backgroundColor: activeProduct.leftColor }}
-                  >
+                {hasGalleryImage1 ? (
+                  // See Panel 2 note above — no backgroundColor so the
+                  // photo floats against the panel surface instead of
+                  // sitting in a brand-colored frame.
+                  <div className="pz-anim relative h-[64vh] overflow-hidden">
                     <Image
                       src={activeProduct.gallery[1]}
                       alt={`${activeProduct.title} — supporting view 2`}
                       fill
                       sizes="50vw"
-                      className="object-cover"
+                      className="object-contain"
                     />
                   </div>
                 ) : (

@@ -12,9 +12,10 @@ type Goal = {
   description: string;
   icon: IconKey;
   // ── BACK CARD CONTENT ─────────────────────────────────────────────────────
-  // Set these two fields for each goal to fill in the card's back face.
-  //   backPoints → array of bullet-point strings shown on the LEFT side
-  //   backImage  → image path shown on the RIGHT side, e.g. '/images/power-quality.webp'
+  //   backPoints → array of bullet-point strings (5 each — tightened from the
+  //                original 6–7 so the back face fits without scrolling on
+  //                any aspect ratio, while preserving every distinct point)
+  //   backImage  → image path painted full-bleed behind the back face
   backPoints: string[];
   backImage: string;
 };
@@ -23,99 +24,109 @@ const GOALS: Goal[] = [
   {
     title: 'Improve Power Quality',
     description:
-      'Our generator sets and battery energy storage systems deliver reliable, uninterrupted power—supporting grid stability, preventing downtime, and safeguarding vital operations.',
+      'Reliable, uninterrupted power that protects sensitive equipment and prevents downtime. Our generators and battery systems deliver clean, stable output that supports grid stability across every load condition.',
     icon: 'power',
     backPoints: [
       'Corrects voltage, frequency & harmonic imbalances for stable, clean power',
-      'Rapid charge/discharge response supports grid infrastructure at every level — transmission, distribution & behind the meter',
-      'Seamlessly integrates with solar, wind & chemical storage to improve compatibility',
-      'Power Factor Correction reduces reactive power charges & increases system efficiency',
-      'Voltage Regulation protects critical equipment, minimizing failure risk & extending lifespan',
-      'Harmonic distortion mitigation reduces overheating & improves overall efficiency',
-      'Safeguards critical loads against outages, equipment stress & rising energy costs',
+      'Rapid charge/discharge supports the grid — transmission, distribution & behind the meter',
+      'Power Factor Correction + voltage regulation cut reactive charges and protect equipment',
+      'Integrates seamlessly with solar, wind & chemical storage for higher compatibility',
+      'Safeguards critical loads against outages, equipment stress and rising energy costs',
     ],
     backImage: '/images/applications_1.webp',
   },
   {
     title: 'Prevent Downtime',
     description:
-      'Our systems combine generator sets and battery energy storage to offer a cleaner, more reliable source of outage protection—while reducing electricity bills by up to 30%.',
+      'Generator + battery storage combined for cleaner, faster outage protection. Millisecond switchover keeps servers and critical equipment online while cutting electricity bills by up to 30%.',
     icon: 'time',
     backPoints: [
-      'Responds within milliseconds during outages — zero interruptions, shutdowns, or costly restarts',
-      'Operates intelligently 24/7, not just during emergencies — optimizing energy & correcting power quality continuously',
-      'Seamlessly switches to backup mode, keeping servers & critical equipment running without delays',
-      'Battery + generator combination delivers continuous backup for the full duration of any outage',
-      'Reduces emissions by up to 90% compared to conventional standby generators',
-      'Proven 20+ year lifespan — reliable, scalable, and built for long-term value',
+      'Millisecond response during outages — zero interruptions, shutdowns or costly restarts',
+      'Battery + generator combo delivers continuous backup for the full outage duration',
+      'Runs intelligently 24/7 — optimizing energy and power quality, not only in emergencies',
+      'Reduces emissions by up to 90% vs conventional standby generators',
+      'Proven 20+ year lifespan — reliable, scalable and built for long-term value',
     ],
     backImage: '/images/applications_2.webp',
   },
   {
     title: 'Lower Energy Costs',
     description:
-      'Our systems integrate advanced generator sets and battery storage to help lower electricity bills in the short term and create sustained savings over time. These savings can fully offset the system\'s initial investment, delivering strong long-term return on investment for your operation.',
+      'Hybrid generator + storage that lowers bills today and creates sustained savings over time. Energy arbitrage, peak shaving, and renewable integration combine to offset the initial investment and deliver strong long-term ROI.',
     icon: 'chart',
     backPoints: [
-      'Hybrid generator + battery storage systems cut electricity bills by up to 30%',
-      'Energy Arbitrage — stores energy or runs generators during low-rate periods, deploys during peak-cost windows',
-      'Peak Shaving — reduces maximum demand charges by supplying stored energy during heavy usage',
-      'Offsets grid reliance by integrating renewables, protecting against future price hikes',
-      'Real-time monitoring provides clear visibility into system efficiency and savings',
-      'Engineered for long-term durability, maximizing ROI while minimizing operational costs',
+      'Hybrid generator + battery storage cuts electricity bills by up to 30%',
+      'Energy Arbitrage — store at low rates, deploy during peak-cost windows',
+      'Peak Shaving reduces maximum-demand charges during heavy usage',
+      'Renewable integration hedges against future grid price hikes',
+      'Real-time monitoring + long-term durability maximize ROI over the system\'s life',
     ],
     backImage: '/images/applications_3.webp',
   },
   {
     title: 'Reduce Emissions',
     description:
-      'We integrate solar energy with advanced inverters, storage, and smart management to power buildings efficiently, lowering energy costs and reducing carbon footprint through clean, sustainable power.',
+      'Solar, inverters, storage and smart energy management combined for cleaner power without compromising reliability. Reduces fossil-fuel reliance and shrinks your carbon footprint while supporting long-term sustainability goals.',
     icon: 'cloud',
     backPoints: [
-      'Reduces reliance on fossil-fuel generators by integrating solar energy and smart battery storage',
-      'Peak load shifting and intelligent energy management lower overall carbon footprint',
-      'Extended product lifespans and reduced energy waste minimize environmental impact',
-      'CHINT BESS systems actively reduce diesel and grid dependency during peak demand',
-      'Partner FPT Industrial has offset 16,500+ tons of CO2, with a fully carbon-neutral ePowertrain facility powered by solar and wind',
-      'Supports your sustainability goals without compromising performance or reliability',
+      'Solar + smart battery storage replaces fossil-fuel generator reliance',
+      'Peak load shifting and intelligent energy management cut carbon footprint',
+      'CHINT BESS actively reduces diesel and grid dependency during peak demand',
+      'Partner FPT Industrial has offset 16,500+ tons of CO₂ via carbon-neutral facilities',
+      'Extended product lifespans + reduced energy waste minimize environmental impact',
     ],
     backImage: '/images/applications_4.webp',
   },
 ];
 
 // ───────────────────────────────────────────────────────────────────────────
-// SCROLL SPEED
+// SECTION LAYOUT
 // ───────────────────────────────────────────────────────────────────────────
+// The section is taller than the viewport (SECTION_VH) and its inner content
+// is `position: sticky` for the first viewport height — so once the cards
+// scroll into view they pin to the top of the screen and stay there while
+// the user keeps scrolling, giving a dedicated "dwell" before the page
+// continues to ProcessSection. Mirrors the PeekProducts pause but tuned to
+// this section's information density.
+//
+//   0  → 100vh   : section scrolls in, content pins at the top
+//   100 → SECTION_VH−100  : DWELL — cards stay in place, nothing else moves
+//                            (this is the scroll break the user asked for)
+//   SECTION_VH−100 → SECTION_VH : sticky releases, content scrolls up out
+//                                  of the way, ProcessSection enters from below
+const SECTION_VH = 180; // ⇒ 80vh of dwell after pin engages
 export default function GoalsSection() {
   return (
     <section
-      className="relative flex h-screen flex-col overflow-hidden bg-[#F4EFE7]"
-      style={{ scrollSnapAlign: 'start' }}
+      className="relative bg-[#F4EFE7]"
+      style={{ height: `${SECTION_VH}vh`, scrollSnapAlign: 'start' }}
     >
-      {/* flex-col + justify-center keeps the block centred in the viewport
-          regardless of screen height — no content from adjacent sections
-          is ever visible. */}
-      <div className="flex flex-1 flex-col justify-center px-6 py-10 md:px-10 lg:px-14">
-        {/* Header */}
-        <div className="text-center">
-          <p className="font-tiny text-[20px] font-medium uppercase tracking-[0.32em] text-red-600">
-            Operational Goals
-          </p>
-          <h2 className="font-heading mx-auto mt-4 max-w-[64rem] text-[clamp(28px,3.6vw,52px)] font-semibold leading-[1.08] tracking-tight text-black">
-            Meet Key Operational Goals
-            <span className="font-heading ml-3 italic font-normal text-black/85">
-              with Power Zone
-            </span>
-          </h2>
-        </div>
+      <div className="sticky top-0 flex h-screen flex-col overflow-hidden">
+        {/* Inner padding container — `justify-center` keeps the header +
+            grid block centred vertically within the pinned viewport
+            regardless of aspect ratio. */}
+        <div className="flex flex-1 flex-col justify-center gap-[clamp(20px,3.5vh,48px)] px-6 py-[clamp(20px,3vh,40px)] md:px-10 lg:px-14">
+          {/* Header */}
+          <div className="text-center">
+            <p className="font-tiny text-[clamp(13px,1.3vw,18px)] font-medium uppercase tracking-[0.32em] text-red-600">
+              Operational Goals
+            </p>
+            <h2 className="font-heading mx-auto mt-3 max-w-[64rem] text-[clamp(28px,3.4vw,50px)] font-semibold leading-[1.08] tracking-tight text-black">
+              Meet Key Operational Goals
+              <span className="font-heading ml-3 italic font-normal text-black/85">
+                with Power Zone
+              </span>
+            </h2>
+          </div>
 
-        {/* 4-column card grid. Each card has an explicit clamp() height so
-            the absolute-positioned faces always have a reliable containing
-            block, independent of any ancestor min-height. */}
-        <div className="mx-auto mt-8 grid w-full max-w-[1400px] grid-cols-4 gap-5 lg:gap-6">
-          {GOALS.map((goal) => (
-            <GoalCard key={goal.title} goal={goal} />
-          ))}
+          {/* Card grid — responsive at narrow widths, fixed 4-up on lg+.
+              Each card carries its own height clamp so the absolute-
+              positioned faces always have a concrete containing block. */}
+          <div className="mx-auto grid w-full max-w-[1400px] grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+            {GOALS.map((goal) => (
+              <GoalCard key={goal.title} goal={goal} />
+            ))}
+          </div>
         </div>
       </div>
     </section>
@@ -130,13 +141,11 @@ function GoalCard({
   const [isFlipped, setIsFlipped] = useState(false);
 
   return (
-    // clamp() gives every card an explicit height the absolute-positioned
-    // faces can resolve against — not taller than needed on small screens,
-    // not too short on large ones.
-    <div style={{ height: 'clamp(340px, 46vh, 500px)' }}>
-      {/* Perspective wrapper enables the 3-D flip */}
+    // Card height adapts: not too tall on short windows, not too short on
+    // tall ones, and capped so very tall monitors don't make the cards
+    // feel sparse. min ≈ phone-comfortable, max ≈ premium-monitor-friendly.
+    <div style={{ height: 'clamp(360px, 48vh, 500px)' }}>
       <div className="h-full" style={{ perspective: '1200px' }}>
-        {/* Flip container — click anywhere on the card to flip */}
         <div
           className="relative h-full cursor-pointer transition-transform duration-700 ease-in-out"
           style={{
@@ -145,33 +154,43 @@ function GoalCard({
           }}
           onClick={() => setIsFlipped((f) => !f)}
         >
-
           {/* ── FRONT FACE ─────────────────────────────────────────────── */}
           <div
             className="
-              absolute inset-0 flex flex-col gap-4
-              rounded-2xl bg-white p-7 md:p-8
+              absolute inset-0 flex flex-col
+              rounded-2xl bg-white p-6 md:p-7
               shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06),0_12px_32px_-8px_rgba(0,0,0,0.10)]
             "
             style={{ backfaceVisibility: 'hidden' }}
           >
-            <GoalIcon type={goal.icon} />
+            {/* Icon badge — solid rounded-square in brand red so the icon
+                always reads at any aspect ratio (the earlier bare-SVG
+                rendering disappeared into the white background on some
+                screens). */}
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-50 md:h-14 md:w-14">
+              <GoalIcon type={goal.icon} className="h-6 w-6 text-red-600 md:h-7 md:w-7" />
+            </div>
 
-            <div className="flex-1">
-              <h3 className="font-heading text-[clamp(18px,1.8vw,28px)] font-semibold leading-[1.15] tracking-tight text-black">
+            <div className="mt-5 md:mt-6">
+              <h3 className="font-heading text-[clamp(18px,1.5vw,26px)] font-semibold leading-[1.15] tracking-tight text-black">
                 {goal.title}
               </h3>
-              <p className="font-body mt-3 text-[13px] leading-relaxed text-black/65 md:text-[16px]">
+              <p className="font-body mt-2.5 text-[13px] leading-relaxed text-black/65 md:text-[14px] lg:text-[15px]">
                 {goal.description}
               </p>
             </div>
+
+            {/* Flex spacer so the flip-button stays anchored to the bottom
+                of the card; description sits naturally above it without the
+                bullet block in between. */}
+            <div className="flex-1" />
 
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); setIsFlipped(true); }}
               className="
-                font-tiny mt-auto inline-flex items-center gap-2
-                text-[12px] font-semibold uppercase tracking-[0.18em] text-black
+                font-tiny mt-5 inline-flex items-center gap-2
+                text-[11px] font-semibold uppercase tracking-[0.18em] text-black
                 transition-colors hover:text-red-600
               "
             >
@@ -193,10 +212,10 @@ function GoalCard({
           </div>
 
           {/* ── BACK FACE ──────────────────────────────────────────────────
-              Full-bleed background image with a dark overlay for readability;
-              all copy (eyebrow, bullets, flip-back) sits in white over the
-              image. Bullets are intentionally short (4 max) so the back fits
-              the card without scrolling. */}
+              Full-bleed background image, dark gradient overlay, all copy
+              in white over the photo. Bullet count tightened to 5 in the
+              GOALS data so the list fits without `overflow-y` scrolling
+              even on shorter aspect ratios. */}
           <div
             className="
               absolute inset-0 overflow-hidden rounded-2xl
@@ -207,7 +226,6 @@ function GoalCard({
               transform: 'rotateY(180deg)',
             }}
           >
-            {/* Background image */}
             {goal.backImage && (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -217,33 +235,27 @@ function GoalCard({
                 className="absolute inset-0 h-full w-full object-cover"
               />
             )}
-            {/* Dark gradient overlay — heavier at the top where most of the
-                text lives, fades toward a still-readable bottom. */}
             <div
               aria-hidden
               className="absolute inset-0"
               style={{
                 background:
-                  'linear-gradient(180deg, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.62) 55%, rgba(0,0,0,0.72) 100%)',
+                  'linear-gradient(180deg, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.62) 55%, rgba(0,0,0,0.78) 100%)',
               }}
             />
 
-            {/* Content — full original text restored. The bullet list gets
-                `overflow-y-auto` so verbose entries scroll within the card
-                instead of being clipped; tight font size + leading keeps
-                most goals fitting without any scroll on standard viewports. */}
             <div className="relative z-10 flex h-full flex-col p-5 md:p-6">
-              <p className="font-tiny shrink-0 text-[10px] font-semibold uppercase tracking-[0.22em] text-red-400">
+              <p className="font-tiny shrink-0 text-[11px] font-semibold uppercase tracking-[0.22em] text-red-400">
                 {goal.title}
               </p>
-              <ul className="mt-3 flex-1 space-y-1.5 overflow-y-auto pr-1">
+              <ul className="mt-3 flex-1 space-y-2">
                 {goal.backPoints.map((point) => (
                   <li key={point} className="flex items-start gap-2">
                     <span
                       aria-hidden
-                      className="mt-[5px] h-1 w-1 shrink-0 rounded-full bg-red-500"
+                      className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-red-500"
                     />
-                    <span className="font-body text-[11px] leading-snug text-white/90 md:text-[12px]">
+                    <span className="font-body text-[12px] leading-snug text-white/90 md:text-[13px]">
                       {point}
                     </span>
                   </li>
@@ -255,7 +267,7 @@ function GoalCard({
                 onClick={(e) => { e.stopPropagation(); setIsFlipped(false); }}
                 className="
                   font-tiny mt-3 inline-flex shrink-0 items-center gap-2
-                  text-[10px] font-semibold uppercase tracking-[0.18em] text-white/70
+                  text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70
                   transition-colors hover:text-red-400
                 "
               >
@@ -276,27 +288,39 @@ function GoalCard({
               </button>
             </div>
           </div>
-
         </div>
       </div>
     </div>
   );
 }
 
-function GoalIcon({ type }: { type: IconKey }) {
+// ───────────────────────────────────────────────────────────────────────────
+// ICONS
+// ───────────────────────────────────────────────────────────────────────────
+// All four icons render at the same 32×32 grid; line caps + joins rounded,
+// stroke width 1.75 so they read clearly when scaled down to the 24–28 px
+// final size inside the icon badge.
+function GoalIcon({
+  type,
+  className = 'h-7 w-7 text-red-600',
+}: {
+  type: IconKey;
+  className?: string;
+}) {
   const common = {
     viewBox: '0 0 32 32',
     fill: 'none' as const,
     stroke: 'currentColor',
-    strokeWidth: 1.5,
+    strokeWidth: 1.75,
     strokeLinecap: 'round' as const,
     strokeLinejoin: 'round' as const,
     'aria-hidden': true,
-    className: 'h-8 w-8 text-black',
+    className,
   };
 
   switch (type) {
-    // Clean sine waveform — the visual shorthand for clean, regulated power.
+    // Sine wave above a baseline — the canonical "clean, regulated power"
+    // visual. Two full cycles for visual rhythm.
     case 'power':
       return (
         <svg {...common}>
@@ -312,7 +336,7 @@ function GoalIcon({ type }: { type: IconKey }) {
           <polyline points="11 16 14.5 19.5 21 12.5" />
         </svg>
       );
-    // Dollar sign — direct shorthand for cost savings.
+    // Dollar sign — direct visual for cost savings.
     case 'chart':
       return (
         <svg {...common}>

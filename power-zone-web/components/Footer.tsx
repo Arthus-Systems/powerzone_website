@@ -33,11 +33,14 @@ const SUBSCRIBE_BULLETS = [
 // Maps URLs use a plain search query so the embed renders without an API key.
 const LAHORE_ADDRESS =
   '1P, 1KM, Defence Off, Raiwind Road, Bhobtian Chowk, Adjacent University of Lahore.';
-const LAHORE_MAPS_QUERY = encodeURIComponent(
-  'Power Zone, 1KM Defence Road, Raiwind Road, Bhobtian Chowk, Lahore, Pakistan',
-);
-const LAHORE_MAPS_LINK = `https://www.google.com/maps/search/?api=1&query=${LAHORE_MAPS_QUERY}`;
-const LAHORE_MAPS_EMBED = `https://www.google.com/maps?q=${LAHORE_MAPS_QUERY}&hl=en&z=15&output=embed`;
+// Exact coordinates of the Lahore warehouse (resolved from the canonical
+// Google Maps short link https://maps.app.goo.gl/5XnbehmhK9fcLJdA7 →
+// "Powerzone Generators Pakistan"). Using lat/lng for the embed locks the
+// map to the actual marker rather than relying on a fuzzy text search.
+const LAHORE_LAT = 31.3930372;
+const LAHORE_LNG = 74.240753;
+const LAHORE_MAPS_LINK = 'https://maps.app.goo.gl/5XnbehmhK9fcLJdA7';
+const LAHORE_MAPS_EMBED = `https://www.google.com/maps?q=loc:${LAHORE_LAT},${LAHORE_LNG}&hl=en&z=16&output=embed`;
 
 // ───────────────────────────────────────────────────────────────────────────
 // STICKY REVEAL MECHANIC

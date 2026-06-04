@@ -26,6 +26,7 @@ export default function BlogArticle({
         <Link
           href="/blog"
           className="
+            font-tiny
             inline-flex items-center gap-2
             text-[11px] font-semibold uppercase tracking-[0.22em] text-black/50
             transition-colors hover:text-red-600
@@ -51,12 +52,13 @@ export default function BlogArticle({
         <header className="mt-8">
           <div className="flex flex-wrap items-center gap-3">
             <CategoryPill category={post.category} />
-            <span className="text-[11px] font-medium uppercase tracking-[0.22em] text-black/45">
+            <span className="font-tiny text-[11px] font-medium uppercase tracking-[0.22em] text-black/45">
               {post.readMinutes} min read
             </span>
           </div>
           <h1
             className="
+              font-heading
               mt-6 text-[clamp(28px,3.6vw,46px)]
               font-semibold leading-[1.06] tracking-tight text-black
             "
@@ -64,7 +66,7 @@ export default function BlogArticle({
           >
             {post.title}
           </h1>
-          <p className="mt-5 text-[15px] leading-relaxed text-black/65 md:text-[16px]">
+          <p className="font-body mt-5 text-[15px] leading-relaxed text-black/65 md:text-[16px]">
             {post.excerpt}
           </p>
         </header>
@@ -83,13 +85,14 @@ export default function BlogArticle({
         {/* Tags */}
         {post.tags.length > 0 ? (
           <div className="mt-14 flex flex-wrap items-center gap-2">
-            <span className="text-[10px] font-medium uppercase tracking-[0.22em] text-black/35">
+            <span className="font-tiny text-[10px] font-medium uppercase tracking-[0.22em] text-black/35">
               Tags
             </span>
             {post.tags.map((tag) => (
               <span
                 key={tag}
                 className="
+                  font-tiny
                   rounded-full border border-black/10 bg-black/[0.04]
                   px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-black/55
                 "
@@ -106,12 +109,14 @@ export default function BlogArticle({
         {/* Related */}
         {related.length > 0 ? (
           <section className="mt-20">
-            <p className="text-[11px] font-medium uppercase tracking-[0.32em] text-red-500">
+            <p className="font-tiny text-[11px] font-medium uppercase tracking-[0.32em] text-red-500">
               Keep Reading
             </p>
-            <h2 className="mt-3 text-[clamp(22px,2.6vw,32px)] font-semibold tracking-tight text-black">
+            <h2 className="font-heading mt-3 text-[clamp(22px,2.6vw,32px)] font-semibold tracking-tight text-black">
               More on{' '}
-              <span className="font-serif italic font-normal text-black/70">
+              {/* font-serif removed — italic kept, family switched to
+                  Sansation (font-heading) per the three-font rule. */}
+              <span className="font-heading italic font-normal text-black/70">
                 {post.category.toLowerCase()}
               </span>
             </h2>
@@ -129,13 +134,14 @@ export default function BlogArticle({
 
 function ProseBlocks({ blocks }: { blocks: string[] }) {
   return (
-    <div className="space-y-5 text-[15px] leading-[1.75] text-black/70 md:text-[16.5px]">
+    <div className="font-body space-y-5 text-[15px] leading-[1.75] text-black/70 md:text-[16.5px]">
       {blocks.map((block, i) => {
         if (block.startsWith('## ')) {
           return (
             <h3
               key={i}
               className="
+                font-heading
                 mt-10 text-[19px] font-semibold tracking-tight text-black
                 md:text-[21px]
               "
@@ -146,7 +152,7 @@ function ProseBlocks({ blocks }: { blocks: string[] }) {
           );
         }
         return (
-          <p key={i} className="text-black/70">
+          <p key={i} className="font-body text-black/70">
             {block}
           </p>
         );
@@ -163,6 +169,7 @@ function CategoryPill({ category }: { category: BlogCategory }) {
   return (
     <span
       className={`
+        font-tiny
         inline-flex items-center
         rounded-full px-3 py-1
         text-[10px] font-semibold uppercase tracking-[0.22em]
@@ -191,12 +198,13 @@ function RelatedCard({ post }: { post: BlogPost }) {
     >
       <div className="flex items-center justify-between">
         <CategoryPill category={post.category} />
-        <span className="text-[10px] font-medium uppercase tracking-[0.22em] text-black/40">
+        <span className="font-tiny text-[10px] font-medium uppercase tracking-[0.22em] text-black/40">
           {post.readMinutes} min
         </span>
       </div>
       <h3
         className="
+          font-heading
           mt-4 text-[16px] font-semibold leading-[1.3]
           tracking-tight text-black
           transition-colors group-hover:text-red-600
@@ -206,7 +214,7 @@ function RelatedCard({ post }: { post: BlogPost }) {
       >
         {post.title}
       </h3>
-      <p className="mt-3 line-clamp-2 text-[13px] leading-relaxed text-black/55">
+      <p className="font-body mt-3 line-clamp-2 text-[13px] leading-relaxed text-black/55">
         {post.excerpt}
       </p>
     </Link>
@@ -225,10 +233,10 @@ function CtaPanel() {
     >
       <div className="relative flex flex-col items-start gap-5 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.32em] text-red-500">
+          <p className="font-tiny text-[11px] font-medium uppercase tracking-[0.32em] text-red-500">
             Need a Specialist?
           </p>
-          <h3 className="mt-3 text-[20px] font-semibold tracking-tight text-black md:text-[22px]">
+          <h3 className="font-heading mt-3 text-[20px] font-semibold tracking-tight text-black md:text-[22px]">
             Talk to a Power Zone engineer about your project.
           </h3>
         </div>

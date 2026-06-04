@@ -208,11 +208,20 @@ const PANEL_VARIANTS = {
   }),
 };
 
-// Minimum ms between two navigations. Must comfortably exceed the enter
-// animation duration (0.8 s) so macOS trackpad momentum events (which fire
-// for 1–3 s after a swipe) cannot trigger a second section jump the instant
-// the animation completes.
-const NAV_COOLDOWN_MS = 1200;
+// Sensitivity gating, two pieces:
+//
+// WHEEL_THRESHOLD — minimum |deltaY| of a single wheel event for it to
+//   count as a real scroll. A trackpad inertia tail decays from ~80 down
+//   to single-digit values; setting the bar at 30 ignores most of the
+//   tail while still firing on any deliberate notch/swipe.
+//
+// NAV_COOLDOWN_MS — minimum ms between two navigations. Just over the
+//   0.7 s exit animation so a deliberate second scroll responds without
+//   noticeable lag, but the cooldown still catches the high-magnitude
+//   front of an inertia tail before it can compound into a second panel
+//   advance.
+const WHEEL_THRESHOLD = 30;
+const NAV_COOLDOWN_MS = 800;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Main component
@@ -233,9 +242,9 @@ export default function ApplicationsIndustries() {
   const activeRef = useRef(0);
   // True while the exit animation is running. Cleared by onExitComplete.
   const animating = useRef(false);
-  // Timestamp of the last navigation (ms). Guards against momentum scroll
-  // firing a second transition the instant animating becomes false.
-  const lastNav   = useRef(-Infinity);
+  // Timestamp of the last navigation (ms). Gates the next navigate behind
+  // NAV_COOLDOWN_MS so a single scroll can't compound into two panel jumps.
+  const lastNav = useRef(-Infinity);
   // Whether we should eat the very first wheel event after the sticky range
   // becomes active. Without this, scrolling down from GoalsSection fires a
   // wheel event the same frame the section activates, immediately advancing
@@ -308,11 +317,17 @@ export default function ApplicationsIndustries() {
         // wheel handler the sole driver of panel changes within the section.
         e.preventDefault();
 
-        // Dual gate: animation must be complete AND cooldown must have elapsed.
-        // animating alone isn't enough — trackpad momentum keeps firing after
-        // onExitComplete (0.7 s). lastNav alone isn't enough — it doesn't
-        // prevent a stacked navigate call during the brief window between
-        // onExitComplete and the cooldown expiring.
+        // Filter out tiny inertia events — only the deliberate front of
+        // a gesture exceeds WHEEL_THRESHOLD. Lets a one-notch flick still
+        // register while ignoring the tail.
+        if (Math.abs(e.deltaY) < WHEEL_THRESHOLD) return;
+
+        // Gates:
+        //   animating  — exit animation in flight; any input now would
+        //                compose two panels.
+        //   cooldown   — minimum gap between navigates; catches the
+        //                first high-magnitude inertia event that survives
+        //                the threshold before it can drive a second jump.
         if (animating.current) return;
         if (Date.now() - lastNav.current < NAV_COOLDOWN_MS) return;
 

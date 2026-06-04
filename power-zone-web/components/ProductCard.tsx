@@ -208,12 +208,14 @@ export default function ProductCard({
         </svg>
       </div>
 
-      {/* Arrow — visual indicator only; the whole-card button handles clicks. */}
+      {/* Arrow — visual indicator only; the whole-card button handles clicks.
+          Pushed tighter into the corner (top-1/right-1) with a smaller hit
+          box so the glyph itself sits flush against the edge. */}
       <div
         aria-hidden
         className="
-          pointer-events-none absolute top-3 right-3 z-50
-          h-8 w-8
+          pointer-events-none absolute top-1 right-1 z-50
+          h-6 w-6
           flex items-center justify-center
           text-white
         "

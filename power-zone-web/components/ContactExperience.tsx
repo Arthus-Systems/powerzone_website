@@ -57,24 +57,30 @@ export default function ContactExperience() {
           {/* Left column — headline, description, dial-in info, offices */}
           <section className="flex flex-col gap-7 lg:col-span-5">
             <div>
-              <p className="text-[11px] font-medium uppercase tracking-[0.32em] text-red-500">
+              <p className="font-tiny text-[11px] font-medium uppercase tracking-[0.32em] text-red-500">
                 Contact Sales
               </p>
               <h1
                 className="
+                  font-heading
                   mt-4 text-[clamp(34px,4vw,56px)] font-semibold
                   leading-[1.04] tracking-tight text-black
                 "
                 style={{ letterSpacing: '-0.01em' }}
               >
-                See how Power Zone can
-                <span className="mt-1 block font-serif italic font-normal text-black/70">
+                See how Power Zone can{' '}
+                {/* font-serif removed — italic stays as a style modifier
+                    but the family is now Sansation (font-heading) per the
+                    "only three fonts" rule. `inline` (not block) so the
+                    headline flows as one sentence and only wraps if the
+                    column genuinely runs out of room. */}
+                <span className="font-heading inline italic font-normal text-black/70">
                   power your project.
                 </span>
               </h1>
             </div>
 
-            <p className="max-w-md text-[14px] leading-relaxed text-black/65 md:text-[15px]">
+            <p className="font-body max-w-md text-[14px] leading-relaxed text-black/65 md:text-[15px]">
               Learn more about our products, explore use cases, or request a
               customized quote — built around your operational requirements.
             </p>
@@ -123,10 +129,10 @@ function ContactDetail({
 }) {
   return (
     <a href={href} className="group block">
-      <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-black/40">
+      <p className="font-tiny text-[10px] font-medium uppercase tracking-[0.28em] text-black/40">
         {label}
       </p>
-      <p className="mt-1 text-[15px] text-black transition-colors group-hover:text-red-600 md:text-[16px]">
+      <p className="font-body mt-1 text-[15px] text-black transition-colors group-hover:text-red-600 md:text-[16px]">
         {value}
       </p>
     </a>
@@ -138,7 +144,7 @@ function OfficesSection() {
 
   return (
     <div>
-      <p className="mb-3 text-[10px] font-medium uppercase tracking-[0.32em] text-black/40">
+      <p className="font-tiny mb-3 text-[10px] font-medium uppercase tracking-[0.32em] text-black/40">
         Our Offices
       </p>
 
@@ -152,6 +158,7 @@ function OfficesSection() {
               type="button"
               onClick={() => setActive(i)}
               className={`
+                font-tiny
                 cursor-pointer rounded-full border px-4 py-1.5
                 text-[11px] font-medium uppercase tracking-[0.18em]
                 transition-colors duration-200
@@ -168,8 +175,14 @@ function OfficesSection() {
         })}
       </div>
 
-      {/* Selected city's address */}
-      <div className="mt-3 flex max-w-md items-start gap-2.5 text-[12px] leading-relaxed text-black/55 md:text-[13px]">
+      {/* Selected city's address — fixed-height container so switching
+          between offices (each address is a different length) doesn't
+          change the column height and shift the form card on the right.
+          min-h reserves space for the longest 3-line address (Karachi). */}
+      <div
+        className="mt-3 flex max-w-md items-start gap-2.5 text-[12px] leading-relaxed text-black/55 md:text-[13px]"
+        style={{ minHeight: '4em' }}
+      >
         <svg
           aria-hidden
           viewBox="0 0 12 12"
@@ -178,7 +191,7 @@ function OfficesSection() {
         >
           <path d="M6 0C3.79 0 2 1.79 2 4c0 2.5 4 8 4 8s4-5.5 4-8c0-2.21-1.79-4-4-4Zm0 5.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z" />
         </svg>
-        <span>{OFFICES[active].address}</span>
+        <span className="font-body">{OFFICES[active].address}</span>
       </div>
     </div>
   );
@@ -224,10 +237,10 @@ function ContactForm() {
         md:p-10
       "
     >
-      <p className="text-[11px] font-medium uppercase tracking-[0.32em] text-red-500">
+      <p className="font-tiny text-[11px] font-medium uppercase tracking-[0.32em] text-red-500">
         Get in Touch
       </p>
-      <h2 className="mt-2 text-[22px] font-semibold tracking-tight text-black md:text-[26px]">
+      <h2 className="font-heading mt-2 text-[22px] font-semibold tracking-tight text-black md:text-[26px]">
         Send us a message
       </h2>
 
@@ -299,6 +312,7 @@ function FormField({
   ) => onChange(e.target.value);
 
   const fieldClasses = `
+    font-body
     mt-1.5 w-full bg-transparent
     border-b border-black/20
     py-2 text-[15px] text-black placeholder-black/30
@@ -308,10 +322,10 @@ function FormField({
 
   return (
     <div className={className}>
-      <label className="block text-[10px] font-medium uppercase tracking-[0.24em] text-black/55">
+      <label className="font-tiny block text-[10px] font-medium uppercase tracking-[0.24em] text-black/55">
         {label}
         {optional && (
-          <span className="ml-2 normal-case text-black/30">(optional)</span>
+          <span className="font-tiny ml-2 normal-case text-black/30">(optional)</span>
         )}
       </label>
       {textarea ? (
@@ -371,10 +385,10 @@ function SuccessPanel({ onReset }: { onReset: () => void }) {
         </svg>
       </div>
 
-      <h2 className="mt-6 text-[26px] font-semibold tracking-tight text-black">
+      <h2 className="font-heading mt-6 text-[26px] font-semibold tracking-tight text-black">
         Message sent.
       </h2>
-      <p className="mt-2 max-w-sm text-[14px] leading-relaxed text-black/65 md:text-[15px]">
+      <p className="font-body mt-2 max-w-sm text-[14px] leading-relaxed text-black/65 md:text-[15px]">
         Thanks for reaching out. A member of our sales team will get back to
         you within 24 hours.
       </p>
@@ -383,6 +397,7 @@ function SuccessPanel({ onReset }: { onReset: () => void }) {
         type="button"
         onClick={onReset}
         className="
+          font-tiny
           mt-8 inline-flex items-center gap-2 rounded-full
           border border-black/20 px-6 py-2.5
           text-[11px] font-bold uppercase tracking-[0.22em] text-black/70

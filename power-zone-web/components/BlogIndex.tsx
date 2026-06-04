@@ -57,11 +57,12 @@ export default function BlogIndex() {
       >
         {/* Hero */}
         <section className="text-center">
-          <p className="text-[11px] font-medium uppercase tracking-[0.32em] text-red-500">
+          <p className="font-tiny text-[11px] font-medium uppercase tracking-[0.32em] text-red-500">
             Insights &amp; Field Notes
           </p>
           <h1
             className="
+              font-heading
               mx-auto mt-4 max-w-[60rem]
               text-[clamp(34px,4.4vw,60px)] font-semibold
               leading-[1.04] tracking-tight text-black
@@ -69,11 +70,13 @@ export default function BlogIndex() {
             style={{ letterSpacing: '-0.01em' }}
           >
             Knowledge from the
-            <span className="ml-3 font-serif italic font-normal text-black/70">
+            {/* font-serif removed — italic kept as a style modifier, family
+                switched to Sansation (font-heading) per the three-font rule. */}
+            <span className="font-heading ml-3 italic font-normal text-black/70">
               power room.
             </span>
           </h1>
-          <p className="mx-auto mt-5 max-w-[44rem] text-[14px] leading-relaxed text-black/60 md:text-[15px]">
+          <p className="font-body mx-auto mt-5 max-w-[44rem] text-[14px] leading-relaxed text-black/60 md:text-[15px]">
             Practical guides on diesel generators, hybrid inverters, and the
             energy systems we install across Pakistan — written by the people
             who run them.
@@ -93,6 +96,7 @@ export default function BlogIndex() {
                     type="button"
                     onClick={() => setFilter(f)}
                     className={`
+                      font-tiny
                       cursor-pointer rounded-full px-4 py-1.5
                       text-[11px] font-medium uppercase tracking-[0.22em]
                       transition-colors duration-300
@@ -108,7 +112,7 @@ export default function BlogIndex() {
                 );
               })}
             </div>
-            <p className="text-center text-[12px] text-black/40">
+            <p className="font-body text-center text-[12px] text-black/40">
               {filtered.length}{' '}
               {filtered.length === 1 ? 'article' : 'articles'}
               {query ? (
@@ -186,6 +190,7 @@ function SearchBar({
         onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
         placeholder="Search articles — try &ldquo;battery&rdquo;, &ldquo;cleaning&rdquo;, &ldquo;hybrid inverter&rdquo;…"
         className="
+          font-body
           flex-1 bg-transparent text-[14px] text-black placeholder:text-black/35
           focus:outline-none md:text-[15px]
         "
@@ -232,12 +237,13 @@ function FeaturedCard({ post }: { post: BlogPost }) {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <CategoryPill category={post.category} />
-            <span className="text-[11px] font-medium uppercase tracking-[0.22em] text-black/45">
+            <span className="font-tiny text-[11px] font-medium uppercase tracking-[0.22em] text-black/45">
               Featured · {post.readMinutes} min read
             </span>
           </div>
           <h2
             className="
+              font-heading
               mt-5 text-[clamp(26px,3.2vw,42px)]
               font-semibold leading-[1.08] tracking-tight text-black
             "
@@ -245,7 +251,7 @@ function FeaturedCard({ post }: { post: BlogPost }) {
           >
             {post.title}
           </h2>
-          <p className="mt-4 max-w-[44rem] text-[15px] leading-relaxed text-black/60 md:text-[16px]">
+          <p className="font-body mt-4 max-w-[44rem] text-[15px] leading-relaxed text-black/60 md:text-[16px]">
             {post.excerpt}
           </p>
         </div>
@@ -271,13 +277,14 @@ function PostCard({ post }: { post: BlogPost }) {
     >
       <div className="flex items-center justify-between">
         <CategoryPill category={post.category} />
-        <span className="text-[10px] font-medium uppercase tracking-[0.22em] text-black/40">
+        <span className="font-tiny text-[10px] font-medium uppercase tracking-[0.22em] text-black/40">
           {post.readMinutes} min
         </span>
       </div>
 
       <h3
         className="
+          font-heading
           mt-5 text-[18px] font-semibold leading-[1.25]
           tracking-tight text-black
           md:text-[19px]
@@ -287,7 +294,7 @@ function PostCard({ post }: { post: BlogPost }) {
         {post.title}
       </h3>
 
-      <p className="mt-3 line-clamp-3 text-[13.5px] leading-relaxed text-black/60">
+      <p className="font-body mt-3 line-clamp-3 text-[13.5px] leading-relaxed text-black/60">
         {post.excerpt}
       </p>
 
@@ -308,6 +315,7 @@ function CategoryPill({ category }: { category: BlogCategory }) {
   return (
     <span
       className={`
+        font-tiny
         inline-flex items-center
         rounded-full px-3 py-1
         text-[10px] font-semibold uppercase tracking-[0.22em]
@@ -372,16 +380,17 @@ function EmptyState({
           <path d="m20 20-3.5-3.5" />
         </svg>
       </div>
-      <h3 className="mt-5 text-[18px] font-semibold tracking-tight text-black">
+      <h3 className="font-heading mt-5 text-[18px] font-semibold tracking-tight text-black">
         Nothing matched{query ? ` "${query}"` : ' your filter'}.
       </h3>
-      <p className="mt-2 text-[13.5px] leading-relaxed text-black/55">
+      <p className="font-body mt-2 text-[13.5px] leading-relaxed text-black/55">
         Try a different keyword or clear the filters to see every article.
       </p>
       <button
         type="button"
         onClick={onClear}
         className="
+          font-tiny
           mt-6 inline-flex cursor-pointer items-center gap-2
           rounded-full bg-red-500/85 px-5 py-2
           text-[11px] font-semibold uppercase tracking-[0.22em] text-white

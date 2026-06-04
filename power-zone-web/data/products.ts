@@ -77,7 +77,7 @@ export const products: Product[] = [
     leftColor: "#4B4545",
     rightColor: "#F5EFE5",
     descriptionBgColor: "#F5EFE5",
-    gallery: ["/images/fpt_product_2.avif", "/images/fpt_product_3.avif"],
+    gallery: ["/images/fpt_product_2.webp", "/images/fpt_product_3.webp"],
     descriptionLong:
       "Italian-engineered diesel power tuned for the kind of grid that doesn't always behave. FPT Industrial designs gensets around three priorities — instant peak response, tight voltage and frequency control, and the long service intervals their European industrial customers depend on. Power Zone is the official FPT distributor in Pakistan, handling supply, on-site installation, commissioning, and after-sales support nationwide. Configure as primary or as standby; integrate with microgrids, hybrid renewables, or off-grid topologies without re-engineering the package.",
     engineering:
@@ -115,8 +115,8 @@ export const products: Product[] = [
     rightColor: "#EFEFEF",
     descriptionBgColor: "#EFEFEF",
     gallery: [
-      "/images/perkins_product_2.avif",
-      "/images/perkins_product_3.avif",
+      "/images/perkins_product_2.webp",
+      "/images/perkins_product_3.webp",
     ],
     descriptionLong:
       "British-engineered diesel power tuned for fuel economy and long service life. Perkins pairs a high-efficiency combustion design with a heavy-duty alternator that holds output steady across the load curve — exactly what you want on a site where the genset runs for months between meaningful interventions. Power Zone supplies the full Perkins lineup across Pakistan with installation, commissioning, and on-site maintenance built into the package.",
@@ -155,8 +155,8 @@ export const products: Product[] = [
     rightColor: "#EFF5EF",
     descriptionBgColor: "#EFF5EF",
     gallery: [
-      "/images/cummins_product_2.avif",
-      "/images/cummins_product_3.avif",
+      "/images/cummins_product_2.webp",
+      "/images/cummins_product_3.webp",
     ],
     descriptionLong:
       "American-engineered diesel power with the kind of grid-failure response that defines mission-critical sites. Cummins gensets ship with smart load monitoring that adjusts output in real time, and they're tuned to come online within seconds of an outage — the difference between a server farm staying on its feet and dropping a frame. Power Zone supplies, installs, and maintains the full Cummins lineup across Pakistan, sizing each install around the customer's actual load profile.",
@@ -194,8 +194,8 @@ export const products: Product[] = [
     rightColor: "#EFEFF3",
     descriptionBgColor: "#EFEFF3",
     gallery: [
-      "/images/yuchai_product_2.jpeg",
-      "/images/yuchai_product_3.avif",
+      "/images/yuchai_product_2.webp",
+      "/images/yuchai_product_3.webp",
     ],
     descriptionLong:
       "High-value diesel power from China's largest engine manufacturer. Yuchai gensets are built around a strong output-to-fuel ratio and a wide capacity range — a pragmatic answer for sites that need real industrial reliability without the import-tier price tag. Power Zone handles supply, installation, and ongoing maintenance, with prime and standby configurations sized to the actual load.",
@@ -244,8 +244,8 @@ export const bessProducts: Product[] = [
     rightColor: "#F5EFE5",
     descriptionBgColor: "#F5EFE5",
     gallery: [
-      "/images/battery_product_1.webp",
-      "/images/battery_product_1.webp",
+      "/images/battery_product_2.webp",
+      "/images/battery_product_3.webp",
     ],
     descriptionLong:
       "Lithium iron phosphate (LFP) battery storage in low-voltage and high-voltage configurations. The plug-and-play modular design lets capacity grow with the load — drop in additional units instead of re-engineering the system. The integrated battery management runs round-the-clock, optimizing performance and catching issues early. Built for grid-tied, off-grid, and hybrid renewable installations across commercial, industrial, and residential sites.",
@@ -284,8 +284,8 @@ export const bessProducts: Product[] = [
     rightColor: "#EFEFEF",
     descriptionBgColor: "#EFEFEF",
     gallery: [
-      "/images/bess_product_1.webp",
-      "/images/bess_product_1.webp",
+      "/images/bess_product_2.webp",
+      "/images/bess_product_3.webp",
     ],
     descriptionLong:
       "A compact, IP65-rated battery energy storage cabinet built around LFP cells. Intelligent battery profiles route energy across operational priorities; redundant dual-path cooling and continuous thermal monitoring keep the system stable under sustained load. The pre-engineered modular architecture means rapid deployment for commercial and industrial sites, and integrates cleanly with existing solar or grid infrastructure.",
@@ -324,8 +324,8 @@ export const bessProducts: Product[] = [
     rightColor: "#EFF5EF",
     descriptionBgColor: "#EFF5EF",
     gallery: [
-      "/images/inverter_product_1.webp",
-      "/images/inverter_product_1.webp",
+      "/images/inverter_product_2.webp",
+      "/images/hybrid_inverter_product_2.webp",
     ],
     descriptionLong:
       "A hybrid inverter that integrates solar PV, battery storage, and grid power in a single chassis. Intelligent automatic switching keeps load online when the grid drops; voltage and frequency regulation deliver clean power to sensitive equipment. Built around the same LFP battery architecture and 24/7 BMS as the rest of the Power Zone storage lineup, with modular capacity that grows with the install.",
