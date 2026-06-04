@@ -59,6 +59,16 @@ export default function Home() {
     setFirstVisitChecked(true);
   }, []);
 
+  // Scoped scroll-snap — active only while this page is mounted.
+  // proximity mode so it only snaps when the user is already near a
+  // boundary, leaving free-scrolling through sections undisturbed.
+  useEffect(() => {
+    document.documentElement.style.scrollSnapType = 'y proximity';
+    return () => {
+      document.documentElement.style.scrollSnapType = '';
+    };
+  }, []);
+
   // Called by ControlPanel once it lands on phase==='hero'. We stamp
   // sessionStorage so any subsequent navigation back to / skips the intro.
   const handleIntroComplete = () => {

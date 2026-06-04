@@ -119,7 +119,7 @@ export default function ProcessSection() {
     <section
       ref={containerRef}
       className="relative bg-[#F4EFE7]"
-      style={{ height: `${PROCESS_STEPS.length * SECTION_VH_PER_STEP}vh` }}
+      style={{ height: `${PROCESS_STEPS.length * SECTION_VH_PER_STEP}vh`, scrollSnapAlign: 'start' }}
     >
       <div className="sticky top-0 flex h-screen flex-col overflow-hidden">
         {/* Section header. vh-aware padding shrinks on short laptops

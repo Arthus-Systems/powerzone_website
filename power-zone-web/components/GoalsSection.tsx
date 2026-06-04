@@ -89,12 +89,15 @@ const GOALS: Goal[] = [
 export default function GoalsSection() {
   return (
     <section
-      className="relative bg-[#F4EFE7]"
+      className="relative flex h-screen flex-col overflow-hidden bg-[#F4EFE7]"
       style={{ scrollSnapAlign: 'start' }}
     >
-      <div className="flex min-h-screen flex-col">
+      {/* flex-col + justify-center keeps the block centred in the viewport
+          regardless of screen height — no content from adjacent sections
+          is ever visible. */}
+      <div className="flex flex-1 flex-col justify-center px-6 py-10 md:px-10 lg:px-14">
         {/* Header */}
-        <div className="px-8 pt-20 text-center md:pt-24">
+        <div className="text-center">
           <p className="font-tiny text-[20px] font-medium uppercase tracking-[0.32em] text-red-600">
             Operational Goals
           </p>
@@ -106,16 +109,13 @@ export default function GoalsSection() {
           </h2>
         </div>
 
-        {/* Single-row 4-column card grid */}
-        <div className="flex flex-1 items-stretch px-6 pb-10 pt-6 md:px-10 lg:px-14" style={{ minHeight: '520px' }}>
-          <div className="mx-auto grid h-full w-full max-w-[1400px] grid-cols-4 grid-rows-1 gap-5 lg:gap-6">
-            {GOALS.map((goal) => (
-              <GoalCard
-                key={goal.title}
-                goal={goal}
-              />
-            ))}
-          </div>
+        {/* 4-column card grid. Each card has an explicit clamp() height so
+            the absolute-positioned faces always have a reliable containing
+            block, independent of any ancestor min-height. */}
+        <div className="mx-auto mt-8 grid w-full max-w-[1400px] grid-cols-4 gap-5 lg:gap-6">
+          {GOALS.map((goal) => (
+            <GoalCard key={goal.title} goal={goal} />
+          ))}
         </div>
       </div>
     </section>
@@ -130,7 +130,10 @@ function GoalCard({
   const [isFlipped, setIsFlipped] = useState(false);
 
   return (
-    <div className="h-full min-h-0">
+    // clamp() gives every card an explicit height the absolute-positioned
+    // faces can resolve against — not taller than needed on small screens,
+    // not too short on large ones.
+    <div style={{ height: 'clamp(340px, 46vh, 500px)' }}>
       {/* Perspective wrapper enables the 3-D flip */}
       <div className="h-full" style={{ perspective: '1200px' }}>
         {/* Flip container — click anywhere on the card to flip */}
