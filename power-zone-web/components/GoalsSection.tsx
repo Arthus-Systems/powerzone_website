@@ -49,7 +49,7 @@ const GOALS: Goal[] = [
       'Reduces emissions by up to 90% compared to conventional standby generators',
       'Proven 20+ year lifespan — reliable, scalable, and built for long-term value',
     ],
-    backImage: '/images/applications_2.webp',    // ← INSERT IMAGE PATH HERE, e.g. '/images/prevent-downtime.webp'
+    backImage: '/images/applications_2.webp',
   },
   {
     title: 'Lower Energy Costs',
@@ -64,7 +64,7 @@ const GOALS: Goal[] = [
       'Real-time monitoring provides clear visibility into system efficiency and savings',
       'Engineered for long-term durability, maximizing ROI while minimizing operational costs',
     ],
-    backImage: '/images/applications_3.webp',    // ← INSERT IMAGE PATH HERE, e.g. '/images/lower-costs.webp'
+    backImage: '/images/applications_3.webp',
   },
   {
     title: 'Reduce Emissions',
@@ -79,7 +79,7 @@ const GOALS: Goal[] = [
       'Partner FPT Industrial has offset 16,500+ tons of CO2, with a fully carbon-neutral ePowertrain facility powered by solar and wind',
       'Supports your sustainability goals without compromising performance or reliability',
     ],
-    backImage: '/images/applications_4.webp',    // ← INSERT IMAGE PATH HERE, e.g. '/images/reduce-emissions.webp'
+    backImage: '/images/applications_4.webp',
   },
 ];
 
@@ -97,12 +97,12 @@ export default function GoalsSection() {
       <div className="sticky top-0 flex h-screen flex-col overflow-hidden">
         {/* Header */}
         <div className="px-8 pt-20 text-center md:pt-24">
-          <p className="text-[20px] font-medium uppercase tracking-[0.32em] text-red-600">
+          <p className="font-tiny text-[20px] font-medium uppercase tracking-[0.32em] text-red-600">
             Operational Goals
           </p>
-          <h2 className="mx-auto mt-4 max-w-[64rem] text-[clamp(28px,3.6vw,52px)] font-semibold leading-[1.08] tracking-tight text-black">
+          <h2 className="font-heading mx-auto mt-4 max-w-[64rem] text-[clamp(28px,3.6vw,52px)] font-semibold leading-[1.08] tracking-tight text-black">
             Meet Key Operational Goals
-            <span className="ml-3 font-serif italic font-normal text-black/85">
+            <span className="font-heading ml-3 italic font-normal text-black/85">
               with Power Zone
             </span>
           </h2>
@@ -157,10 +157,10 @@ function GoalCard({
             <GoalIcon type={goal.icon} />
 
             <div className="flex-1">
-              <h3 className="text-[clamp(18px,1.8vw,28px)] font-semibold leading-[1.15] tracking-tight text-black">
+              <h3 className="font-heading text-[clamp(18px,1.8vw,28px)] font-semibold leading-[1.15] tracking-tight text-black">
                 {goal.title}
               </h3>
-              <p className="mt-3 text-[13px] leading-relaxed text-black/65 md:text-[16px]">
+              <p className="font-body mt-3 text-[13px] leading-relaxed text-black/65 md:text-[16px]">
                 {goal.description}
               </p>
             </div>
@@ -169,7 +169,7 @@ function GoalCard({
               type="button"
               onClick={(e) => { e.stopPropagation(); setIsFlipped(true); }}
               className="
-                mt-auto inline-flex items-center gap-2
+                font-tiny mt-auto inline-flex items-center gap-2
                 text-[12px] font-semibold uppercase tracking-[0.18em] text-black
                 transition-colors hover:text-red-600
               "
@@ -191,16 +191,14 @@ function GoalCard({
             </button>
           </div>
 
-          {/* ── BACK FACE ──────────────────────────────────────────────── */}
-          {/*
-            CONTENT GUIDE — fill in the GOALS array at the top of this file:
-              • backText  → shown in the LEFT section below
-              • backImage → shown in the RIGHT section below (image path)
-          */}
+          {/* ── BACK FACE ──────────────────────────────────────────────────
+              Full-bleed background image with a dark overlay for readability;
+              all copy (eyebrow, bullets, flip-back) sits in white over the
+              image. Bullets are intentionally short (4 max) so the back fits
+              the card without scrolling. */}
           <div
             className="
-              absolute inset-0 flex gap-5
-              rounded-2xl bg-white p-7 md:p-8
+              absolute inset-0 overflow-hidden rounded-2xl
               shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06),0_12px_32px_-8px_rgba(0,0,0,0.10)]
             "
             style={{
@@ -208,39 +206,56 @@ function GoalCard({
               transform: 'rotateY(180deg)',
             }}
           >
-            {/* LEFT — bullet points
-                ↳ Edit `backPoints` in the GOALS array for this card */}
-            <div className="flex flex-1 flex-col justify-between overflow-hidden">
-              <div className="overflow-y-auto pr-1">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-red-500">
-                  {goal.title}
-                </p>
-                {goal.backPoints.length > 0 ? (
-                  <ul className="mt-3 space-y-2">
-                    {goal.backPoints.map((point) => (
-                      <li key={point} className="flex items-start gap-2">
-                        <span className="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full bg-red-500" aria-hidden />
-                        <span className="text-[12px] leading-relaxed text-black/70 md:text-[13px]">
-                          {point}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="mt-3 text-[12px] leading-relaxed text-black/40 md:text-[13px]">
-                    Content coming soon.
-                  </p>
-                )}
-              </div>
+            {/* Background image */}
+            {goal.backImage && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={goal.backImage}
+                alt=""
+                aria-hidden
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            )}
+            {/* Dark gradient overlay — heavier at the top where most of the
+                text lives, fades toward a still-readable bottom. */}
+            <div
+              aria-hidden
+              className="absolute inset-0"
+              style={{
+                background:
+                  'linear-gradient(180deg, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.62) 55%, rgba(0,0,0,0.72) 100%)',
+              }}
+            />
 
-              {/* Flip-back button */}
+            {/* Content — full original text restored. The bullet list gets
+                `overflow-y-auto` so verbose entries scroll within the card
+                instead of being clipped; tight font size + leading keeps
+                most goals fitting without any scroll on standard viewports. */}
+            <div className="relative z-10 flex h-full flex-col p-5 md:p-6">
+              <p className="font-tiny shrink-0 text-[10px] font-semibold uppercase tracking-[0.22em] text-red-400">
+                {goal.title}
+              </p>
+              <ul className="mt-3 flex-1 space-y-1.5 overflow-y-auto pr-1">
+                {goal.backPoints.map((point) => (
+                  <li key={point} className="flex items-start gap-2">
+                    <span
+                      aria-hidden
+                      className="mt-[5px] h-1 w-1 shrink-0 rounded-full bg-red-500"
+                    />
+                    <span className="font-body text-[11px] leading-snug text-white/90 md:text-[12px]">
+                      {point}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); setIsFlipped(false); }}
                 className="
-                  mt-3 inline-flex shrink-0 items-center gap-2
-                  text-[11px] font-semibold uppercase tracking-[0.18em] text-black/45
-                  transition-colors hover:text-red-600
+                  font-tiny mt-3 inline-flex shrink-0 items-center gap-2
+                  text-[10px] font-semibold uppercase tracking-[0.18em] text-white/70
+                  transition-colors hover:text-red-400
                 "
               >
                 <svg
@@ -258,27 +273,6 @@ function GoalCard({
                 </svg>
                 Flip back
               </button>
-            </div>
-
-            {/* RIGHT — image content
-                ↳ Edit `backImage` in the GOALS array for this card's image path
-                   e.g. backImage: '/images/power-quality.webp' */}
-            <div className="w-[38%] shrink-0 overflow-hidden rounded-xl bg-black/5">
-              {goal.backImage ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={goal.backImage}
-                  alt={goal.title}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                /* Placeholder — disappears once backImage is set */
-                <div className="flex h-full items-center justify-center">
-                  <span className="text-[9px] uppercase tracking-widest text-black/20">
-                    Image
-                  </span>
-                </div>
-              )}
             </div>
           </div>
 
@@ -301,34 +295,36 @@ function GoalIcon({ type }: { type: IconKey }) {
   };
 
   switch (type) {
+    // Clean sine waveform — the visual shorthand for clean, regulated power.
     case 'power':
       return (
         <svg {...common}>
-          <rect x="3" y="10" width="22" height="12" rx="1.5" />
-          <path d="M25 14v4" />
-          <path d="M28 15v2" />
-          <path d="M13 13l-2 3h3l-2 3" />
+          <path d="M3 16 q3 -7 6 0 t6 0 t6 0 t6 0" />
+          <path d="M3 24 H29" />
         </svg>
       );
+    // Shield + checkmark — protection / uptime guarantee.
     case 'time':
       return (
         <svg {...common}>
-          <path d="M27 16a11 11 0 1 1-3-7.5" />
-          <path d="M27 5v6h-6" />
+          <path d="M16 3 L27 7 V16 c0 7 -5 12 -11 13 c-6 -1 -11 -6 -11 -13 V7 Z" />
+          <polyline points="11 16 14.5 19.5 21 12.5" />
         </svg>
       );
+    // Dollar sign — direct shorthand for cost savings.
     case 'chart':
       return (
         <svg {...common}>
-          <polyline points="4 22 12 14 17 19 28 8" />
-          <polyline points="20 8 28 8 28 16" />
+          <line x1="16" y1="3" x2="16" y2="29" />
+          <path d="M22 9 c-1.5 -1.5 -3.5 -2 -6 -2 c-3.5 0 -5 2 -5 4 c0 5 11 3 11 8 c0 2 -1.5 4 -5 4 c-2.5 0 -4.5 -0.5 -6 -2" />
         </svg>
       );
+    // Leaf — emissions reduction / sustainability.
     case 'cloud':
       return (
         <svg {...common}>
-          <path d="M22 22H8.5A5.5 5.5 0 0 1 8.5 11h.7A6.5 6.5 0 0 1 21 13.5 4.5 4.5 0 0 1 22 22Z" />
-          <path d="M5 27 27 5" />
+          <path d="M5 27 c0 -13 9 -22 22 -22 c0 13 -9 22 -22 22 z" />
+          <line x1="5" y1="27" x2="22" y2="10" />
         </svg>
       );
   }

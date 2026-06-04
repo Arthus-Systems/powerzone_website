@@ -10,10 +10,13 @@
    ========================================================================== */
 
 :root {
-  --pz-font-display: var(--font-display), 'Bricolage Grotesque', system-ui, sans-serif;
-  --pz-font-ui: var(--font-body), 'Manrope', system-ui, sans-serif;
-  --pz-font-label: var(--font-action), var(--font-body), system-ui, sans-serif;
-  --pz-font-mono: var(--font-mono), ui-monospace, 'JetBrains Mono', monospace;
+  /* Every typography token in the intro resolves to Commissioner so the
+     dashboard, gauges, status pills, schematic readout, footer captions
+     etc. all share one consistent font. */
+  --pz-font-display: var(--font-body), system-ui, sans-serif;
+  --pz-font-ui: var(--font-body), system-ui, sans-serif;
+  --pz-font-label: var(--font-body), system-ui, sans-serif;
+  --pz-font-mono: var(--font-body), system-ui, sans-serif;
 
   --pz-red: #ff070f;
   --pz-red-bright: #ff3b30;
@@ -243,8 +246,16 @@
   min-height: 0;
   min-width: 0;
   display: grid;
-  grid-template-rows: 1.32fr 0.9fr 0.98fr;
-  gap: clamp(8px, 1.3vh, 18px);
+  /* Three-way balance:
+     - top (1.10fr) carries grill + ignition + data panel
+     - middle (0.95fr) carries the gauge row; tall enough that the SVG
+       cap of 13vh leaves room for the per-gauge label underneath
+     - bottom (1.15fr) carries the schematic + 7-row Subsystems list;
+       each subsys row gets ~24 px at 720p and ~19 px at 600p, both
+       comfortably above the 14-17 px icon size
+     Sum (3.20fr) unchanged from prior layout. */
+  grid-template-rows: 1.10fr 0.95fr 1.15fr;
+  gap: clamp(6px, 1vh, 14px);
   padding-top: clamp(2px, 0.4vh, 6px);
 }
 .pz-row { min-height: 0; min-width: 0; }
@@ -283,14 +294,14 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 .pz-panel--pad {
-  padding: clamp(8px, 1.4vh, 18px) clamp(10px, 1.1vw, 22px);
+  padding: clamp(6px, 1vh, 14px) clamp(10px, 1.1vw, 22px);
   display: flex;
   flex-direction: column;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
 }
-.pz-panel__head { margin-bottom: clamp(6px, 1vh, 14px); white-space: nowrap; }
+.pz-panel__head { margin-bottom: clamp(4px, 0.7vh, 10px); white-space: nowrap; }
 
 /* -- TOP ROW · DATA PANEL (metrics | health) ------------------------------- */
 .pz-col-data {
@@ -493,8 +504,10 @@
   animation: pzPromptPulse 1.8s ease-in-out infinite;
 }
 .pz-ign__prompt--active {
-  color: var(--pz-fg-3);
-  animation: none;
+  /* Same red as the idle prompt — kept lit through the cinematic so the
+     button copy reads "Initiating…" until the dashboard slides away. */
+  color: var(--pz-red-bright);
+  animation: pzPromptPulse 1.8s ease-in-out infinite;
 }
 .pz-ign__prompt .pz-ign__arrow {
   display: inline-block;
@@ -588,7 +601,11 @@
   width: auto;
   height: 100%;
   max-width: 100%;
-  max-height: clamp(108px, 19.2vh, 216px);
+  /* SVG cap restored close to its original generous values
+     (was 19.2vh, 216px). 18vh ≈ 130px at 720p and ~108px at 600p, both
+     still leaving guaranteed room for the per-gauge label underneath
+     after panel + per-gauge padding are subtracted. */
+  max-height: clamp(100px, 18vh, 210px);
 }
 .pz-gauge__label {
   margin-top: 2px;
@@ -689,6 +706,9 @@
   max-height: 100%;
   object-fit: contain;
   opacity: 0.9;
+  /* Blueprint scaled 5% larger relative to its frame (the card itself is
+     unchanged). transform-origin defaults to center so it grows in place. */
+  transform: scale(1.05);
   filter: brightness(0.85) drop-shadow(0 0 1px rgba(255, 255, 255, 0.2));
   transition: filter 1s ease;
 }
@@ -707,28 +727,33 @@
   color: var(--pz-fg-4);
 }
 
-/* subsystems list */
+/* subsystems list — 7 rows that MUST fit the bottom-row panel at any
+   aspect ratio. Distribute available vertical space evenly with flex, and
+   keep per-row chrome minimal (compact padding, smaller icon column). */
 .pz-subsys {
   display: flex;
   flex-direction: column;
   height: 100%;
-  justify-content: space-between;
-  gap: 2px;
+  gap: 0;
   min-height: 0;
   overflow: hidden;
 }
 .pz-subsys__row {
   display: grid;
-  grid-template-columns: clamp(16px, 1.6vw, 26px) 1fr auto;
+  grid-template-columns: clamp(12px, 1.2vw, 18px) 1fr auto;
   align-items: center;
-  gap: clamp(8px, 0.8vw, 14px);
-  padding: clamp(2px, 0.5vh, 8px) 0;
+  gap: clamp(6px, 0.7vw, 12px);
+  /* Each row is given an equal share of the panel's vertical space via
+     flex:1 — no fixed padding, so the row never overflows on short
+     viewports. The border still gives visual rhythm. */
+  flex: 1 1 0;
+  min-height: 0;
   border-bottom: 1px solid var(--pz-line);
 }
 .pz-subsys__row:last-child { border-bottom: none; }
 .pz-subsys__icon {
-  width: clamp(14px, 1.5vw, 22px);
-  height: clamp(14px, 1.5vw, 22px);
+  width: clamp(11px, 1.2vw, 17px);
+  height: clamp(11px, 1.2vw, 17px);
   color: var(--pz-red-bright);
   opacity: 0.92;
 }

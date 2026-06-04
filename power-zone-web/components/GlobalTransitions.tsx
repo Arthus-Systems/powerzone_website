@@ -177,6 +177,36 @@ export default function GlobalTransitions({
     return () => window.removeEventListener('pz:runRadial', handler);
   }, []);
 
+  // Imperative API — directional CURTAIN variant. Same flavour as the
+  // navbar curtain (enters from a chosen edge, covers, retreats to the
+  // same edge), but for in-page state swaps that should feel directional
+  // instead of radial — e.g. Generators ↔ BESS on the products page,
+  // where the direction encodes which catalog is taking over.
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const ce = e as CustomEvent<{
+        from: 'left' | 'right';
+        onCovered: () => void;
+        onDone?: () => void;
+      }>;
+      const detail = ce.detail;
+      if (!detail) return;
+      if (lockedRef.current) return;
+      lockedRef.current = true;
+      runCurtainCallback(
+        detail.from,
+        detail.onCovered,
+        setState,
+        () => {
+          lockedRef.current = false;
+          detail.onDone?.();
+        },
+      );
+    };
+    window.addEventListener('pz:runCurtain', handler);
+    return () => window.removeEventListener('pz:runCurtain', handler);
+  }, []);
+
   return (
     <>
       {children}
@@ -265,6 +295,31 @@ function runRadialCallback(
       });
     });
   }, RADIAL_MS + 40);
+}
+
+/** Directional curtain variant for in-page state swaps. Curtain enters
+ * from the given edge, fully covers the viewport, runs `onCovered` (so
+ * the caller can flip state out of sight), then retreats to the same
+ * edge — mirroring the navbar's curtain motion. */
+function runCurtainCallback(
+  from: 'left' | 'right',
+  onCovered: () => void,
+  setState: (s: State) => void,
+  done: () => void,
+) {
+  setState({ kind: 'curtain', phase: 'covering', from });
+  window.setTimeout(() => {
+    onCovered();
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setState({ kind: 'curtain', phase: 'uncovering', from });
+        window.setTimeout(() => {
+          setState({ kind: 'idle' });
+          done();
+        }, CURTAIN_MS + 60);
+      });
+    });
+  }, CURTAIN_MS + 40);
 }
 
 // ─── Overlays ──────────────────────────────────────────────────────────

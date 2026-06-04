@@ -36,9 +36,11 @@ export default function GrillWindow({
         />
         <div className="pz-grill__scan" />
       </div>
+      {/* Matches the schematic readout below — same physical machine
+          (FPT C13 TE3A, 442 kVA ESP) referenced from both spots. */}
       <div className="pz-grill__tag">
-        <span className="pz-grill__model">PZ&nbsp;·&nbsp;PZPT&nbsp;750</span>
-        <span className="pz-grill__sub">Standby Genset</span>
+        <span className="pz-grill__model">PZ&nbsp;·&nbsp;FPT&nbsp;C13&nbsp;TE3A</span>
+        <span className="pz-grill__sub">442&nbsp;kVA Standby Genset</span>
       </div>
     </div>
   );

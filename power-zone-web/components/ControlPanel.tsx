@@ -26,7 +26,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { RotateCcw, ChevronsRight } from 'lucide-react';
+import { ChevronsRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 import Navbar from '@/components/Navbar';
@@ -70,14 +70,25 @@ const DIESEL_SFX = '/diesel-start.mp3';
 // recording naturally tails off across the whole transition.
 const DIESEL_FADE_DURATION = 4500;
 
+/* Operating point for an FPT C13 TE3A (12.9L inline-6, 1500 rpm @ 50 Hz,
+ * 442 kVA standby / 354 kWe ESP) running at ~72% load. All seven values
+ * are internally consistent at this operating point and within realistic
+ * operating bands for a healthy diesel genset:
+ *   - power     = 0.72 × 354 kWe ≈ 255 kW
+ *   - voltage   = 400 V (3-phase line-to-line, standard genset output)
+ *   - current   = 0.72 × (442 kVA / (√3 × 400 V)) ≈ 460 A
+ *   - frequency = 50.0 Hz (1500 rpm)
+ *   - fuel      = 92% (typical, slightly below full)
+ *   - load      = 72%
+ *   - coolant   = 85°C (normal operating range is 82–95°C) */
 const NOMINAL: Readings = {
-  power: 332,
+  power: 255,
   voltage: 400,
-  current: 480,
+  current: 460,
   frequency: 50,
-  fuel: 100,
+  fuel: 92,
   load: 72,
-  coolant: 84,
+  coolant: 85,
 };
 const ZEROS: Readings = {
   power: 0,
@@ -96,10 +107,9 @@ const MESH_SRC = '/images/mesh_grill.png';
 
 export type ControlPanelProps = {
   onHero?: () => void;
-  onReset?: () => void;
 };
 
-export default function ControlPanel({ onHero, onReset }: ControlPanelProps) {
+export default function ControlPanel({ onHero }: ControlPanelProps) {
   const [phase, setPhase] = useState<Phase>('idle');
   const [chevrons, setChevrons] = useState<number>(0);
   const [readings, setReadings] = useState<Readings>(ZEROS);
@@ -180,6 +190,8 @@ export default function ControlPanel({ onHero, onReset }: ControlPanelProps) {
     const heroV = viewportVideoRef.current;
     if (heroV) {
       try { heroV.currentTime = 0; } catch {}
+      // Play the reveal video at 1.5x for a snappier handoff into the hero.
+      heroV.playbackRate = 1.5;
       heroV.play().catch(() => {});
     }
     setPhase('revealing');
@@ -217,31 +229,6 @@ export default function ControlPanel({ onHero, onReset }: ControlPanelProps) {
     });
     timers.current.push(window.setTimeout(() => setPhase('online'), 1950));
   }, [phase]);
-
-  const reset = useCallback((): void => {
-    clearTimers();
-    const heroVid = viewportVideoRef.current;
-    if (heroVid) {
-      heroVid.pause();
-      try {
-        heroVid.currentTime = 0;
-      } catch {
-        /* some browsers throw if metadata isn't loaded yet — harmless */
-      }
-    }
-    const diesel = dieselAudioRef.current;
-    if (diesel) {
-      diesel.pause();
-      try { diesel.currentTime = 0; } catch {}
-      diesel.volume = 1;
-    }
-    setPhase('idle');
-    setChevrons(0);
-    setReadings(ZEROS);
-    setVideoEnded(false);
-    heroShownRef.current = false;
-    onReset?.();
-  }, [clearTimers, onReset]);
 
   /* Skip the cinematic by jumping the viewport video near its end. */
   const skip = useCallback((): void => {
@@ -338,15 +325,17 @@ export default function ControlPanel({ onHero, onReset }: ControlPanelProps) {
               </div>
             </section>
 
-            {/* MIDDLE ROW — gauges */}
+            {/* MIDDLE ROW — gauges. Ranges match the FPT C13 TE3A operating
+                envelope: 0–500 V on a 400 V genset, 47–53 Hz around 50 Hz
+                nominal, 0–100% load, 0–120°C coolant (normal band 82–95°C). */}
             <section className="pz-row pz-row--gauges pz-panel pz-fade-out">
               <Gauge label="Voltage" unit="V" value={readings.voltage} max={500} />
               <Gauge
                 label="Frequency"
                 unit="Hz"
                 value={readings.frequency}
-                min={45}
-                max={65}
+                min={47}
+                max={53}
               />
               <FuelGauge value={readings.fuel} />
               <Gauge label="Load" unit="%" value={readings.load} max={100} />
@@ -372,12 +361,6 @@ export default function ControlPanel({ onHero, onReset }: ControlPanelProps) {
             <Footer />
           </div>
 
-          {online && (
-            <button type="button" className="pz-reset" onClick={reset}>
-              <RotateCcw strokeWidth={1.5} />
-              Reset to standby
-            </button>
-          )}
           {phase === 'revealing' && (
             <button type="button" className="pz-skip" onClick={skip}>
               Skip&nbsp;intro <ChevronsRight strokeWidth={1.5} />

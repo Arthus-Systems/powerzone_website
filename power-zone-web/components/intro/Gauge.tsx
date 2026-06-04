@@ -92,7 +92,21 @@ export default function Gauge({
             <stop offset="48%" stopColor="#16181b" />
             <stop offset="100%" stopColor="#000" />
           </linearGradient>
-          <filter id={`glow${uid}`} x="-60%" y="-60%" width="220%" height="220%">
+          {/* filterUnits=userSpaceOnUse + the gauge's full coordinate box so
+              the glow region never collapses. The default objectBoundingBox
+              units derive the filter region from the source element's bbox —
+              for a perfectly axis-aligned line (e.g. needle at exactly 0°/
+              90°/180°/270°/360°), the bbox width or height is zero, and
+              some browsers then render nothing. Using user-space units
+              makes the region independent of the needle's orientation. */}
+          <filter
+            id={`glow${uid}`}
+            filterUnits="userSpaceOnUse"
+            x="0"
+            y="0"
+            width={size}
+            height={size}
+          >
             <feGaussianBlur stdDeviation="2.4" result="b" />
             <feMerge>
               <feMergeNode in="b" />

@@ -37,7 +37,7 @@ export default function Subsystems({ online }: SubsystemsProps) {
     <div className="pz-subsys">
       {SUBSYSTEMS.map(({ Icon, label }) => (
         <div className="pz-subsys__row" key={label}>
-          <Icon size={19} className="pz-subsys__icon" />
+          <Icon size={16} className="pz-subsys__icon" />
           <span className="pz-subsys__label pz-field-label">{label}</span>
           <span className={'pz-status ' + (online ? 'pz-status--on' : 'pz-status--off')}>
             {online ? 'Online' : 'Offline'}

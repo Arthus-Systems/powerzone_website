@@ -86,15 +86,22 @@ export default function Home() {
         <ControlPanel onHero={handleIntroComplete} />
       ) : (
         <>
-      {/* Hero + PeekProducts share a 200vh wrapper. PeekProducts is
+      {/* Hero + PeekProducts share a 280vh wrapper. PeekProducts is
           sticky-pinned (z-0) so it stays "behind" the hero for the full
-          100vh sticky range. The hero (z-10) is absolutely positioned at
-          the wrapper's top, so it scrolls upward naturally with the page,
-          appearing to slide off and reveal PeekProducts. At scroll 100vh,
-          PeekProducts unsticks and continues into normal flow — meaning
-          the user genuinely lands ON PeekProducts (not past it) before
-          scrolling further into SolutionsSection. */}
-      <div className="relative" style={{ height: '200vh' }}>
+          180vh sticky range (wrapper_height − sticky_child_height). The
+          hero (z-10) is absolutely positioned at the wrapper's top, so it
+          scrolls upward naturally with the page, appearing to slide off
+          and reveal PeekProducts.
+
+          Scroll budget:
+            0   → 100vh : hero scrolls up, PeekProducts is revealed
+            100 → 180vh : PEEK PAUSE — PeekProducts stays pinned, nothing
+                          else moves. This is the "tiny pause" so the user
+                          actually lands on it before the page continues
+                          toward SolutionsSection
+            180 → 280vh : PeekProducts un-sticks and scrolls up; below the
+                          wrapper, SolutionsSection enters the viewport */}
+      <div className="relative" style={{ height: '280vh' }}>
         <div className="sticky top-0 z-0 h-screen">
           <PeekProductsSection />
         </div>

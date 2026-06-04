@@ -12,11 +12,17 @@ type Props = {
 };
 
 export default function IgnitionButton({ armed, running, onPress, offSrc, pressedSrc, onSrc }: Props) {
-  const idle = !armed && !running;
   const [pressedFlash, setPressedFlash] = useState(false);
+  // Latched once the button is pressed and never reset by parent phase
+  // transitions. Without this, the prompt would flip back from
+  // "Initiating…" to "Press to initiate transfer" once the parent moves
+  // past 'online' into 'revealing' (where both armed + running are false).
+  const [hasBeenPressed, setHasBeenPressed] = useState(false);
+  const idle = !hasBeenPressed && !armed && !running;
 
   const handleClick = () => {
     if (!idle) return;
+    setHasBeenPressed(true);
     setPressedFlash(true);
     onPress();
     window.setTimeout(() => setPressedFlash(false), 500);
@@ -30,11 +36,11 @@ export default function IgnitionButton({ armed, running, onPress, offSrc, presse
       <div className={`pz-ign__prompt ${idle ? 'pz-ign__prompt--idle' : 'pz-ign__prompt--active'}`} aria-hidden="true">
         {idle ? (
           <>
-            Press to initiate transfer
+            Press to Enter Website
             <span className="pz-ign__arrow">↓</span>
           </>
         ) : (
-          'Transfer in progress'
+          'Initiating…'
         )}
       </div>
       <button type="button" className={`pz-ign__btn ${stateClass}`} onClick={handleClick} aria-label="Initiate transfer">
