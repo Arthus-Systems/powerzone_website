@@ -45,7 +45,21 @@ export default function IgnitionButton({ armed, running, onPress, offSrc, presse
       </div>
       <button type="button" className={`pz-ign__btn ${stateClass}`} onClick={handleClick} aria-label="Initiate transfer">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="pz-ign__plate" src={src} alt="" draggable={false} />
+        {/* LCP candidate inside the cinematic — Lighthouse flagged this image
+            as the largest paint. fetchpriority="high" tells the browser to
+            prioritize this download over other deferred assets; loading
+            stays "eager" (the default) since lazy-loading the LCP element
+            is counter-productive. Applies only when the cinematic is
+            mounted, i.e. fresh desktop visits — returning/mobile visitors
+            don't pay this cost. */}
+        <img
+          className="pz-ign__plate"
+          src={src}
+          alt=""
+          draggable={false}
+          loading="eager"
+          fetchPriority="high"
+        />
         <span className="pz-ign__lit" />
         <span className="pz-ign__ring" />
       </button>

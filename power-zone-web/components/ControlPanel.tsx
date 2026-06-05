@@ -122,12 +122,12 @@ export default function ControlPanel({ onHero }: ControlPanelProps) {
   const heroShownRef = useRef<boolean>(false);
   const dieselAudioRef = useRef<HTMLAudioElement | null>(null);
 
+  // Cleanup-only: pause whatever Audio object exists when the cinematic
+  // unmounts. Construction is deferred to `arm()` below so users who never
+  // press the ignition never download the ~700KB MP3.
   useEffect(() => {
-    const diesel = new Audio(DIESEL_SFX);
-    diesel.preload = 'auto';
-    dieselAudioRef.current = diesel;
     return () => {
-      diesel.pause();
+      dieselAudioRef.current?.pause();
     };
   }, []);
 
@@ -213,14 +213,19 @@ export default function ControlPanel({ onHero }: ControlPanelProps) {
    * (250ms then +300ms each), then promotes to 'online' at 1950ms. */
   const arm = useCallback((): void => {
     if (phase !== 'idle') return;
-    const diesel = dieselAudioRef.current;
-    if (diesel) {
-      diesel.currentTime = 0;
-      diesel.volume = 1;
-      diesel.play().catch(() => {
-        /* Browser autoplay policy or Low Power Mode may block this — non-fatal. */
-      });
+    // Lazy-construct the diesel Audio on first press so we don't ship the
+    // ~700KB MP3 on mount. Subsequent presses (e.g. after reset) re-use it.
+    let diesel = dieselAudioRef.current;
+    if (!diesel) {
+      diesel = new Audio(DIESEL_SFX);
+      diesel.preload = 'auto';
+      dieselAudioRef.current = diesel;
     }
+    diesel.currentTime = 0;
+    diesel.volume = 1;
+    diesel.play().catch(() => {
+      /* Browser autoplay policy or Low Power Mode may block this — non-fatal. */
+    });
     setPhase('arming');
     [0, 1, 2, 3, 4].forEach((i) => {
       timers.current.push(
@@ -271,6 +276,12 @@ export default function ControlPanel({ onHero }: ControlPanelProps) {
         className={'pz-canvas' + (revealing ? ' is-revealing' : '') + (phase === 'hero' ? ' is-hero' : '')}
       >
         {/* viewport video at z-0, behind the dashboard */}
+        {/* preload="metadata" downloads only the MP4 header (~10KB) so the
+            browser knows duration/dimensions for instant playability
+            decisions, but defers the ~740KB body until startReveal() calls
+            heroV.play(). The cinematic's ~3.4s value-ramp + arming window
+            (REVEAL_DELAY) before play kicks off gives the browser ample
+            time to buffer enough video for smooth playback. */}
         <video
           ref={viewportVideoRef}
           className="pz-viewport-video absolute inset-0 z-0 w-full h-full object-cover [transition:opacity_2000ms_ease-out]"
@@ -279,7 +290,7 @@ export default function ControlPanel({ onHero }: ControlPanelProps) {
           poster="/poweron_final_frame.webp"
           muted
           playsInline
-          preload="auto"
+          preload="metadata"
           onEnded={handleVideoEnded}
           aria-hidden="true"
         />
