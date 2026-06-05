@@ -10,7 +10,7 @@ import TiltedCard from './ui/TiltedCard';
 // than crowding the section header.
 export default function PeekProductsSection() {
   return (
-    <section className="relative flex min-h-screen flex-col items-center overflow-hidden bg-[#F4EFE7] px-6 md:px-12 py-[clamp(28px,5vh,72px)]">
+    <section className="relative flex min-h-screen flex-col items-center overflow-hidden bg-[#F4EFE7] px-4 sm:px-6 md:px-12 py-12 lg:py-[clamp(28px,5vh,72px)]">
       {/* Soft brand-accent glow in the top-right corner */}
       <div
         aria-hidden
@@ -162,7 +162,7 @@ function CredentialCard({
   tagline: string;
 }) {
   return (
-    <div className="group flex items-center gap-4 md:gap-5 rounded-2xl border border-black/15 bg-black/[0.02] px-5 py-3.5 md:px-6 md:py-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-black/30 hover:bg-black/[0.04] hover:shadow-[0_10px_28px_rgba(0,0,0,0.08)]">
+    <div className="group flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 md:gap-5 rounded-2xl border border-black/15 bg-black/[0.02] px-4 py-3 sm:px-5 sm:py-3.5 md:px-6 md:py-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-black/30 hover:bg-black/[0.04] hover:shadow-[0_10px_28px_rgba(0,0,0,0.08)]">
       <div className="flex shrink-0 flex-col items-start gap-1.5">
         <div className="flex items-center gap-2.5">
           <span
@@ -177,8 +177,8 @@ function CredentialCard({
           {credential}
         </span>
       </div>
-      <div aria-hidden className="h-9 w-px shrink-0 bg-black/15" />
-      <p className="font-body text-[clamp(11px,1.4vh,13px)] leading-snug text-black/65">
+      <div aria-hidden className="hidden sm:block h-9 w-px shrink-0 bg-black/15" />
+      <p className="font-body text-[12px] sm:text-[clamp(11px,1.4vh,13px)] leading-snug text-black/65">
         {tagline}
       </p>
     </div>

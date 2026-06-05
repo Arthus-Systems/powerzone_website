@@ -228,6 +228,25 @@ const NAV_COOLDOWN_MS = 800;
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function ApplicationsIndustries() {
+  return (
+    <>
+      {/* Desktop (lg+): wheel-driven sticky cinematic */}
+      <div className="hidden lg:block">
+        <DesktopCinematic />
+      </div>
+      {/* Mobile / tablet (<lg): plain vertical scroll */}
+      <div className="lg:hidden">
+        <MobileIndustryStack />
+      </div>
+    </>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DesktopCinematic — the original wheel-pinned 5-panel show, lg+ only
+// ─────────────────────────────────────────────────────────────────────────────
+
+function DesktopCinematic() {
   const N = INDUSTRIES.length;
 
   const [activeIndex, setActiveIndex] = useState(0);
@@ -283,6 +302,10 @@ export default function ApplicationsIndustries() {
     if (!outer) return;
 
     const onWheel = (e: WheelEvent) => {
+      // Extra safety: do nothing below the lg breakpoint. The mobile stack
+      // is rendered separately and should scroll naturally.
+      if (window.innerWidth < 1024) return;
+
       const rect = outer.getBoundingClientRect();
       const vh   = window.innerHeight;
 
@@ -610,5 +633,101 @@ function IndustrySlide({
         </motion.div>
       </div>
     </section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MobileIndustryStack — <lg fallback: plain vertical list of industries
+// ─────────────────────────────────────────────────────────────────────────────
+// No GSAP, no sticky pin, no wheel interception. Each industry renders as a
+// natural-flow section with the image stacked above the description so a
+// touch user can simply swipe-scroll through the whole list.
+
+function MobileIndustryStack() {
+  return (
+    <div className="relative bg-[#F4EFE7]">
+      {INDUSTRIES.map((industry) => (
+        <section
+          key={industry.id}
+          aria-label={industry.label}
+          className="relative flex w-full flex-col"
+          style={{ backgroundColor: '#F4EFE7' }}
+        >
+          {/* Image on top */}
+          <div className="relative w-full overflow-hidden">
+            {industry.imageSrc ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={industry.imageSrc}
+                alt={industry.label}
+                className="h-[42vh] w-full object-cover sm:h-[50vh]"
+              />
+            ) : (
+              <div className="flex h-[42vh] w-full items-center justify-center bg-zinc-200/80 sm:h-[50vh]">
+                <span className="select-none font-tiny text-[10px] uppercase tracking-[0.3em] text-zinc-400">
+                  {industry.placeholder}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Description below, with per-industry tint */}
+          <div
+            className="relative w-full px-5 py-10 sm:px-8 sm:py-12"
+            style={{ backgroundColor: industry.tint || '#F4EFE7' }}
+          >
+            <p className="font-tiny text-[11px] font-semibold uppercase tracking-[0.32em] text-red-600">
+              {industry.label}
+            </p>
+
+            <h2 className="mt-3 font-heading text-[clamp(22px,6vw,30px)] font-bold leading-[1.15] tracking-tight text-[#1A1A1A]">
+              {industry.headline}
+            </h2>
+
+            <p className="mt-3 font-body text-[14px] leading-relaxed text-[#555] sm:text-[15px]">
+              {industry.description}
+            </p>
+
+            <div className="mt-6 flex flex-col gap-2.5">
+              {industry.benefits.map((benefit, bi) => (
+                <div
+                  key={bi}
+                  className="flex items-center gap-3 rounded-xl bg-white px-4 py-3.5 shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
+                >
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-50">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#D93025"
+                      strokeWidth={1.75}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-5 w-5"
+                      aria-hidden
+                    >
+                      <path d={benefit.iconPath} />
+                    </svg>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-heading text-[14px] font-bold leading-tight text-[#1A1A1A]">
+                      {benefit.stat}
+                    </p>
+                    <p className="mt-0.5 font-body text-[11px] leading-snug text-[#888]">
+                      {benefit.label}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-7 text-black">
+              <InteractiveHoverButton href="/contact">
+                Contact Sales
+              </InteractiveHoverButton>
+            </div>
+          </div>
+        </section>
+      ))}
+    </div>
   );
 }

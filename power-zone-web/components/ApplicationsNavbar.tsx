@@ -11,8 +11,19 @@ import Navbar from '@/components/Navbar';
  */
 export default function ApplicationsNavbar() {
   useEffect(() => {
-    document.documentElement.style.scrollSnapType = 'y proximity';
+    // Snap is only useful for the lg+ wheel cinematic. On mobile the
+    // industries render as a plain vertical list with no snap targets,
+    // so scope this to desktop widths only.
+    const mq = window.matchMedia('(min-width: 1024px)');
+    const apply = () => {
+      document.documentElement.style.scrollSnapType = mq.matches
+        ? 'y proximity'
+        : '';
+    };
+    apply();
+    mq.addEventListener('change', apply);
     return () => {
+      mq.removeEventListener('change', apply);
       document.documentElement.style.scrollSnapType = '';
     };
   }, []);

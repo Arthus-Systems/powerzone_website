@@ -43,7 +43,7 @@ export default function ContactExperience() {
       <main
         className="
           relative z-10 flex min-h-screen flex-col
-          px-6 pb-10 pt-32 md:px-10
+          px-6 pb-10 pt-24 md:px-10
           lg:h-screen lg:px-16 lg:pb-12 lg:pt-32
         "
       >

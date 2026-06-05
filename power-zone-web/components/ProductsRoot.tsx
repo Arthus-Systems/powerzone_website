@@ -44,6 +44,7 @@ import {
 import Navbar from "./Navbar";
 import ProductExperience from "./ProductExperience";
 import ProductNav from "./ProductNav";
+import MobileProductsList from "./MobileProductsList";
 
 const CATEGORIES: ReadonlyArray<{
   id: string;
@@ -114,6 +115,12 @@ function CategorySwitch({
 }) {
   const [hidden, setHidden] = useState(false);
   useEffect(() => {
+    // Below lg we render MobileProductsList instead of the cinematic
+    // ProductExperience — there's no detail phase to react to, so don't
+    // subscribe (and don't risk this transform hiding the switch on mobile).
+    if (typeof window === "undefined") return;
+    const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
+    if (!isDesktop) return;
     const handler = (e: Event) => {
       const ce = e as CustomEvent<{ phase: "showcase" | "detail" }>;
       setHidden(ce.detail?.phase === "detail");
@@ -241,17 +248,31 @@ export default function ProductsRoot() {
         onChange={setCategoryId}
       />
 
-      {/* Brand quick-links — keyed on category so the buttons re-mount
-       * when the active catalog changes. ProductNav handles its own
-       * phase-driven swipe internally so it doesn't need a wrapper. */}
-      <ProductNav key={`nav-${categoryId}`} products={active.items} />
+      {/* Desktop (lg+) — the cinematic, wheel-driven split-screen showcase
+       * plus the GSAP horizontal-scroll detail layer. Wrapped in a
+       * `hidden lg:block` so it never mounts on touch viewports (where
+       * the wheel choreography is hostile to use). ProductNav is folded
+       * into the same wrapper because it's coupled to the showcase. */}
+      <div className="hidden lg:block">
+        {/* Brand quick-links — keyed on category so the buttons re-mount
+         * when the active catalog changes. ProductNav handles its own
+         * phase-driven swipe internally so it doesn't need a wrapper. */}
+        <ProductNav key={`nav-${categoryId}`} products={active.items} />
 
-      <ProductExperience
-        key={categoryId}
-        products={active.items}
-        initialIdx={initialIdx}
-        onActiveChange={handleActiveChange}
-      />
+        <ProductExperience
+          key={categoryId}
+          products={active.items}
+          initialIdx={initialIdx}
+          onActiveChange={handleActiveChange}
+        />
+      </div>
+
+      {/* Mobile (<lg) — a plain vertical list. Same product data, no
+       * GSAP/Lenis/scroll-pinning. The CategorySwitch above still drives
+       * which catalog is shown. */}
+      <div className="lg:hidden">
+        <MobileProductsList key={`mobile-${categoryId}`} products={active.items} />
+      </div>
     </>
   );
 }

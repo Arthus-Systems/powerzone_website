@@ -52,7 +52,7 @@ export default function BlogIndex() {
       <main
         className="
           relative z-10 mx-auto w-full max-w-[1400px]
-          px-6 pb-24 pt-32 md:px-10 lg:px-16
+          px-6 pb-24 pt-24 md:px-10 md:pt-32 lg:px-16
         "
       >
         {/* Hero */}

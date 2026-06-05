@@ -55,7 +55,12 @@ export default function Home() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const seen = sessionStorage.getItem(INTRO_SEEN_KEY) === 'true';
-    if (seen) setIntroDone(true);
+    // Skip the cinematic intro at sub-lg widths. ControlPanel is a
+    // desktop-only experience (mouse-driven gauge interactions, fixed
+    // 16:9-ish layout) and on mobile it would either crash, misalign,
+    // or just confuse the user. Mobile users land straight on the hero.
+    const isMobile = window.innerWidth < 1024;
+    if (seen || isMobile) setIntroDone(true);
     setFirstVisitChecked(true);
   }, []);
 
@@ -96,12 +101,83 @@ export default function Home() {
         <ControlPanel onHero={handleIntroComplete} />
       ) : (
         <>
-      {/* Hero + PeekProducts share a 280vh wrapper. PeekProducts is
-          sticky-pinned (z-0) so it stays "behind" the hero for the full
-          180vh sticky range (wrapper_height − sticky_child_height). The
-          hero (z-10) is absolutely positioned at the wrapper's top, so it
-          scrolls upward naturally with the page, appearing to slide off
-          and reveal PeekProducts.
+      {/* Mobile (<lg): hero and PeekProducts render as plain stacked
+          sections. The vh-based sticky cinematic below this block is
+          desktop-only — on mobile browsers, 100vh fluctuates as the URL
+          bar hides/shows, which breaks the sticky pin and the absolute-
+          inside-sticky layering. The mobile fallback is the same hero
+          chrome (navbar + heading + paragraph) sized for narrower viewports
+          and followed by PeekProductsSection scrolling normally below. */}
+      <div className="block lg:hidden">
+        <div className="relative h-screen w-full overflow-hidden bg-black">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={INTRO_END_FRAME}
+            alt=""
+            draggable={false}
+            className="absolute inset-0 z-0 h-full w-full object-cover"
+            style={{ opacity: 0.6 }}
+          />
+
+          <motion.div
+            initial={{ opacity: 0, y: -48 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.9, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute left-0 right-0 top-0 z-[90]"
+          >
+            <Navbar />
+          </motion.div>
+
+          <motion.div
+            variants={HERO_CONTAINER_VARIANTS}
+            initial="hidden"
+            animate="show"
+            className="pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-center px-6 text-center"
+          >
+            <motion.h1
+              variants={HERO_ITEM_VARIANTS}
+              className="font-heading mt-5 font-semibold leading-[1.05] text-[clamp(30px,8vw,52px)] tracking-[-0.02em] text-white [text-shadow:0_2px_18px_rgba(0,0,0,0.55)]"
+            >
+              Diesel Generators
+              <br />
+              by Power Zone
+            </motion.h1>
+            <motion.p
+              variants={HERO_ITEM_VARIANTS}
+              className="font-tiny mt-5 text-[12px] sm:text-[14px] font-bold uppercase tracking-[0.28em] text-white/90 [text-shadow:0_1px_4px_rgba(0,0,0,0.7)]"
+            >
+              Reliable Backup Power
+            </motion.p>
+          </motion.div>
+
+          <motion.p
+            variants={HERO_ITEM_VARIANTS}
+            initial="hidden"
+            animate="show"
+            transition={{ delay: 0.95 }}
+            className="
+              font-body
+              pointer-events-none absolute left-1/2 bottom-[clamp(32px,8vh,96px)]
+              -translate-x-1/2 z-20
+              w-[min(36rem,92vw)] px-4 text-center
+              text-[12px] sm:text-[14px] leading-relaxed text-white/75
+              [text-shadow:0_1px_4px_rgba(0,0,0,0.7)]
+            "
+          >
+            Power Zone delivers high performance diesel generators and
+            advanced battery energy storage systems, ensuring uninterrupted
+            power for industries across Pakistan.
+          </motion.p>
+        </div>
+        <PeekProductsSection />
+      </div>
+
+      {/* Desktop (lg+): Hero + PeekProducts share a 280vh wrapper.
+          PeekProducts is sticky-pinned (z-0) so it stays "behind" the
+          hero for the full 180vh sticky range (wrapper_height −
+          sticky_child_height). The hero (z-10) is absolutely positioned
+          at the wrapper's top, so it scrolls upward naturally with the
+          page, appearing to slide off and reveal PeekProducts.
 
           Scroll budget:
             0   → 100vh : hero scrolls up, PeekProducts is revealed
@@ -111,7 +187,7 @@ export default function Home() {
                           toward SolutionsSection
             180 → 280vh : PeekProducts un-sticks and scrolls up; below the
                           wrapper, SolutionsSection enters the viewport */}
-      <div className="relative" style={{ height: '280vh' }}>
+      <div className="relative hidden lg:block" style={{ height: '280vh' }}>
         <div className="sticky top-0 z-0 h-screen">
           <PeekProductsSection />
         </div>

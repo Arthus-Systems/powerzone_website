@@ -19,7 +19,7 @@ export default function BlogArticle({
       <main
         className="
           relative z-10 mx-auto w-full max-w-[760px]
-          px-6 pb-24 pt-32 md:px-8 md:pt-36
+          px-6 pb-24 pt-24 md:px-8 md:pt-36
         "
       >
         {/* Back link */}
