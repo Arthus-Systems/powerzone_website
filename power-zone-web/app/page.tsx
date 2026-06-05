@@ -44,13 +44,18 @@ const HERO_ITEM_VARIANTS = {
 };
 
 export default function Home() {
-  // Render-gate. Until we've checked sessionStorage we don't know whether the
-  // intro should play, so we paint pure black to avoid flashing the wrong state.
-  const [firstVisitChecked, setFirstVisitChecked] = useState(false);
-  // `introDone` is true when EITHER the user already saw the intro on this
-  // session OR the cinematic has just finished — both paths converge on the
-  // post-intro homepage hero.
-  const [introDone, setIntroDone] = useState(false);
+  // `introDone` defaults to TRUE so the server renders the post-intro hero
+  // (real marketing copy in the SSR HTML — SEO, view-source, no-JS users).
+  // The fresh-desktop-visit case flips it to false in useEffect below, which
+  // mounts the cinematic ControlPanel. The .pz-init-overlay rendered at the
+  // bottom of this return masks the brief gap between hydration and that
+  // decision so the user never perceives the hero before the cinematic.
+  const [introDone, setIntroDone] = useState(true);
+  // Drives the JS-fast-fade of the init overlay. The overlay's CSS has a
+  // safety-net keyframe so it always disappears even if this state never
+  // flips (e.g. JS error); when this flag goes true the overlay fades in
+  // ~350ms instead of waiting for the 1500ms safety delay.
+  const [overlayHiding, setOverlayHiding] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -60,8 +65,25 @@ export default function Home() {
     // 16:9-ish layout) and on mobile it would either crash, misalign,
     // or just confuse the user. Mobile users land straight on the hero.
     const isMobile = window.innerWidth < 1024;
-    if (seen || isMobile) setIntroDone(true);
-    setFirstVisitChecked(true);
+
+    if (!seen && !isMobile) {
+      // Fresh desktop visitor — show the cinematic.
+      setIntroDone(false);
+    } else {
+      // Returning visitor OR any mobile/tablet — stamp the flag so a later
+      // resize to desktop won't re-trigger the intro in the same session.
+      try {
+        sessionStorage.setItem(INTRO_SEEN_KEY, 'true');
+      } catch {
+        /* sessionStorage unavailable — non-fatal */
+      }
+    }
+
+    // Defer the overlay fade by one frame so React's reconciliation has
+    // already painted the new branch (ControlPanel for fresh desktop, hero
+    // for everyone else). The overlay then dissolves to reveal whichever
+    // branch actually mounted.
+    requestAnimationFrame(() => setOverlayHiding(true));
   }, []);
 
   // Scoped scroll-snap — active only while this page is mounted.
@@ -85,14 +107,10 @@ export default function Home() {
     setIntroDone(true);
   };
 
-  if (!firstVisitChecked) {
-    return <div className="w-screen h-screen bg-black" />;
-  }
-
-  // First-visit path: ControlPanel owns the entire viewport, including the
-  // post-intro hero overlay it fades in once the reveal completes.
-  // Return-visit path (or post-intro): static hero atop the end-frame, with
-  // the regular site Navbar and the downstream marketing sections.
+  // First-visit (desktop) path: ControlPanel owns the entire viewport,
+  // including the post-intro hero overlay it fades in once the reveal
+  // completes. Other paths: static hero atop the end-frame, with the
+  // regular site Navbar and the downstream marketing sections.
   // ContactFloatingCTA renders unconditionally as a top-level sibling — its
   // own internal scroll-visibility gate handles when to appear.
   return (
@@ -262,6 +280,18 @@ export default function Home() {
         </>
       )}
       <ContactFloatingCTA />
+
+      {/* SSR-side mask. Lives in the HTML so a fresh desktop visitor never
+          sees the hero "leak through" between hydration and the moment
+          ControlPanel mounts — the overlay covers everything until the
+          useEffect above has decided which branch to show. Has a CSS
+          safety-net keyframe (see globals.css .pz-init-overlay) so it
+          dissolves even if this state setter never fires. aria-hidden +
+          inert so it never traps focus or screen readers even at opacity 1. */}
+      <div
+        aria-hidden
+        className={`pz-init-overlay${overlayHiding ? ' is-hiding' : ''}`}
+      />
     </>
   );
 }

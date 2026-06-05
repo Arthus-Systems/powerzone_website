@@ -72,3 +72,52 @@ body::-webkit-scrollbar {
 
 /* Page transitions are now handled by GlobalTransitions.tsx via
  * framer-motion AnimatePresence — works in every browser. */
+
+/* -----------------------------------------------------------------------------
+ * pz-init-overlay — SSR-side black mask over the homepage.
+ *
+ * Why this exists:
+ *   The homepage's "first visit" decision (cinematic intro vs static post-intro
+ *   hero) can only be made client-side because it depends on sessionStorage +
+ *   viewport width. Without a mask, fresh desktop visitors would briefly see
+ *   the SSR-rendered hero before the cinematic mounts. This overlay lives in
+ *   the SSR HTML, paints opaque on first frame, and dissolves once the page
+ *   has decided which branch to show.
+ *
+ * Two-layer behaviour:
+ *   1. JS-DRIVEN (typical) — page.tsx adds `.is-hiding` once its useEffect
+ *      decides (usually within ~16ms of hydration). 350ms ease-out fade →
+ *      content revealed.
+ *   2. CSS SAFETY NET — if JS never runs (script error, JS disabled, blocked
+ *      bundle), the keyframe animation kicks in at 1500ms and fades over
+ *      650ms anyway. Worst case the user sees content at ~2.15s instead of
+ *      being permanently stranded on a black screen.
+ *
+ * Real content (hero, sections, footer) is in the SSR HTML beneath this
+ * overlay, so View Source + JS-disabled still shows the marketing copy.
+ * -------------------------------------------------------------------------- */
+.pz-init-overlay {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 9999;
+  /* pointer-events: none from the start so a stuck overlay can't trap
+     clicks even before the fade triggers. */
+  pointer-events: none;
+  opacity: 1;
+  /* Safety-net keyframe — fires unconditionally so a JS failure can't
+     leave a permanent black screen. JS overrides this with a faster
+     transition via .is-hiding below. */
+  animation: pz-init-overlay-safety-fade 650ms ease-out 1500ms forwards;
+}
+.pz-init-overlay.is-hiding {
+  /* Higher specificity overrides the keyframe; JS-driven fade is faster
+     so users on the happy path don't perceive the 1500ms safety delay. */
+  animation: pz-init-overlay-js-fade 350ms ease-out forwards;
+}
+@keyframes pz-init-overlay-safety-fade {
+  to { opacity: 0; visibility: hidden; }
+}
+@keyframes pz-init-overlay-js-fade {
+  to { opacity: 0; visibility: hidden; }
+}
