@@ -19,6 +19,10 @@ interface TiltedCardProps {
   showTooltip?: boolean;
   overlayContent?: React.ReactNode;
   displayOverlayContent?: boolean;
+  /** Mark the image as LCP-priority. Adds loading="eager" + fetchPriority="high"
+   *  so the browser starts the download immediately. Use sparingly — only on
+   *  images Lighthouse flags as the LCP candidate. */
+  priority?: boolean;
 }
 
 const springValues: SpringOptions = {
@@ -41,6 +45,7 @@ export default function TiltedCard({
   showTooltip = true,
   overlayContent = null,
   displayOverlayContent = false,
+  priority = false,
 }: TiltedCardProps) {
   const ref = useRef<HTMLElement>(null);
 
@@ -124,6 +129,8 @@ export default function TiltedCard({
           src={imageSrc as string}
           alt={altText}
           className="tilted-card-img"
+          loading={priority ? 'eager' : 'lazy'}
+          fetchPriority={priority ? 'high' : 'auto'}
           style={{
             width: imageWidth,
             height: imageHeight,

@@ -54,6 +54,12 @@ export default function PeekProductsSection() {
               showMobileWarning={false}
               showTooltip={false}
               displayOverlayContent={true}
+              // Lighthouse-flagged LCP candidate. Setting priority adds
+              // loading="eager" + fetchPriority="high" so the browser starts
+              // this download immediately rather than treating it as
+              // viewport-lazy. Combined with the resized image (1.9MB → 65KB)
+              // this should clear the LCP audit cleanly.
+              priority
               overlayContent={
                 <div className="flex h-full w-full flex-col justify-end">
                   <div className="bg-gradient-to-t from-black/95 via-black/70 to-transparent px-6 pt-24 pb-7">

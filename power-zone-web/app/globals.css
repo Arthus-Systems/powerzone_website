@@ -115,9 +115,15 @@ body::-webkit-scrollbar {
      so users on the happy path don't perceive the 1500ms safety delay. */
   animation: pz-init-overlay-js-fade 350ms ease-out forwards;
 }
+/* Compositor-only keyframes — only `opacity` animates so the browser can
+   promote the overlay to its own layer and run the fade on the GPU
+   without touching layout. (Lighthouse "non-composited animations" warning
+   flagged the earlier `visibility` property here as a CLS risk; pointer-
+   events is already none on the base class, and opacity:0 is enough to
+   make the element non-interactive once forwards-filled.) */
 @keyframes pz-init-overlay-safety-fade {
-  to { opacity: 0; visibility: hidden; }
+  to { opacity: 0; }
 }
 @keyframes pz-init-overlay-js-fade {
-  to { opacity: 0; visibility: hidden; }
+  to { opacity: 0; }
 }
