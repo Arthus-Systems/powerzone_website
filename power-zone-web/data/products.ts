@@ -68,7 +68,7 @@ export const products: Product[] = [
   {
     id: 1,
     slug: "FPT",
-    image: "/images/fpt_product_1_1.webp",
+    image: "/images/fpt_product_1.webp",
     title: "FPT",
     subtitle: "Diesel",
     category: "Industrial",
@@ -231,46 +231,9 @@ export const products: Product[] = [
  * -------------------------------------------------------------------------- */
 
 export const bessProducts: Product[] = [
-  {
-    id: 1,
-    slug: "Battery",
-    image: "/images/battery_product_1.webp",
-    title: "Li-ion Battery",
-    subtitle: "Storage",
-    category: "Energy Storage",
-    year: "2025",
-    accentColor: "#4B4545",
-    leftColor: "#4B4545",
-    rightColor: "#F5EFE5",
-    descriptionBgColor: "#F5EFE5",
-    gallery: [
-      "/images/battery_product_2.webp",
-      "/images/battery_product_3.webp",
-    ],
-    descriptionLong:
-      "Lithium iron phosphate (LFP) battery storage in low-voltage and high-voltage configurations. The plug-and-play modular design lets capacity grow with the load — drop in additional units instead of re-engineering the system. The integrated battery management runs round-the-clock, optimizing performance and catching issues early. Built for grid-tied, off-grid, and hybrid renewable installations across commercial, industrial, and residential sites.",
-    engineering:
-      "LFP chemistry chosen for thermal stability and long cycle life over the typical NMC alternative. The BMS keeps cells equalized and ready for fast charge/discharge response, which translates to peak load shaving and clean voltage/frequency regulation. Rapid power deployment during outages keeps critical loads online.",
-    origin: "Pakistan Engineered",
-    tagline: "Modular LFP storage that scales with the load",
-    overview:
-      "Plug-and-play LFP battery modules in low-voltage or high-voltage configurations. Add units to scale capacity without redesigning the BMS or the rack.",
-    features: [
-      "Lithium iron phosphate (LFP) chemistry",
-      "Round-the-clock battery management system",
-      "Modular: scale by adding units",
-      "Peak shaving and demand-charge reduction",
-      "Programmable schedules and adaptive grid response",
-    ],
-    applications: [
-      "Commercial and industrial backup",
-      "Data center support",
-      "Residential storage",
-      "Solar PV integration",
-      "Grid stability and peak shaving",
-    ],
-    url: "https://powerzone.com.pk/battery",
-  },
+  // Order: BESS first so that landing on /products?category=bess from the
+  // homepage's Peek Our Products card (which shows bess_product_1.webp) lands
+  // on the matching hero image instead of the Li-ion Battery.
   {
     id: 2,
     slug: "BESS",
@@ -279,10 +242,11 @@ export const bessProducts: Product[] = [
     subtitle: "Storage",
     category: "Storage System",
     year: "2025",
-    accentColor: "#454545",
-    leftColor: "#454545",
-    rightColor: "#EFEFEF",
-    descriptionBgColor: "#EFEFEF",
+    // Red-warm palette per user request.
+    accentColor: "#4B4545",
+    leftColor: "#4B4545",
+    rightColor: "#F5EFE5",
+    descriptionBgColor: "#F5EFE5",
     gallery: [
       "/images/bess_product_2.webp",
       "/images/bess_product_3.webp",
@@ -312,6 +276,48 @@ export const bessProducts: Product[] = [
     url: "https://powerzone.com.pk/bess",
   },
   {
+    id: 1,
+    slug: "Battery",
+    image: "/images/battery_product_1.webp",
+    title: "Li-ion Battery",
+    subtitle: "Storage",
+    category: "Energy Storage",
+    year: "2025",
+    // Colors swapped per user request — was Li-ion palette, now uses
+    // the original BESS (neutral gray) palette.
+    accentColor: "#454545",
+    leftColor: "#454545",
+    rightColor: "#EFEFEF",
+    descriptionBgColor: "#EFEFEF",
+    gallery: [
+      "/images/battery_product_2.webp",
+      "/images/battery_product_3.webp",
+    ],
+    descriptionLong:
+      "Lithium iron phosphate (LFP) battery storage in low-voltage and high-voltage configurations. The plug-and-play modular design lets capacity grow with the load — drop in additional units instead of re-engineering the system. The integrated battery management runs round-the-clock, optimizing performance and catching issues early. Built for grid-tied, off-grid, and hybrid renewable installations across commercial, industrial, and residential sites.",
+    engineering:
+      "LFP chemistry chosen for thermal stability and long cycle life over the typical NMC alternative. The BMS keeps cells equalized and ready for fast charge/discharge response, which translates to peak load shaving and clean voltage/frequency regulation. Rapid power deployment during outages keeps critical loads online.",
+    origin: "Pakistan Engineered",
+    tagline: "Modular LFP storage that scales with the load",
+    overview:
+      "Plug-and-play LFP battery modules in low-voltage or high-voltage configurations. Add units to scale capacity without redesigning the BMS or the rack.",
+    features: [
+      "Lithium iron phosphate (LFP) chemistry",
+      "Round-the-clock battery management system",
+      "Modular: scale by adding units",
+      "Peak shaving and demand-charge reduction",
+      "Programmable schedules and adaptive grid response",
+    ],
+    applications: [
+      "Commercial and industrial backup",
+      "Data center support",
+      "Residential storage",
+      "Solar PV integration",
+      "Grid stability and peak shaving",
+    ],
+    url: "https://powerzone.com.pk/battery",
+  },
+  {
     id: 3,
     slug: "Inverter",
     image: "/images/inverter_product_1.webp",
@@ -319,6 +325,8 @@ export const bessProducts: Product[] = [
     subtitle: "Hybrid",
     category: "Power Electronics",
     year: "2025",
+    // Green-tint palette — the remaining slot after BESS took red-warm
+    // and Li-ion kept neutral gray.
     accentColor: "#454B45",
     leftColor: "#454B45",
     rightColor: "#EFF5EF",
