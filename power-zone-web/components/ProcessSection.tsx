@@ -249,46 +249,24 @@ function ProcessCard({
       style={{ y, scale, zIndex: 10 + index }}
       className="pointer-events-none absolute inset-0 flex items-center justify-center px-3 py-[clamp(6px,1vh,16px)] md:px-8"
     >
+      {/* Mobile: cap card height at ~70vh so the card is a clear portrait
+          rectangle (not stretched square) and the section doesn't try to
+          fill every available pixel. Mobile layout stacks image on top +
+          text below; desktop keeps the original side-by-side text|image
+          layout that fills the full sticky viewport. */}
       <div
         className="
           pointer-events-auto
-          relative grid h-full w-full max-w-[1400px]
-          grid-cols-1 md:grid-cols-2
+          relative grid w-full max-w-[1400px]
+          h-auto max-h-[70vh] grid-rows-[42%_58%]
+          md:h-full md:max-h-none md:grid-rows-1 md:grid-cols-2
           overflow-hidden rounded-[2rem]
           border border-white/10
           bg-[#1A1A1A]
         "
       >
-        {/* Text side. Sizes bumped so the type fills the card properly
-         * (was visibly too small inside the 15%-shrunk card — the card
-         * looked half empty). Padding tightened slightly to give the
-         * larger type more breathing room. */}
-        <div className="flex min-h-0 flex-col justify-between p-[clamp(18px,2.6vh,48px)] md:p-[clamp(22px,3vh,56px)]">
-          {/* Step number — italic serif */}
-          <div className="font-heading italic leading-none text-white/65 text-[clamp(56px,9vh,140px)]">
-            {String(index + 1).padStart(2, '0')}
-          </div>
-
-          {/* Title + description sit at the bottom */}
-          <div className="max-w-[36rem]">
-            <h3
-              className="font-heading font-bold uppercase leading-[1.02] tracking-tight text-white text-[clamp(30px,6.5vh,72px)]"
-              style={{ letterSpacing: '-0.01em' }}
-            >
-              {step.titlePrimary}
-              <br />
-              <span className="font-heading italic font-normal">
-                {step.titleAccent}
-              </span>
-            </h3>
-            <p className="font-body mt-[clamp(14px,3vh,35px)] text-[clamp(16px,2.8vh,25px)] leading-relaxed text-white/75">
-              {step.description}
-            </p>
-          </div>
-        </div>
-
-        {/* Image side — empty until imageSrc is set on the step above */}
-        <div className="relative hidden bg-[#0E0E0E] md:block">
+        {/* Image side — shown on mobile too (top row); side-by-side on md+. */}
+        <div className="relative bg-[#0E0E0E]">
           {step.imageSrc ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -297,6 +275,35 @@ function ProcessCard({
               className="absolute inset-0 h-full w-full object-cover"
             />
           ) : null}
+        </div>
+
+        {/* Text side. Sizes bumped so the type fills the card properly
+         * (was visibly too small inside the 15%-shrunk card — the card
+         * looked half empty). Padding tightened slightly to give the
+         * larger type more breathing room. */}
+        <div className="flex min-h-0 flex-col justify-between p-4 sm:p-[clamp(18px,2.6vh,48px)] md:p-[clamp(22px,3vh,56px)]">
+          {/* Step number — italic serif. Smaller on mobile so it doesn't
+              dominate the shorter card. */}
+          <div className="font-heading italic leading-none text-white/65 text-[32px] sm:text-[clamp(56px,9vh,140px)]">
+            {String(index + 1).padStart(2, '0')}
+          </div>
+
+          {/* Title + description sit at the bottom */}
+          <div className="max-w-[36rem]">
+            <h3
+              className="font-heading font-bold uppercase leading-[1.05] tracking-tight text-white text-[20px] sm:text-[clamp(30px,6.5vh,72px)] sm:leading-[1.02]"
+              style={{ letterSpacing: '-0.01em' }}
+            >
+              {step.titlePrimary}
+              <br />
+              <span className="font-heading italic font-normal">
+                {step.titleAccent}
+              </span>
+            </h3>
+            <p className="font-body mt-2 text-[12px] leading-snug text-white/75 sm:mt-[clamp(14px,3vh,35px)] sm:text-[clamp(16px,2.8vh,25px)] sm:leading-relaxed">
+              {step.description}
+            </p>
+          </div>
         </div>
       </div>
     </motion.div>

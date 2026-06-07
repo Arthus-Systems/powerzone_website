@@ -243,18 +243,18 @@ function GoalCard({
               }}
             />
 
-            <div className="relative z-10 flex h-full flex-col p-5 md:p-6">
-              <p className="font-tiny shrink-0 text-[11px] font-semibold uppercase tracking-[0.22em] text-red-400">
+            <div className="relative z-10 flex h-full flex-col p-3 sm:p-5 md:p-6">
+              <p className="font-tiny shrink-0 text-[8px] font-semibold uppercase tracking-[0.2em] text-red-400 sm:text-[11px] sm:tracking-[0.22em]">
                 {goal.title}
               </p>
-              <ul className="mt-3 flex-1 space-y-2">
+              <ul className="mt-2 flex-1 space-y-1 sm:mt-3 sm:space-y-2">
                 {goal.backPoints.map((point) => (
-                  <li key={point} className="flex items-start gap-2">
+                  <li key={point} className="flex items-start gap-1.5 sm:gap-2">
                     <span
                       aria-hidden
-                      className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-red-500"
+                      className="mt-[5px] h-[3px] w-[3px] shrink-0 rounded-full bg-red-500 sm:mt-[7px] sm:h-1 sm:w-1"
                     />
-                    <span className="font-body text-[12px] leading-snug text-white/90 md:text-[13px]">
+                    <span className="font-body text-[9px] leading-[1.25] text-white/90 sm:text-[12px] sm:leading-snug md:text-[13px]">
                       {point}
                     </span>
                   </li>
@@ -265,9 +265,10 @@ function GoalCard({
                 type="button"
                 onClick={(e) => { e.stopPropagation(); setIsFlipped(false); }}
                 className="
-                  font-tiny mt-3 inline-flex shrink-0 items-center gap-2
-                  text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70
+                  font-tiny mt-2 inline-flex shrink-0 items-center gap-1
+                  text-[8px] font-semibold uppercase tracking-[0.14em] text-white/70
                   transition-colors hover:text-red-400
+                  sm:mt-3 sm:gap-2 sm:text-[11px] sm:tracking-[0.18em]
                 "
               >
                 <svg

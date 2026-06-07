@@ -128,11 +128,14 @@ export default function Navbar({ className = '' }: { className?: string }) {
         })}
       </ul>
 
-      {/* Mobile StaggeredMenu (<md). Lives in a fixed wrapper so its
-          slide-in panel can cover the full viewport regardless of the
-          navbar's own positioning. */}
-      <div className="absolute inset-0 md:hidden">
+      {/* Mobile StaggeredMenu (<md). `isFixed` makes its own wrapper
+          position:fixed / 100vw × 100vh so the slide-in panel can fill
+          the entire viewport — without it, the wrapper would inherit
+          the navbar's 62px height and the panel would render as a thin
+          horizontal strip at the top of the page. */}
+      <div className="md:hidden">
         <StaggeredMenu
+          isFixed
           position="right"
           items={STAGGERED_ITEMS}
           socialItems={[]}

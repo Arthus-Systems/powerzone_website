@@ -308,23 +308,25 @@ export default function SolutionsSection() {
                 className="pz-sol-card relative flex-shrink-0 overflow-hidden rounded-3xl bg-white shadow-[0_30px_80px_-20px_rgba(0,0,0,0.55),0_10px_30px_-10px_rgba(0,0,0,0.4),0_0_60px_-15px_rgba(220,38,38,0.18)] w-[clamp(240px,78vw,300px)] h-[clamp(360px,52vh,440px)] sm:w-[clamp(280px,25vw,460px)] sm:h-[clamp(440px,55vh,720px)]"
               >
                 <div className="flex h-full flex-col p-5 sm:p-[clamp(26px,3.6vh,52px)]">
-                  {/* Counter pill at the top */}
+                  {/* Counter pill — bumped ~1.5× on mobile for legibility
+                      (text-[10px] → text-[15px]). */}
                   <div className="flex items-center gap-3">
-                    <span aria-hidden className="h-px w-10 bg-red-600 sm:w-14" />
-                    <span className="font-tiny text-[10px] uppercase tracking-[0.3em] text-red-600 sm:text-[12px] sm:tracking-[0.32em]">
+                    <span aria-hidden className="h-px w-12 bg-red-600 sm:w-14" />
+                    <span className="font-tiny text-[15px] uppercase tracking-[0.28em] text-red-600 sm:text-[12px] sm:tracking-[0.32em]">
                       {String(i + 1).padStart(2, '0')} /{' '}
                       {String(SOLUTION_CARDS.length).padStart(2, '0')}
                     </span>
                   </div>
 
-                  {/* Title — sized smaller on mobile so it doesn't crowd
-                      the narrower card. */}
-                  <h3 className="font-heading mt-4 font-bold uppercase leading-[1.06] tracking-tight text-black text-[20px] sm:mt-[clamp(24px,3.6vh,48px)] sm:text-[clamp(28px,3.8vh,44px)]">
+                  {/* Title — bumped ~1.5× on mobile (20px → 30px) so the
+                      headline carries weight on phones. */}
+                  <h3 className="font-heading mt-4 font-bold uppercase leading-[1.06] tracking-tight text-black text-[30px] sm:mt-[clamp(24px,3.6vh,48px)] sm:text-[clamp(28px,3.8vh,44px)]">
                     {card.title}
                   </h3>
 
-                  {/* Description — readable on mobile, full size on sm+. */}
-                  <p className="font-body mt-3 text-[13px] leading-relaxed text-black/72 sm:mt-[clamp(18px,3.6vh,32px)] sm:text-[clamp(17px,2.2vh,21px)]">
+                  {/* Description — bumped ~1.5× on mobile (13px → 19px)
+                      for readability without overflowing the card. */}
+                  <p className="font-body mt-3 text-[19px] leading-snug text-black/72 sm:mt-[clamp(18px,3.6vh,32px)] sm:text-[clamp(17px,2.2vh,21px)] sm:leading-relaxed">
                     {card.description}
                   </p>
                 </div>

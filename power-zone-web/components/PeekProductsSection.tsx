@@ -66,7 +66,7 @@ export default function PeekProductsSection() {
                     {/* <p className="font-mono text-[10px] uppercase tracking-[0.32em] text-red-400 mb-3">
                       Generators
                     </p> */}
-                    <p className="font-body text-white text-xl md:text-2xl font-semibold leading-tight tracking-tight">
+                    <p className="font-body text-white text-[13px] sm:text-base md:text-2xl font-semibold leading-tight tracking-tight">
                       Learn more about
                       <br />
                       our generators
@@ -111,7 +111,7 @@ export default function PeekProductsSection() {
                     {/* <p className="font-mono text-[10px] uppercase tracking-[0.32em] text-red-400 mb-3">
                       Battery Storage
                     </p> */}
-                    <p className="font-body text-white text-xl md:text-2xl font-semibold leading-tight tracking-tight">
+                    <p className="font-body text-white text-[13px] sm:text-base md:text-2xl font-semibold leading-tight tracking-tight">
                       Learn more about our
                       <br />
                       battery storage solutions

@@ -112,21 +112,23 @@ export default function Home() {
         <ControlPanel onHero={handleIntroComplete} />
       ) : (
         <>
-      {/* Hero → CustomerLogos slide-up cinematic — UNIFIED across mobile
-          and desktop. Single 280vh sticky wrapper: CustomerLogos sits
-          PINNED at z-0; the hero (z-10 absolute) is anchored to the
-          wrapper's top and scrolls upward naturally with the page,
-          revealing CustomerLogos beneath. All sizing is responsive via
-          Tailwind clamp/breakpoint utilities so the same wrapper works
-          for both. Mobile gets the same slide-up reveal effect that
-          desktop has had since the start.
+      {/* Hero → CustomerLogos slide-up cinematic. Same pattern on all
+          breakpoints but the wrapper HEIGHT differs:
+            mobile  (<md): h-[200vh] → no dwell — hero reveals
+                            CustomerLogos in 100vh, then 100vh of un-stick
+                            so PeekProducts arrives immediately after.
+            desktop (md+): h-[280vh] → 80vh dwell on CustomerLogos
+                            sandwiched between the reveal and the un-stick.
 
-          Scroll budget (same on all breakpoints):
+          Desktop budget:
             0   →100vh : hero scrolls up, CustomerLogos is revealed
             100→180vh : DWELL — CustomerLogos pinned, nothing else moves
-            180→280vh : CustomerLogos un-sticks and scrolls up out of the
-                         viewport; PeekProducts (below the wrapper) enters */}
-      <div className="relative" style={{ height: '280vh' }}>
+            180→280vh : CustomerLogos un-sticks; PeekProducts enters
+          Mobile budget:
+            0   →100vh : hero scrolls up, CustomerLogos is revealed
+            100→200vh : CustomerLogos un-sticks; PeekProducts enters
+                         (no scroll-break / dwell — per design ask) */}
+      <div className="relative h-[200vh] md:h-[280vh]">
         <div className="sticky top-0 z-0 h-screen">
           <CustomerLogos />
         </div>
