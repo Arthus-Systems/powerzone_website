@@ -119,10 +119,11 @@ export default function GoalsSection() {
             </h2>
           </div>
 
-          {/* Card grid — responsive at narrow widths, fixed 4-up on lg+.
-              Each card carries its own height clamp so the absolute-
-              positioned faces always have a concrete containing block. */}
-          <div className="mx-auto grid w-full max-w-[1400px] grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+          {/* Card grid — 2-up on phones so the user can see two cards in
+              the same viewport, scales to 4-up on lg+. Each card carries
+              its own height clamp so the absolute-positioned faces always
+              have a concrete containing block. */}
+          <div className="mx-auto grid w-full max-w-[1400px] grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:gap-6">
             {GOALS.map((goal) => (
               <GoalCard key={goal.title} goal={goal} />
             ))}
@@ -141,10 +142,10 @@ function GoalCard({
   const [isFlipped, setIsFlipped] = useState(false);
 
   return (
-    // Card height adapts: not too tall on short windows, not too short on
-    // tall ones, and capped so very tall monitors don't make the cards
-    // feel sparse. min ≈ phone-comfortable, max ≈ premium-monitor-friendly.
-    <div style={{ height: 'clamp(360px, 48vh, 500px)' }}>
+    // Card height: shorter on mobile (2-up grid) so two cards fit a phone
+    // viewport comfortably; bumps to the original 48vh range at sm+ where
+    // the card is wider and has more vertical room to breathe.
+    <div className="h-[clamp(260px,40vh,340px)] sm:h-[clamp(360px,48vh,500px)]">
       <div className="h-full" style={{ perspective: '1200px' }}>
         <div
           className="relative h-full cursor-pointer transition-transform duration-700 ease-in-out"
@@ -158,24 +159,21 @@ function GoalCard({
           <div
             className="
               absolute inset-0 flex flex-col
-              rounded-2xl bg-white p-6 md:p-7
+              rounded-2xl bg-white p-4 sm:p-6 md:p-7
               shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06),0_12px_32px_-8px_rgba(0,0,0,0.10)]
             "
             style={{ backfaceVisibility: 'hidden' }}
           >
-            {/* Icon badge — solid rounded-square in brand red so the icon
-                always reads at any aspect ratio (the earlier bare-SVG
-                rendering disappeared into the white background on some
-                screens). */}
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-50 md:h-14 md:w-14">
-              <GoalIcon type={goal.icon} className="h-6 w-6 text-red-600 md:h-7 md:w-7" />
+            {/* Icon badge — smaller on mobile 2-up, bumps to original at sm+. */}
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-50 sm:h-12 sm:w-12 sm:rounded-xl md:h-14 md:w-14">
+              <GoalIcon type={goal.icon} className="h-5 w-5 text-red-600 sm:h-6 sm:w-6 md:h-7 md:w-7" />
             </div>
 
-            <div className="mt-5 md:mt-6">
-              <h3 className="font-heading text-[clamp(18px,1.5vw,26px)] font-semibold leading-[1.15] tracking-tight text-black">
+            <div className="mt-3 sm:mt-5 md:mt-6">
+              <h3 className="font-heading text-[14px] font-semibold leading-[1.18] tracking-tight text-black sm:text-[clamp(18px,1.5vw,26px)] sm:leading-[1.15]">
                 {goal.title}
               </h3>
-              <p className="font-body mt-2.5 text-[13px] leading-relaxed text-black/65 md:text-[14px] lg:text-[15px]">
+              <p className="font-body mt-1.5 text-[11px] leading-snug text-black/65 sm:mt-2.5 sm:text-[13px] sm:leading-relaxed md:text-[14px] lg:text-[15px]">
                 {goal.description}
               </p>
             </div>
@@ -189,9 +187,10 @@ function GoalCard({
               type="button"
               onClick={(e) => { e.stopPropagation(); setIsFlipped(true); }}
               className="
-                font-tiny mt-5 inline-flex items-center gap-2
-                text-[11px] font-semibold uppercase tracking-[0.18em] text-black
+                font-tiny mt-3 inline-flex items-center gap-1.5
+                text-[9px] font-semibold uppercase tracking-[0.14em] text-black
                 transition-colors hover:text-red-600
+                sm:mt-5 sm:gap-2 sm:text-[11px] sm:tracking-[0.18em]
               "
             >
               Flip to see more

@@ -61,19 +61,21 @@ export default function Home() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const seen = sessionStorage.getItem(INTRO_SEEN_KEY) === 'true';
+    // Mobile + tablet (<lg) bypass the cinematic — ControlPanel was
+    // designed at 16:9 with mouse-driven interactions and doesn't
+    // translate well to phones. Mobile users land straight on the hero.
+    const isMobile = window.innerWidth < 1024;
 
-    // Cinematic plays on EVERY first visit — mobile + tablet + desktop.
-    // ControlPanel has its own portrait-friendly CSS (see ControlPanel.css
-    // @media block) that compacts the dashboard for narrow viewports;
-    // the reveal video plays at object-fit:cover so it crops vs letterbox.
-    if (!seen) {
+    if (!seen && !isMobile) {
       setIntroDone(false);
+    } else {
+      try {
+        sessionStorage.setItem(INTRO_SEEN_KEY, 'true');
+      } catch {
+        /* sessionStorage unavailable — non-fatal */
+      }
     }
 
-    // Defer the overlay fade by one frame so React's reconciliation has
-    // already painted the new branch (ControlPanel for fresh visitor, hero
-    // for returning visitor). The overlay then dissolves to reveal
-    // whichever branch actually mounted.
     requestAnimationFrame(() => setOverlayHiding(true));
   }, []);
 
@@ -155,7 +157,7 @@ export default function Home() {
           >
             <motion.h1
               variants={HERO_ITEM_VARIANTS}
-              className="font-heading mt-5 font-semibold leading-[1.05] text-[clamp(30px,8vw,52px)] tracking-[-0.02em] text-white [text-shadow:0_2px_18px_rgba(0,0,0,0.55)] md:leading-[1.02] md:text-[clamp(36px,5vw,78px)]"
+              className="font-heading mt-5 font-semibold leading-[1.05] text-[clamp(40px,11vw,72px)] tracking-[-0.02em] text-white [text-shadow:0_2px_18px_rgba(0,0,0,0.55)] md:leading-[1.02] md:text-[clamp(36px,5vw,78px)]"
             >
               Diesel Generators
               <br />

@@ -60,9 +60,10 @@ export default function CustomerLogos() {
         </p>
       </div>
 
-      {/* Three staggered rows. `group` on each row scopes hover so
-          touching any logo in a row colors EVERY logo in that row while
-          the other two stay muted. */}
+      {/* Staggered rows. Desktop renders 3 rows; mobile (<md) gets a 4th
+          row to fill the larger visual footprint of the section on tall
+          phone aspect ratios. `group` on each row scopes hover so
+          touching any logo in a row colors EVERY logo in that row. */}
       <div className="mt-[clamp(32px,5vh,64px)] flex flex-col gap-[clamp(16px,2.4vh,32px)]">
         <div className="group" style={EDGE_FADE_MASK}>
           <InfiniteSlider gap={72} speed={ROW_SPEED} delay={0}>
@@ -84,6 +85,17 @@ export default function CustomerLogos() {
           <InfiniteSlider gap={72} speed={ROW_SPEED} delay={-47}>
             {ALL_LOGOS.map((n) => (
               <LogoChip key={`r3-${n}`} n={n} />
+            ))}
+          </InfiniteSlider>
+        </div>
+
+        {/* Mobile-only 4th row. Quartile offset (~−58s) so it doesn't sync
+            with row 3; reversed direction so adjacent rows always alternate
+            visually. */}
+        <div className="group md:hidden" style={EDGE_FADE_MASK}>
+          <InfiniteSlider gap={72} speed={ROW_SPEED} delay={-58} reverse>
+            {ALL_LOGOS.map((n) => (
+              <LogoChip key={`r4-${n}`} n={n} />
             ))}
           </InfiniteSlider>
         </div>

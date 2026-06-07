@@ -3,32 +3,19 @@
 /* -----------------------------------------------------------------------------
  * Navbar — single source of truth for the site nav.
  *
- * Auto-color uses `mix-blend-difference` — the same compositor effect
- * that drives the PowerZone logo in the products-page detail view.
- * Every pixel of the navbar (text + logo) is inverted against the
- * pixel directly behind it, so a glyph straddling a light/dark seam
- * picks up the correct contrast on both halves with no JS sampling.
- * Pure white text + white-pixel logo art give the cleanest inversion
- * (white on dark → white, white on light → black). The nav element
- * MUST NOT introduce `isolation: isolate`, and no fixed-positioned
- * ancestor should create a stacking context that traps the blend
- * against itself — otherwise the inversion samples against the
- * transparent wrapper instead of the page underneath.
+ * Desktop (md+): inline horizontal nav with logo + 5 links + auto-color
+ * (mix-blend-difference / halo / black-text per route).
  *
- * The bar is purely text + logo (no background, no border, no blur),
- * short (≈62px), with an animated underline for hover + active.
- * Logo is decorative (no click handler) — the Home nav link handles
- * going back to /.
- *
- * Direction of the page-transition curtain is decided by
- * GlobalTransitions based on the clicked link's index relative to
- * the currently-active one within this <nav>, so no extra props
- * needed here.
+ * Mobile (<md): the StaggeredMenu component takes over — an animated
+ * slide-in panel with staggered red/blue underlay layers (PowerZone brand
+ * red + accent blue). The desktop nav row stays mounted but is visually
+ * hidden via `md:flex` / `hidden` on the inline `<ul>` and the logo is
+ * preserved via the StaggeredMenu's own header.
  * -------------------------------------------------------------------------- */
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import StaggeredMenu, { type StaggeredMenuItem } from '@/components/ui/StaggeredMenu';
 
 export const NAV_LINKS = [
   { label: 'Home', href: '/' },
@@ -38,9 +25,20 @@ export const NAV_LINKS = [
   { label: 'Contact Us', href: '/contact' },
 ] as const;
 
+// PowerZone brand colors used as the StaggeredMenu's slide-in underlay
+// layers. Red = the primary brand red; blue = the accent glow color used
+// in the cinematic intro's footer badge.
+const PZ_RED = '#ff070f';
+const PZ_BLUE = '#4f8dff';
+
+const STAGGERED_ITEMS: StaggeredMenuItem[] = NAV_LINKS.map((l) => ({
+  label: l.label,
+  ariaLabel: `Navigate to ${l.label}`,
+  link: l.href,
+}));
+
 export default function Navbar({ className = '' }: { className?: string }) {
   const pathname = usePathname() || '/';
-  const [menuOpen, setMenuOpen] = useState(false);
 
   // A link is "active" when the user is on its route, or — for non-home
   // routes — when they're on a sub-route of it (e.g. /blog/some-post).
@@ -65,28 +63,10 @@ export default function Navbar({ className = '' }: { className?: string }) {
     pathname === '/privacy-policy' ||
     pathname.startsWith('/privacy-policy/');
 
-  // Close menu on route change
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [pathname]);
-
-  // Lock body scroll while mobile menu is open; close on Escape.
-  useEffect(() => {
-    if (!menuOpen) return;
-
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setMenuOpen(false);
-    };
-    window.addEventListener('keydown', onKey);
-
-    return () => {
-      document.body.style.overflow = prevOverflow;
-      window.removeEventListener('keydown', onKey);
-    };
-  }, [menuOpen]);
+  // For the StaggeredMenu's toggle button color, pick a sensible default
+  // per route. Halo routes get white (with the mix-blend-difference scope
+  // handling inversion); black-text routes get black; default white.
+  const menuToggleColor = isBlackTextRoute ? '#000' : '#fff';
 
   return (
     <nav
@@ -97,12 +77,12 @@ export default function Navbar({ className = '' }: { className?: string }) {
         ${className}
       `.trim()}
     >
-      {/* Logo — visual only. Sits inside the mix-blend-difference scope
-       * so its light pixels invert against whatever page surface is
-       * behind, matching how the detail-view logo behaves. */}
+      {/* Logo — visual only on desktop (md+). On mobile the StaggeredMenu
+          renders its own logo in its header, so we hide this one to avoid
+          double-rendering. */}
       <div
         aria-hidden
-        className="absolute left-8 top-1/2 -translate-y-1/2 select-none"
+        className="absolute left-8 top-1/2 hidden -translate-y-1/2 select-none md:block"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -113,6 +93,9 @@ export default function Navbar({ className = '' }: { className?: string }) {
         />
       </div>
 
+      {/* Desktop horizontal link row (md+) — unchanged from the original
+          desktop nav. Stays hidden on mobile, where the StaggeredMenu
+          takes over. */}
       <ul
         className={`
           hidden md:flex h-full items-center justify-center gap-8
@@ -145,87 +128,24 @@ export default function Navbar({ className = '' }: { className?: string }) {
         })}
       </ul>
 
-      {/* Hamburger button — mobile only. Inherits current text color
-       * (via text-current) so the route-based color/halo logic applies
-       * uniformly to the icon. */}
-      <button
-        type="button"
-        aria-label="Open menu"
-        aria-expanded={menuOpen}
-        onClick={() => setMenuOpen(true)}
-        className="absolute right-8 top-1/2 -translate-y-1/2 md:hidden text-current mix-blend-difference"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden
-        >
-          <line x1="3" y1="6" x2="21" y2="6" />
-          <line x1="3" y1="12" x2="21" y2="12" />
-          <line x1="3" y1="18" x2="21" y2="18" />
-        </svg>
-      </button>
-
-      {/* Full-screen mobile menu overlay. z-[110] sits above the navbar's
-       * own z-90 so its backdrop covers the bar (including the logo). */}
-      {menuOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Mobile navigation menu"
-          className="fixed inset-0 z-[110] bg-black/95 backdrop-blur-md flex flex-col items-center justify-center"
-        >
-          <button
-            type="button"
-            aria-label="Close menu"
-            onClick={() => setMenuOpen(false)}
-            className="absolute top-6 right-6 text-white"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-7 w-7"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden
-            >
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
-
-          <ul className="flex flex-col items-center gap-8">
-            {NAV_LINKS.map((link) => {
-              const active = isActive(link.href);
-              return (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    aria-current={active ? 'page' : undefined}
-                    onClick={() => setMenuOpen(false)}
-                    className={`
-                      font-tiny text-[20px] font-bold uppercase tracking-[0.24em]
-                      ${active ? 'text-red-500' : 'text-white'}
-                    `.trim()}
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      )}
+      {/* Mobile StaggeredMenu (<md). Lives in a fixed wrapper so its
+          slide-in panel can cover the full viewport regardless of the
+          navbar's own positioning. */}
+      <div className="absolute inset-0 md:hidden">
+        <StaggeredMenu
+          position="right"
+          items={STAGGERED_ITEMS}
+          socialItems={[]}
+          displaySocials={false}
+          displayItemNumbering
+          logoUrl="/images/logo-on-dark.webp"
+          menuButtonColor={menuToggleColor}
+          openMenuButtonColor="#000"
+          changeMenuColorOnOpen
+          colors={[PZ_RED, PZ_BLUE]}
+          accentColor={PZ_RED}
+        />
+      </div>
     </nav>
   );
 }

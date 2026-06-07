@@ -74,6 +74,30 @@ body::-webkit-scrollbar {
  * framer-motion AnimatePresence — works in every browser. */
 
 /* -----------------------------------------------------------------------------
+ * Mobile-only PeekProducts card sizing.
+ *
+ * The TiltedCard component uses inline-style height/width on the figure +
+ * inner motion.div. To shrink them on mobile WITHOUT changing desktop, we
+ * override with !important inside an @media (max-width: 767px) block. On
+ * md+ the inline styles win and the desktop sizing is byte-for-byte
+ * preserved.
+ *
+ * Halving the height lets both stacked cards (Generators + BESS) fit
+ * within one mobile viewport instead of each one taking ~52vh.
+ * -------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+  .pz-peek-card-mobile-half .tilted-card-figure,
+  .pz-peek-card-mobile-half .tilted-card-inner {
+    height: clamp(160px, 26vh, 260px) !important;
+    width: clamp(220px, 70vw, 360px) !important;
+  }
+  .pz-peek-card-mobile-half .tilted-card-img {
+    height: clamp(160px, 26vh, 260px) !important;
+    width: clamp(220px, 70vw, 360px) !important;
+  }
+}
+
+/* -----------------------------------------------------------------------------
  * pz-init-overlay — SSR-side black mask over the homepage.
  *
  * Why this exists:

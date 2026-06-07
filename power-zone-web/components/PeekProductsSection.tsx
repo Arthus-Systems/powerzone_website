@@ -40,7 +40,7 @@ export default function PeekProductsSection() {
           <Link
             href="/products?category=generators"
             aria-label="View our diesel generators"
-            className="block cursor-pointer"
+            className="pz-peek-card-mobile-half block cursor-pointer"
           >
             <TiltedCard
               imageSrc="/images/fpt_product_1.webp"
@@ -91,7 +91,7 @@ export default function PeekProductsSection() {
           <Link
             href="/products?category=bess"
             aria-label="View our battery energy storage solutions"
-            className="block cursor-pointer"
+            className="pz-peek-card-mobile-half block cursor-pointer"
           >
             <TiltedCard
               imageSrc="/images/bess_product_1.webp"
