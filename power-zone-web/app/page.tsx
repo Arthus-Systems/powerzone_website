@@ -61,29 +61,19 @@ export default function Home() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const seen = sessionStorage.getItem(INTRO_SEEN_KEY) === 'true';
-    // Skip the cinematic intro at sub-lg widths. ControlPanel is a
-    // desktop-only experience (mouse-driven gauge interactions, fixed
-    // 16:9-ish layout) and on mobile it would either crash, misalign,
-    // or just confuse the user. Mobile users land straight on the hero.
-    const isMobile = window.innerWidth < 1024;
 
-    if (!seen && !isMobile) {
-      // Fresh desktop visitor — show the cinematic.
+    // Cinematic plays on EVERY first visit — mobile + tablet + desktop.
+    // ControlPanel has its own portrait-friendly CSS (see ControlPanel.css
+    // @media block) that compacts the dashboard for narrow viewports;
+    // the reveal video plays at object-fit:cover so it crops vs letterbox.
+    if (!seen) {
       setIntroDone(false);
-    } else {
-      // Returning visitor OR any mobile/tablet — stamp the flag so a later
-      // resize to desktop won't re-trigger the intro in the same session.
-      try {
-        sessionStorage.setItem(INTRO_SEEN_KEY, 'true');
-      } catch {
-        /* sessionStorage unavailable — non-fatal */
-      }
     }
 
     // Defer the overlay fade by one frame so React's reconciliation has
-    // already painted the new branch (ControlPanel for fresh desktop, hero
-    // for everyone else). The overlay then dissolves to reveal whichever
-    // branch actually mounted.
+    // already painted the new branch (ControlPanel for fresh visitor, hero
+    // for returning visitor). The overlay then dissolves to reveal
+    // whichever branch actually mounted.
     requestAnimationFrame(() => setOverlayHiding(true));
   }, []);
 
@@ -120,15 +110,25 @@ export default function Home() {
         <ControlPanel onHero={handleIntroComplete} />
       ) : (
         <>
-      {/* Mobile (<lg): hero and PeekProducts render as plain stacked
-          sections. The vh-based sticky cinematic below this block is
-          desktop-only — on mobile browsers, 100vh fluctuates as the URL
-          bar hides/shows, which breaks the sticky pin and the absolute-
-          inside-sticky layering. The mobile fallback is the same hero
-          chrome (navbar + heading + paragraph) sized for narrower viewports
-          and followed by PeekProductsSection scrolling normally below. */}
-      <div className="block lg:hidden">
-        <div className="relative h-screen w-full overflow-hidden bg-black">
+      {/* Hero → CustomerLogos slide-up cinematic — UNIFIED across mobile
+          and desktop. Single 280vh sticky wrapper: CustomerLogos sits
+          PINNED at z-0; the hero (z-10 absolute) is anchored to the
+          wrapper's top and scrolls upward naturally with the page,
+          revealing CustomerLogos beneath. All sizing is responsive via
+          Tailwind clamp/breakpoint utilities so the same wrapper works
+          for both. Mobile gets the same slide-up reveal effect that
+          desktop has had since the start.
+
+          Scroll budget (same on all breakpoints):
+            0   →100vh : hero scrolls up, CustomerLogos is revealed
+            100→180vh : DWELL — CustomerLogos pinned, nothing else moves
+            180→280vh : CustomerLogos un-sticks and scrolls up out of the
+                         viewport; PeekProducts (below the wrapper) enters */}
+      <div className="relative" style={{ height: '280vh' }}>
+        <div className="sticky top-0 z-0 h-screen">
+          <CustomerLogos />
+        </div>
+        <div className="absolute inset-x-0 top-0 z-10 h-screen w-screen overflow-hidden bg-black">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={INTRO_END_FRAME}
@@ -151,11 +151,11 @@ export default function Home() {
             variants={HERO_CONTAINER_VARIANTS}
             initial="hidden"
             animate="show"
-            className="pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-center px-6 text-center"
+            className="pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-center px-6 text-center md:px-8"
           >
             <motion.h1
               variants={HERO_ITEM_VARIANTS}
-              className="font-heading mt-5 font-semibold leading-[1.05] text-[clamp(30px,8vw,52px)] tracking-[-0.02em] text-white [text-shadow:0_2px_18px_rgba(0,0,0,0.55)]"
+              className="font-heading mt-5 font-semibold leading-[1.05] text-[clamp(30px,8vw,52px)] tracking-[-0.02em] text-white [text-shadow:0_2px_18px_rgba(0,0,0,0.55)] md:leading-[1.02] md:text-[clamp(36px,5vw,78px)]"
             >
               Diesel Generators
               <br />
@@ -163,12 +163,13 @@ export default function Home() {
             </motion.h1>
             <motion.p
               variants={HERO_ITEM_VARIANTS}
-              className="font-tiny mt-5 text-[12px] sm:text-[14px] font-bold uppercase tracking-[0.28em] text-white/90 [text-shadow:0_1px_4px_rgba(0,0,0,0.7)]"
+              className="font-tiny mt-5 text-[12px] font-bold uppercase tracking-[0.28em] text-white/90 [text-shadow:0_1px_4px_rgba(0,0,0,0.7)] sm:text-[14px] md:mt-7 md:text-[18px] md:tracking-[0.34em]"
             >
               Reliable Backup Power
             </motion.p>
           </motion.div>
 
+          {/* Floor-anchored body paragraph — pinned near the bottom edge. */}
           <motion.p
             variants={HERO_ITEM_VARIANTS}
             initial="hidden"
@@ -179,8 +180,10 @@ export default function Home() {
               pointer-events-none absolute left-1/2 bottom-[clamp(32px,8vh,96px)]
               -translate-x-1/2 z-20
               w-[min(36rem,92vw)] px-4 text-center
-              text-[12px] sm:text-[14px] leading-relaxed text-white/75
+              text-[12px] leading-relaxed text-white/75
               [text-shadow:0_1px_4px_rgba(0,0,0,0.7)]
+              sm:text-[14px]
+              md:w-[min(40rem,90vw)] md:bottom-[clamp(40px,10vh,160px)] md:px-6 md:text-[18px]
             "
           >
             Power Zone delivers high performance diesel generators and
@@ -188,106 +191,10 @@ export default function Home() {
             power for industries across Pakistan.
           </motion.p>
         </div>
-        {/* MOBILE scroll-break wrapper: CustomerLogos pins at viewport top
-            via sticky for ~80vh of dwell before un-sticking. Mirrors the
-            scroll-break pattern used by GoalsSection so the trust strip
-            actually lands and lingers before products appear. */}
-        <div className="relative" style={{ height: '180vh' }}>
-          <div className="sticky top-0 h-screen">
-            <CustomerLogos />
-          </div>
-        </div>
-        <PeekProductsSection />
       </div>
-
-      {/* Desktop (lg+): 280vh sticky cinematic wrapper. CustomerLogos sits
-          PINNED behind the hero (z-0 sticky); the hero (z-10 absolute) is
-          anchored to the wrapper's top and scrolls upward naturally with
-          the page, revealing CustomerLogos beneath. Same pattern as the
-          original hero+PeekProducts reveal, now staging CustomerLogos as
-          the revealed layer.
-
-          Scroll budget:
-            0   →100vh : hero scrolls up, CustomerLogos is revealed
-            100→180vh : DWELL — CustomerLogos pinned, nothing else moves
-                         (the "scroll break" before products)
-            180→280vh : CustomerLogos un-sticks and scrolls up out of the
-                         viewport; PeekProducts (rendered after the wrapper)
-                         arrives on screen below it */}
-      <div className="relative hidden lg:block" style={{ height: '280vh' }}>
-        <div className="sticky top-0 z-0 h-screen">
-          <CustomerLogos />
-        </div>
-        <div className="absolute inset-x-0 top-0 z-10 h-screen w-screen overflow-hidden bg-black">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={INTRO_END_FRAME}
-          alt=""
-          draggable={false}
-          className="absolute inset-0 z-0 h-full w-full object-cover"
-          style={{ opacity: 0.6 }}
-        />
-
-        <motion.div
-          initial={{ opacity: 0, y: -48 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          className="absolute left-0 right-0 top-0 z-[90]"
-        >
-          <Navbar />
-        </motion.div>
-
-        <motion.div
-          variants={HERO_CONTAINER_VARIANTS}
-          initial="hidden"
-          animate="show"
-          className="pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-center px-8 text-center"
-        >
-          <motion.h1
-            variants={HERO_ITEM_VARIANTS}
-            className="font-heading mt-5 font-semibold leading-[1.02] text-[clamp(36px,5vw,78px)] tracking-[-0.02em] text-white [text-shadow:0_2px_18px_rgba(0,0,0,0.55)]"
-          >
-            Diesel Generators
-            <br />
-            by Power Zone
-          </motion.h1>
-          <motion.p
-            variants={HERO_ITEM_VARIANTS}
-            className="font-tiny mt-6 md:mt-7 text-[15px] md:text-[18px] font-bold uppercase tracking-[0.34em] text-white/90 [text-shadow:0_1px_4px_rgba(0,0,0,0.7)]"
-          >
-            Reliable Backup Power
-          </motion.p>
-        </motion.div>
-
-        {/* Floor-anchored body paragraph — pinned near the bottom edge. */}
-        <motion.p
-          variants={HERO_ITEM_VARIANTS}
-          initial="hidden"
-          animate="show"
-          transition={{ delay: 0.95 }}
-          className="
-            font-body
-            pointer-events-none absolute left-1/2 bottom-[clamp(40px,10vh,160px)]
-            -translate-x-1/2 z-20
-            w-[min(40rem,90vw)] px-6 text-center
-            text-[13px] md:text-[18px] leading-relaxed text-white/75
-            [text-shadow:0_1px_4px_rgba(0,0,0,0.7)]
-          "
-        >
-          Power Zone delivers high performance diesel generators and
-          advanced battery energy storage systems, ensuring uninterrupted
-          power for industries across Pakistan.
-        </motion.p>
-        </div>
-      </div>
-      {/* Desktop-only PeekProductsSection (mobile renders its own copy
-          inside the mobile branch above, so this is gated to lg+). The
-          desktop cinematic wrapper above ends with CustomerLogos already
-          on screen and the dwell complete — PeekProducts enters next in
-          normal flow. */}
-      <div className="hidden lg:block">
-        <PeekProductsSection />
-      </div>
+      {/* PeekProductsSection enters in normal flow after the cinematic
+          wrapper above. Same on mobile + desktop. */}
+      <PeekProductsSection />
       <SolutionsSection />
       <GoalsSection />
       <ProcessSection />

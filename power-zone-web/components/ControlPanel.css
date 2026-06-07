@@ -902,6 +902,112 @@
   height: clamp(12px, 1.3vh, 18px);
 }
 
+/* ============================================================================
+   MOBILE PORTRAIT — compacted layout
+   ============================================================================
+   The cinematic was designed at 16:9 with three horizontal rows. On a
+   portrait phone (≤640px wide), squeezing three side-by-side elements
+   per row is unreadable. This media query reformats the dashboard for
+   narrow viewports:
+     - Top row stacks vertically: grill on top, ignition button center,
+       data panel (metrics + health) at the bottom
+     - Gauges collapse from 5-across → 3-across; Fuel + Coolant hidden
+       (they're decorative during the value-ramp; the front-and-center
+       Voltage / Frequency / Load gauges keep the visual interest)
+     - Bottom row stacks: schematic above, subsystems below
+     - Header compacts: smaller logo, status-pill label hidden, MODE
+       text shrunk
+     - Footer chrome simplifies
+   The viewport video plays full-bleed beneath via object-fit:cover — it
+   crops on portrait aspect ratios but stays cinematic.
+   ========================================================================= */
+@media (max-width: 640px) {
+  .pz-canvas {
+    padding: 0 clamp(8px, 2vw, 16px) clamp(6px, 1.4vh, 14px);
+  }
+
+  /* HEADER */
+  .pz-header {
+    height: 48px;
+    padding-left: clamp(56px, 14vw, 80px);
+    gap: 8px;
+  }
+  .pz-header__logoWrap { left: 16px; height: 48px; }
+  .pz-header__logo { height: 32px; }
+  .pz-header__mode {
+    font-size: 10px !important;
+    letter-spacing: 0.14em !important;
+  }
+  .pz-pill { padding: 4px 8px; gap: 6px; }
+  .pz-pill__label { display: none; }
+  .pz-pill__dot { width: 6px; height: 6px; }
+  .pz-chevrons { display: none; }
+
+  /* GRID — three rows, tighter gaps */
+  .pz-grid {
+    grid-template-rows: 1.5fr 0.9fr 1fr;
+    gap: clamp(4px, 0.8vh, 10px);
+    padding-top: 2px;
+  }
+
+  /* TOP ROW: stack grill → ignition → data vertically */
+  .pz-row--top {
+    grid-template-columns: 1fr;
+    grid-auto-rows: minmax(0, 1fr);
+    gap: clamp(4px, 0.8vh, 10px);
+  }
+  .pz-col-grill { min-height: 0; }
+  .pz-grill__inner { max-height: 100%; }
+  .pz-col-ign { padding: 0; }
+  .pz-ign__btn { max-width: min(100%, 38vw); }
+  .pz-ign__prompt { font-size: 11px !important; margin-bottom: 4px; }
+  .pz-col-data {
+    padding: clamp(4px, 0.8vh, 10px) clamp(8px, 2vw, 14px);
+    grid-template-columns: 1fr 1px 1fr;
+  }
+  .pz-subpanel { padding: 4px 6px; }
+  .pz-panel__head { margin-bottom: 4px; font-size: 9px; }
+  .pz-metric { padding: 2px 0; }
+  .pz-metric__value .pz-readout { font-size: 12px; }
+  .pz-health { padding: 2px 0; gap: 6px; }
+
+  /* GAUGES ROW: 3 columns, hide Fuel (3) + Coolant (5) */
+  .pz-row--gauges.pz-panel {
+    grid-template-columns: 1fr 1fr 1fr;
+    padding: 4px;
+  }
+  .pz-row--gauges > :nth-child(3),
+  .pz-row--gauges > :nth-child(5) {
+    display: none;
+  }
+  .pz-gauge svg { max-height: 14vh; }
+  .pz-gauge__label { font-size: 9px; }
+
+  /* BOTTOM ROW: stack schematic above subsys */
+  .pz-row--bottom {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: clamp(4px, 0.8vh, 10px);
+  }
+  .pz-panel--pad { padding: 4px 8px; }
+  .pz-subsys__row {
+    grid-template-columns: 12px 1fr auto;
+    gap: 6px;
+  }
+  .pz-subsys__icon { width: 11px; height: 11px; }
+  .pz-schematic__label, .pz-schematic__readout { font-size: 8px; }
+
+  /* FOOTER: compact */
+  .pz-footer {
+    padding: clamp(2px, 0.4vh, 6px) 4px clamp(1px, 0.2vh, 3px);
+    gap: 6px;
+  }
+  .pz-footer__badge { width: 24px; height: 24px; font-size: 10px; }
+  .pz-footer__txt { font-size: 8px; }
+  .pz-footer__right { font-size: 8px; }
+  .pz-mono { font-size: 8px; }
+}
+
 /* -- HOMEPAGE HERO --------------------------------------------------------- */
 .pz-hero {
   position: absolute;

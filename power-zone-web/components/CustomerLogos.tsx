@@ -94,14 +94,33 @@ export default function CustomerLogos() {
 
 /* One logo chip. Desaturated + dimmed at rest so the rows read as a cohesive
  * band; group-hover (not hover) means hovering ANY logo in the row colors
- * ALL logos in that row. */
+ * ALL logos in that row.
+ *
+ * Image performance hardening:
+ *   - Source files are pre-sized to a 200×200 max box at WebP q=80 (~6 KB
+ *     average) — see public/images/customer_logos/. Originals preserved as
+ *     .original.webp.
+ *   - loading="lazy": these sit below the fold for both mobile and desktop,
+ *     so the browser defers them until they approach the viewport.
+ *   - decoding="async": decode happens off the main thread; the marquee
+ *     keeps animating at 60fps while logos decode in the background.
+ *   - fetchPriority="low": explicit deprioritization vs higher-priority
+ *     hero / LCP images. The browser already infers this from loading=lazy
+ *     but being explicit shaves a tick on slow connections.
+ *   - 200×200 dims as DOM attrs give the browser the intrinsic aspect ratio
+ *     so it can compute layout boxes before the bytes arrive (avoids CLS).
+ *     The CSS h-14…h-24 + w-auto take over for the actual display size. */
 function LogoChip({ n }: { n: number }) {
   return (
     /* eslint-disable-next-line @next/next/no-img-element */
     <img
       src={`/images/customer_logos/logo_${n}.webp`}
       alt={`Customer logo ${n}`}
+      width={200}
+      height={200}
       loading="lazy"
+      decoding="async"
+      fetchPriority="low"
       draggable={false}
       className="
         pointer-events-none h-14 w-auto shrink-0 select-none object-contain

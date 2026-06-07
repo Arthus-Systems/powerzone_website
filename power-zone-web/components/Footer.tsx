@@ -295,29 +295,22 @@ export default function Footer() {
     </footer>
   );
 
+  // Unified sticky-reveal mechanic — same on mobile + desktop. The mobile
+  // branch previously rendered the footer in normal flow because vh-based
+  // sticky behavior interacted badly with browser-chrome resizing; that's
+  // accepted here as a trade for matching the desktop "slide-up from
+  // behind" reveal the user explicitly asked for on mobile. The footer's
+  // inner content fills h-full of the 90vh sticky child, so it adapts to
+  // whatever the live viewport actually is on that frame.
   return (
-    <>
-      {/* ─── MOBILE (<md) — plain, naturally-flowing footer ───────────
-          No sticky reveal, no fixed vh height — mobile browser chrome
-          resizing was cropping the sticky version. The inner <footer>
-          uses h-full, so we wrap it in a min-height container that lets
-          the content size itself naturally. */}
-      <div className="block w-full bg-black md:hidden">
-        <div className="min-h-fit w-full [&>footer]:h-auto">
-          {footerInner}
-        </div>
+    <div
+      className="relative h-[90vh] w-full"
+      style={{ clipPath: 'polygon(0% 0, 100% 0%, 100% 100%, 0 100%)' }}
+    >
+      <div className="relative h-[calc(100vh+90vh)] -top-[100vh]">
+        <div className="sticky top-[10vh] h-[90vh]">{footerInner}</div>
       </div>
-
-      {/* ─── DESKTOP (md+) — sticky-reveal mechanic preserved ──────── */}
-      <div
-        className="relative hidden h-[90vh] md:block"
-        style={{ clipPath: 'polygon(0% 0, 100% 0%, 100% 100%, 0 100%)' }}
-      >
-        <div className="relative h-[calc(100vh+90vh)] -top-[100vh]">
-          <div className="sticky top-[10vh] h-[90vh]">{footerInner}</div>
-        </div>
-      </div>
-    </>
+    </div>
   );
 }
 
