@@ -44,7 +44,7 @@ import {
 import Navbar from "./Navbar";
 import ProductExperience from "./ProductExperience";
 import ProductNav from "./ProductNav";
-import MobileProductsList from "./MobileProductsList";
+import MobileProductShowcase from "./MobileProductShowcase";
 
 const CATEGORIES: ReadonlyArray<{
   id: string;
@@ -267,11 +267,19 @@ export default function ProductsRoot() {
         />
       </div>
 
-      {/* Mobile (<lg) — a plain vertical list. Same product data, no
-       * GSAP/Lenis/scroll-pinning. The CategorySwitch above still drives
-       * which catalog is shown. */}
+      {/* Mobile (<lg) — the rotated cinematic. Photo on top, ProductCard
+       * centered, description on bottom; scrolling wipes photo+card from
+       * the LEFT while the description wipes from the RIGHT, revealing
+       * the next product underneath. Click into a product opens the
+       * MobileProductDetail overlay, which slides in from the right
+       * using the same rotated clip-path trick. */}
       <div className="lg:hidden">
-        <MobileProductsList key={`mobile-${categoryId}`} products={active.items} />
+        <MobileProductShowcase
+          key={`mobile-${categoryId}`}
+          products={active.items}
+          initialIdx={initialIdx}
+          onActiveChange={handleActiveChange}
+        />
       </div>
     </>
   );
