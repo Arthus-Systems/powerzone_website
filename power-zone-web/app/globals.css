@@ -115,6 +115,44 @@ body::-webkit-scrollbar {
      so users on the happy path don't perceive the 1500ms safety delay. */
   animation: pz-init-overlay-js-fade 350ms ease-out forwards;
 }
+/* -----------------------------------------------------------------------------
+ * pz-marquee — infinite horizontal scroll for the CustomerLogos section
+ *
+ * The track inside .pz-marquee-wrapper renders its children TWICE; this
+ * keyframe translates it from 0 to -50% so the second copy slides into the
+ * first copy's position seamlessly. animation-duration / direction are
+ * applied inline by InfiniteSlider so individual rows can tune speed and
+ * orientation per instance.
+ * -------------------------------------------------------------------------- */
+.pz-marquee-wrapper {
+  overflow: hidden;
+  width: 100%;
+}
+.pz-marquee-track {
+  display: flex;
+  width: max-content;
+  align-items: center;
+  animation-name: pz-marquee;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  /* `transform-origin: left center` keeps the start of the loop steady. */
+  will-change: transform;
+}
+@keyframes pz-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+/* Pause-on-hover via play-state (NOT duration swap) — duration changes
+   mid-animation force the browser to recompute the cycle position and
+   produce a visible jump. play-state freezes the track in place and
+   resumes from the same offset on mouseleave. */
+.pz-marquee-wrapper:hover .pz-marquee-track {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pz-marquee-track { animation: none; }
+}
+
 /* Compositor-only keyframes — only `opacity` animates so the browser can
    promote the overlay to its own layer and run the fade on the GPU
    without touching layout. (Lighthouse "non-composited animations" warning

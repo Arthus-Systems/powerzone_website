@@ -18,6 +18,7 @@ import SolutionsSection from '@/components/SolutionsSection';
 import GoalsSection from '@/components/GoalsSection';
 import ProcessSection from '@/components/ProcessSection';
 import PeekProductsSection from '@/components/PeekProductsSection';
+import CustomerLogos from '@/components/CustomerLogos';
 import Footer from '@/components/Footer';
 import ContactFloatingCTA from '@/components/ContactFloatingCTA';
 
@@ -187,31 +188,37 @@ export default function Home() {
             power for industries across Pakistan.
           </motion.p>
         </div>
+        {/* MOBILE scroll-break wrapper: CustomerLogos pins at viewport top
+            via sticky for ~80vh of dwell before un-sticking. Mirrors the
+            scroll-break pattern used by GoalsSection so the trust strip
+            actually lands and lingers before products appear. */}
+        <div className="relative" style={{ height: '180vh' }}>
+          <div className="sticky top-0 h-screen">
+            <CustomerLogos />
+          </div>
+        </div>
         <PeekProductsSection />
       </div>
 
-      {/* Desktop (lg+): Hero + PeekProducts share a 280vh wrapper.
-          PeekProducts is sticky-pinned (z-0) so it stays "behind" the
-          hero for the full 180vh sticky range (wrapper_height −
-          sticky_child_height). The hero (z-10) is absolutely positioned
-          at the wrapper's top, so it scrolls upward naturally with the
-          page, appearing to slide off and reveal PeekProducts.
+      {/* Desktop (lg+): 280vh sticky cinematic wrapper. CustomerLogos sits
+          PINNED behind the hero (z-0 sticky); the hero (z-10 absolute) is
+          anchored to the wrapper's top and scrolls upward naturally with
+          the page, revealing CustomerLogos beneath. Same pattern as the
+          original hero+PeekProducts reveal, now staging CustomerLogos as
+          the revealed layer.
 
           Scroll budget:
-            0   → 100vh : hero scrolls up, PeekProducts is revealed
-            100 → 180vh : PEEK PAUSE — PeekProducts stays pinned, nothing
-                          else moves. This is the "tiny pause" so the user
-                          actually lands on it before the page continues
-                          toward SolutionsSection
-            180 → 280vh : PeekProducts un-sticks and scrolls up; below the
-                          wrapper, SolutionsSection enters the viewport */}
+            0   →100vh : hero scrolls up, CustomerLogos is revealed
+            100→180vh : DWELL — CustomerLogos pinned, nothing else moves
+                         (the "scroll break" before products)
+            180→280vh : CustomerLogos un-sticks and scrolls up out of the
+                         viewport; PeekProducts (rendered after the wrapper)
+                         arrives on screen below it */}
       <div className="relative hidden lg:block" style={{ height: '280vh' }}>
         <div className="sticky top-0 z-0 h-screen">
-          <PeekProductsSection />
+          <CustomerLogos />
         </div>
-        <div
-          className="absolute inset-x-0 top-0 z-10 h-screen w-screen overflow-hidden bg-black"
-        >
+        <div className="absolute inset-x-0 top-0 z-10 h-screen w-screen overflow-hidden bg-black">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={INTRO_END_FRAME}
@@ -272,6 +279,14 @@ export default function Home() {
           power for industries across Pakistan.
         </motion.p>
         </div>
+      </div>
+      {/* Desktop-only PeekProductsSection (mobile renders its own copy
+          inside the mobile branch above, so this is gated to lg+). The
+          desktop cinematic wrapper above ends with CustomerLogos already
+          on screen and the dwell complete — PeekProducts enters next in
+          normal flow. */}
+      <div className="hidden lg:block">
+        <PeekProductsSection />
       </div>
       <SolutionsSection />
       <GoalsSection />
