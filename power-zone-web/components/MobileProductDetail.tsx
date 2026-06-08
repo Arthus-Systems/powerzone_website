@@ -289,14 +289,25 @@ export default function MobileProductDetail({ product, onClose }: Props) {
 
         {/* CTA — exact same component as Applications page Contact
             Sales (InteractiveHoverButton: dot-fill radial animation).
-            onClick triggers the overlay's exit IMMEDIATELY before the
-            navigation fires so the page-transition curtain doesn't
-            stutter compositing against the still-animating overlay. */}
-        <div className="mt-10 text-black" style={{ color: fg }}>
-          <InteractiveHoverButton
-            href="/contact"
-            onClick={() => onClose()}
-          >
+            Wrapped in a div with `transform: translateZ(0)` + `isolation`
+            so the button gets its OWN compositor layer — the overlay's
+            heavy content (clip-path, image, dense text) was forcing
+            paint composition every frame of the hover animation,
+            producing the lag. Promoting the button to its own layer
+            lets the radial dot-fill animate against an empty buffer.
+            onClick removed — letting the click flow naturally lets
+            the radial animation play uninterrupted before navigation;
+            the overlay gets cleared by Next.js route change anyway. */}
+        <div
+          className="mt-10"
+          style={{
+            color: fg,
+            transform: 'translateZ(0)',
+            isolation: 'isolate',
+            willChange: 'transform',
+          }}
+        >
+          <InteractiveHoverButton href="/contact">
             Contact Sales
           </InteractiveHoverButton>
         </div>

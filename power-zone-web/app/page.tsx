@@ -46,13 +46,19 @@ const HERO_ITEM_VARIANTS = {
 };
 
 export default function Home() {
-  // Lenis on the homepage — tuned to CAP MAX SCROLL VELOCITY without
-  // over-throttling. Previous syncTouchLerp:0.06 + touchMultiplier:0.85
-  // felt sluggish on a normal scroll. New values let normal scrolls
-  // feel near-native while still dampening fast flings:
-  //   - syncTouchLerp:0.12 → catches up roughly 2× faster than 0.06
-  //   - touchMultiplier:0.95 → only ~5% reduction from native distance
-  useLenis({ syncTouch: true, syncTouchLerp: 0.12, touchMultiplier: 0.95 });
+  // Lenis on the homepage WITHOUT syncTouch — mobile touch scrolling
+  // is fully native. Why:
+  //   - syncTouch:true intercepts every touch event (preventDefault)
+  //     to lerp the scroll, which (a) caps speed (too slow), (b)
+  //     keeps browser chrome from auto-showing on scroll-up, (c)
+  //     blocks native pull-to-refresh at the top, AND (d) defeats
+  //     `body.style.overflow = 'hidden'` (Lenis owns the scroll, not
+  //     the browser, so overflow:hidden on body can't lock it).
+  //   - With syncTouch off, Lenis only smooths the desktop wheel
+  //     (smoothWheel:true default). Mobile gets native scroll back:
+  //     native speed, native chrome behavior, native pull-to-refresh,
+  //     and the body-overflow scroll lock works again.
+  useLenis();
 
   // `introDone` defaults to TRUE so the server renders the post-intro hero
   // (real marketing copy in the SSR HTML — SEO, view-source, no-JS users).

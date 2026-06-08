@@ -496,16 +496,31 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   }, [position, onMenuClose, menuButtonColor]);
 
   // ── BODY SCROLL LOCK while menu is open ──────────────────────────
-  // Prevents the underlying page from scrolling behind the sidebar.
-  // Captures the original `body.style.overflow` value on open and
-  // restores it on close so we don't clobber any other code that
-  // might be managing overflow.
+  // `position: fixed` + remembered scrollY is the bulletproof iOS
+  // Safari / Android Chrome scroll lock. overflow:hidden alone DOES
+  // NOT prevent touch-momentum scrolling on iOS — fixed positioning
+  // does. We capture the current scrollY when opening, lock the body,
+  // restore the scroll position on close.
   React.useEffect(() => {
     if (!open) return;
-    const prev = document.body.style.overflow;
+    const scrollY = window.scrollY;
+    const prevStyles = {
+      overflow: document.body.style.overflow,
+      position: document.body.style.position,
+      top: document.body.style.top,
+      width: document.body.style.width,
+    };
     document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
     return () => {
-      document.body.style.overflow = prev;
+      document.body.style.overflow = prevStyles.overflow;
+      document.body.style.position = prevStyles.position;
+      document.body.style.top = prevStyles.top;
+      document.body.style.width = prevStyles.width;
+      // Restore the scroll position the user was at before the lock.
+      window.scrollTo(0, scrollY);
     };
   }, [open]);
 

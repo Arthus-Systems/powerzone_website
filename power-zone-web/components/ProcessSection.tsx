@@ -265,7 +265,7 @@ function ProcessCardContent({
       className="
         pointer-events-auto
         relative grid
-        w-[88vw] h-full
+        w-[88vw] h-[90%]
         grid-rows-[40%_60%]
         md:w-full md:max-w-[1100px] md:h-[60vh] md:max-h-[560px] md:min-h-[440px]
         md:grid-rows-1 md:grid-cols-2
@@ -300,14 +300,16 @@ function ProcessCardContent({
             body    clamp(15px, 2.0vh,  18px)
           Total max text stack now fits comfortably inside max-h-[560px]
           with breathing room on every monitor size. */}
-      <div className="flex min-h-0 flex-col justify-start gap-2 p-4 sm:p-[clamp(18px,2.6vh,48px)] md:justify-between md:gap-0 md:p-[clamp(22px,3vh,42px)]">
-        <div className="font-heading italic leading-none text-white/65 text-[28px] md:text-[clamp(48px,6.5vh,88px)]">
+      {/* Mobile text sizes trimmed ~10% (step# 28→25, title 18→16,
+          body 12→11, padding p-4→p-3). Desktop tokens unchanged. */}
+      <div className="flex min-h-0 flex-col justify-start gap-1.5 p-3 sm:p-[clamp(18px,2.6vh,48px)] md:justify-between md:gap-0 md:p-[clamp(22px,3vh,42px)]">
+        <div className="font-heading italic leading-none text-white/65 text-[25px] md:text-[clamp(48px,6.5vh,88px)]">
           {String(index + 1).padStart(2, '0')}
         </div>
 
         <div className="max-w-[34rem]">
           <h3
-            className="font-heading font-bold uppercase leading-[1.05] tracking-tight text-white text-[18px] md:text-[clamp(28px,4.2vh,48px)] md:leading-[1.04]"
+            className="font-heading font-bold uppercase leading-[1.05] tracking-tight text-white text-[16px] md:text-[clamp(28px,4.2vh,48px)] md:leading-[1.04]"
             style={{ letterSpacing: '-0.01em' }}
           >
             {step.titlePrimary}
@@ -316,7 +318,7 @@ function ProcessCardContent({
               {step.titleAccent}
             </span>
           </h3>
-          <p className="font-body mt-1.5 text-[12px] leading-snug text-white/75 md:mt-[clamp(12px,2.2vh,22px)] md:text-[clamp(15px,2.0vh,18px)] md:leading-relaxed">
+          <p className="font-body mt-1 text-[11px] leading-snug text-white/75 md:mt-[clamp(12px,2.2vh,22px)] md:text-[clamp(15px,2.0vh,18px)] md:leading-relaxed">
             {step.description}
           </p>
         </div>
