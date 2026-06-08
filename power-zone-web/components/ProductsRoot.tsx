@@ -168,11 +168,14 @@ function CategorySwitch({
         <div
           role="group"
           aria-label="Switch product category"
+          /* Mobile: 25% smaller (gap-0.5 p-0.5). Desktop: original
+             gap-1 p-1. */
           className="
-            flex items-center gap-1 rounded-full
-            border border-white/15 bg-black/55 p-1
+            flex items-center gap-0.5 rounded-full
+            border border-white/15 bg-black/55 p-0.5
             shadow-[0_4px_18px_rgba(0,0,0,0.35)]
             backdrop-blur-md
+            md:gap-1 md:p-1
           "
         >
           {CATEGORIES.map((cat) => {
@@ -184,10 +187,14 @@ function CategorySwitch({
                 onClick={(e) => handleClick(e, cat.id)}
                 aria-pressed={active}
                 aria-label={`Switch to ${cat.label}`}
+                /* Mobile: 25% smaller padding + font (px-3.5 py-1
+                   text-[8px] tracking-0.16em). Desktop: original
+                   px-5 py-1.5 text-[11px] tracking-0.2em. */
                 className={
-                  "font-tiny cursor-pointer rounded-full px-5 py-1.5 " +
-                  "text-[11px] font-semibold uppercase tracking-[0.2em] " +
+                  "font-tiny cursor-pointer rounded-full px-3.5 py-1 " +
+                  "text-[8px] font-semibold uppercase tracking-[0.16em] " +
                   "transition-colors duration-300 " +
+                  "md:px-5 md:py-1.5 md:text-[11px] md:tracking-[0.2em] " +
                   (active
                     ? "bg-white text-black"
                     : "text-white/70 hover:text-white")

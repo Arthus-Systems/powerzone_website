@@ -21,6 +21,7 @@ import PeekProductsSection from '@/components/PeekProductsSection';
 import CustomerLogos from '@/components/CustomerLogos';
 import Footer from '@/components/Footer';
 import ContactFloatingCTA from '@/components/ContactFloatingCTA';
+import { useLenis } from '@/hooks/useLenis';
 
 // Pre-rendered final frame of /poweron.mp4 — painted as the hero
 // background for return visits that skip the intro.
@@ -45,9 +46,19 @@ const HERO_ITEM_VARIANTS = {
 };
 
 export default function Home() {
-  // No Lenis on the homepage — native scroll. Adding Lenis here was
-  // double-smoothing on top of GoalsSection/ProcessSection's internal
-  // scroll-driven animations.
+  // Lenis on the homepage — tuned ONLY to CAP MAX SCROLL VELOCITY,
+  // not to add general smoothing. Why these specific values:
+  //   - syncTouch:true + syncTouchLerp:0.06 → fast mobile swipes
+  //     get heavily dampened (the lerp's slow catch-up cap-limits
+  //     scroll-per-frame); slow swipes barely notice it since the
+  //     lerp target is tiny.
+  //   - touchMultiplier:0.85 → swipe distance ~15% less than native,
+  //     reinforces the velocity cap.
+  // NOT setting custom `lerp` for desktop wheel — leaves it at Lenis
+  // defaults so desktop scroll feels native (no double-smoothing
+  // with ProcessSection's useSpring, which was the source of the
+  // earlier jitter when we had `lerp:0.25` + `duration:0.6`).
+  useLenis({ syncTouch: true, syncTouchLerp: 0.06, touchMultiplier: 0.85 });
 
   // `introDone` defaults to TRUE so the server renders the post-intro hero
   // (real marketing copy in the SSR HTML — SEO, view-source, no-JS users).

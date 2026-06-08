@@ -54,55 +54,57 @@ export default function SpecReel({ products, panelRefs, contentRefs }: Props) {
               ref={(el) => {
                 if (contentRefs) contentRefs.current[i] = el;
               }}
-              className="flex h-full flex-col px-10 md:pl-[17vw] md:pr-12 lg:pr-20 pt-[18vh] will-change-[clip-path]"
+              /* Mobile: tighter top padding + side padding + smaller
+                 type sizes so the spec panel actually fits the bottom
+                 ~55% of the viewport on the mobile showcase. Desktop
+                 (md+) preserves the original wide padding + sizes. */
+              className="flex h-full flex-col px-5 pt-[8vh] md:px-10 md:pl-[17vw] md:pr-12 lg:pr-20 md:pt-[18vh] will-change-[clip-path]"
             >
-              <div className="mb-5 flex items-center gap-4">
+              <div className="mb-3 flex items-center gap-3 md:mb-5 md:gap-4">
                 <span
                   aria-hidden
-                  className="h-px w-10"
+                  className="h-px w-7 md:w-10"
                   style={{ backgroundColor: fg, opacity: 0.45 }}
                 />
                 <span
-                  className="font-mono text-[10px] uppercase tracking-[0.32em]"
+                  className="font-mono text-[8px] uppercase tracking-[0.28em] md:text-[10px] md:tracking-[0.32em]"
                   style={{ opacity: 0.7 }}
                 >
                   {product.origin}
                 </span>
               </div>
 
-              {/* Big product title intentionally omitted — the centered
-               * card already carries the product name. */}
               <p
-                className="text-[12px] md:text-[13px] font-medium uppercase tracking-[0.24em]"
+                className="text-[10px] md:text-[13px] font-medium uppercase tracking-[0.22em] md:tracking-[0.24em]"
                 style={{ opacity: 0.8 }}
               >
                 {product.tagline}
               </p>
 
               <p
-                className="mt-7 max-w-[34rem] text-[13px] md:text-[14px] leading-relaxed"
+                className="mt-3 max-w-[34rem] text-[11px] leading-snug md:mt-7 md:text-[14px] md:leading-relaxed"
                 style={{ opacity: 0.8 }}
               >
                 {product.overview}
               </p>
 
-              <div className="mt-8 grid grid-cols-1 gap-7 md:grid-cols-2 md:gap-10">
+              <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 md:mt-8 md:gap-x-10 md:gap-y-7">
                 <div>
                   <h3
-                    className="font-mono text-[10px] uppercase tracking-[0.32em]"
+                    className="font-mono text-[8px] uppercase tracking-[0.26em] md:text-[10px] md:tracking-[0.32em]"
                     style={{ opacity: 0.55 }}
                   >
                     Capabilities
                   </h3>
                   <ul
-                    className="mt-3 space-y-1.5 text-[13px]"
+                    className="mt-1.5 space-y-1 text-[10px] leading-tight md:mt-3 md:space-y-1.5 md:text-[13px] md:leading-normal"
                     style={{ opacity: 0.85 }}
                   >
                     {product.features.map((feature) => (
-                      <li key={feature} className="flex gap-3">
+                      <li key={feature} className="flex gap-2 md:gap-3">
                         <span
                           aria-hidden
-                          className="mt-[7px] h-[5px] w-[5px] shrink-0 rounded-full"
+                          className="mt-[5px] h-[3px] w-[3px] shrink-0 rounded-full md:mt-[7px] md:h-[5px] md:w-[5px]"
                           style={{ backgroundColor: fg, opacity: 0.65 }}
                         />
                         <span>{feature}</span>
@@ -113,20 +115,20 @@ export default function SpecReel({ products, panelRefs, contentRefs }: Props) {
 
                 <div>
                   <h3
-                    className="font-mono text-[10px] uppercase tracking-[0.32em]"
+                    className="font-mono text-[8px] uppercase tracking-[0.26em] md:text-[10px] md:tracking-[0.32em]"
                     style={{ opacity: 0.55 }}
                   >
                     Applications
                   </h3>
                   <ul
-                    className="mt-3 space-y-1.5 text-[13px]"
+                    className="mt-1.5 space-y-1 text-[10px] leading-tight md:mt-3 md:space-y-1.5 md:text-[13px] md:leading-normal"
                     style={{ opacity: 0.75 }}
                   >
                     {product.applications.map((application) => (
-                      <li key={application} className="flex gap-3">
+                      <li key={application} className="flex gap-2 md:gap-3">
                         <span
                           aria-hidden
-                          className="mt-[7px] h-[5px] w-[5px] shrink-0 rounded-full"
+                          className="mt-[5px] h-[3px] w-[3px] shrink-0 rounded-full md:mt-[7px] md:h-[5px] md:w-[5px]"
                           style={{ backgroundColor: fg, opacity: 0.4 }}
                         />
                         <span>{application}</span>

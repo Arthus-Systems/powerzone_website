@@ -150,7 +150,9 @@
   right: 0;
   width: clamp(260px, 38vw, 420px);
   height: 100%;
-  background: white;
+  /* Cream — matches the homepage `--background: #F5EFE5` so the panel
+     reads as a slide-in of the same surface, not a foreign white sheet. */
+  background: #F5EFE5;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   display: flex;

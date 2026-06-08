@@ -9,7 +9,25 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-export function useLenis() {
+type UseLenisOptions = {
+  /** When true, Lenis intercepts touch scrolls and lerps them. Combined
+   *  with a small `touchMultiplier`, this CAPS the max velocity of a
+   *  fast mobile swipe — slow scrolls catch up to their tiny target
+   *  instantly while fast scrolls glide-in over the lerp window. */
+  syncTouch?: boolean;
+  /** Multiplier on touch-input scroll distance. <1 reduces the pixel
+   *  distance per swipe (effectively a velocity cap), 1 = native. */
+  touchMultiplier?: number;
+  /** Touch lerp factor. Lower = heavier dampening on fast swipes. */
+  syncTouchLerp?: number;
+};
+
+export function useLenis(options: UseLenisOptions = {}) {
+  const {
+    syncTouch = false,
+    touchMultiplier = 1,
+    syncTouchLerp = 0.075,
+  } = options;
   const lenisRef = useRef<Lenis | null>(null);
 
   useEffect(() => {
@@ -17,6 +35,9 @@ export function useLenis() {
       duration: 1.5,
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
+      syncTouch,
+      syncTouchLerp,
+      touchMultiplier,
     });
     lenisRef.current = lenis;
 
@@ -33,7 +54,7 @@ export function useLenis() {
       lenis.destroy();
       lenisRef.current = null;
     };
-  }, []);
+  }, [syncTouch, touchMultiplier, syncTouchLerp]);
 
   return lenisRef;
 }

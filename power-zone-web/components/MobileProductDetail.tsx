@@ -286,20 +286,19 @@ export default function MobileProductDetail({ product, onClose }: Props) {
           </>
         )}
 
-        {/* CTAs */}
-        <div className="mt-10 flex flex-wrap gap-3">
-          {product.url && (
-            <a
-              href={product.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-tiny inline-flex items-center justify-center rounded-full bg-black px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-white transition-colors hover:bg-black/85"
-            >
-              View on powerzone.com.pk
-            </a>
-          )}
+        {/* CTAs — only Contact Sales now. The "View on powerzone.com.pk"
+            external link has been removed per the design ask.
+            onClick triggers the overlay's exit IMMEDIATELY before the
+            navigation fires. Without that, the heavy overlay (clip-path
+            transition, big content area) was still mounted during the
+            page transition's radial curtain reveal — and the curtain
+            paint had to composite against the still-animating overlay
+            on every frame, producing the visible stutter. Closing the
+            overlay first lets the curtain animate against a clean page. */}
+        <div className="mt-10">
           <a
             href="/contact"
+            onClick={() => onClose()}
             className="font-tiny inline-flex items-center justify-center rounded-full border px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.22em] transition-colors"
             style={{ borderColor: `${fg}55`, color: fg }}
           >
