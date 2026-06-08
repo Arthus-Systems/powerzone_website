@@ -633,6 +633,12 @@ export default function ProductExperience({
       requestAnimationFrame(() => {
         const st = ScrollTrigger.getById(SHOWCASE_ST_ID);
         if (!st) return;
+        // Mid-cycle mount — the original logic. With mobile's
+        // showcase no longer hijacking the window scroll (gated to
+        // <lg now), Lenis lands cleanly on the snap point for
+        // safeInitialIdx and the enterDetail click-check passes the
+        // first time. Mid-cycle also lets the user wrap backward
+        // through the modular catalog.
         const totalTransitions = N * SHOWCASE_CYCLES;
         const initialT =
           Math.floor(SHOWCASE_CYCLES / 2) * N + safeInitialIdx;

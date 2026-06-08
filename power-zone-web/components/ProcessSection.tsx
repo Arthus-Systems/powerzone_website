@@ -91,10 +91,12 @@ const PROCESS_STEPS: ProcessStep[] = [
 const SECTION_VH_PER_STEP = 170;
 
 // Fraction of total scroll progress reserved for "dwell" at the end —
-// after the last card has slid in, the section needs a bit more sticky
-// scroll before unpinning so the user actually sees the last card before
-// the footer arrives.
-const END_DWELL_FRACTION = 0.08;
+// after the last card has slid in, the section keeps it pinned for
+// this fraction of scroll before unpinning. 0.13 × 850vh ≈ 110vh of
+// dwell, which is just over one viewport of scroll where the last
+// card sits static at the front of the stack — a deliberate "tiny
+// pause" before the section releases and the footer arrives.
+const END_DWELL_FRACTION = 0.13;
 
 // Per-card entry animation span (in scroll-progress units). Each card
 // slides from off-screen-below to in-place over this fraction of total
@@ -125,15 +127,21 @@ export default function ProcessSection() {
   // visible at all). With the spring, the card's Y interpolates over
   // multiple frames, producing a visible glide.
   //
-  // Tuning (bumped from stiffness 90 → 170 to fix the fast-scroll skip):
-  //   stiffness 170 → catches up to a hard wheel input within ~150ms
-  //                    instead of ~350ms. Combined with the widened
-  //                    ENTRY_SPAN=0.14 below, the spring's smoothed
-  //                    value passes through every card's entry range
-  //                    even on a fast scroll-out, so the first/last
-  //                    card never gets skipped.
+  // Tuning:
+  //   stiffness 170 → catches up to a hard wheel input within ~150ms.
+  //                    Combined with the widened ENTRY_SPAN=0.14
+  //                    above, the spring's smoothed value passes
+  //                    through every card's entry range even on a
+  //                    fast scroll-out, so the first/last card
+  //                    doesn't get skipped.
   //   damping   30  → no bounce at the higher stiffness
   //   restDelta 0.0003 → tight settle so cards land exactly at 0%
+  //
+  // This is the SINGLE smoothing layer on the scroll position. The
+  // previous jitter was caused by Lenis adding ANOTHER smoothing
+  // layer on top of this on the homepage — that's been removed (see
+  // app/page.tsx), so this spring runs cleanly off the raw native
+  // scroll feed and behaves correctly.
   const smoothProgress = useSpring(clampedProgress, {
     stiffness: 170,
     damping: 30,

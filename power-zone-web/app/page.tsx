@@ -21,7 +21,6 @@ import PeekProductsSection from '@/components/PeekProductsSection';
 import CustomerLogos from '@/components/CustomerLogos';
 import Footer from '@/components/Footer';
 import ContactFloatingCTA from '@/components/ContactFloatingCTA';
-import { useLenis } from '@/hooks/useLenis';
 
 // Pre-rendered final frame of /poweron.mp4 — painted as the hero
 // background for return visits that skip the intro.
@@ -46,13 +45,9 @@ const HERO_ITEM_VARIANTS = {
 };
 
 export default function Home() {
-  // Lenis smooth-scroll on the homepage. `syncTouch: true` is the
-  // critical bit — it lerps mobile touch scroll, taming fast-swipe
-  // momentum that was previously blasting past pinned sections
-  // (SolutionsSection's GSAP horizontal scroll especially) faster
-  // than the user could see the animations resolve. Also gives the
-  // wheel scroll a slight glide on desktop for consistency.
-  useLenis({ syncTouch: true });
+  // No Lenis on the homepage — native scroll. Adding Lenis here was
+  // double-smoothing on top of GoalsSection/ProcessSection's internal
+  // scroll-driven animations.
 
   // `introDone` defaults to TRUE so the server renders the post-intro hero
   // (real marketing copy in the SSR HTML — SEO, view-source, no-JS users).
@@ -88,15 +83,15 @@ export default function Home() {
     requestAnimationFrame(() => setOverlayHiding(true));
   }, []);
 
-  // Scoped scroll-snap — active only while this page is mounted.
-  // proximity mode so it only snaps when the user is already near a
-  // boundary, leaving free-scrolling through sections undisturbed.
-  useEffect(() => {
-    document.documentElement.style.scrollSnapType = 'y proximity';
-    return () => {
-      document.documentElement.style.scrollSnapType = '';
-    };
-  }, []);
+  // NO scroll-snap on the homepage. The previous `scroll-snap-type:
+  // y proximity` + `scrollSnapAlign: 'start'` on GoalsSection and
+  // ProcessSection was the root of the "jittery / laggy scroll from
+  // GoalsSection to Footer" complaint — entering either of those
+  // sticky-pin sections, the browser would fight the user's scroll
+  // input trying to snap the section's start to viewport top,
+  // producing stop-go stutter. With snap disabled at the document
+  // level, the per-section scrollSnapAlign declarations no-op and
+  // scroll feels natural.
 
   // Called by ControlPanel once it lands on phase==='hero'. We stamp
   // sessionStorage so any subsequent navigation back to / skips the intro.

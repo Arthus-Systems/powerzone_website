@@ -169,16 +169,35 @@ export default function MobileProductShowcase({
     });
   }, [N]);
 
-  // INITIAL MOUNT — set up the ScrollTrigger, then scroll to the middle of
-  // the modular wrap so the user can traverse the catalog in both
-  // directions before hitting an edge.
+  // INITIAL MOUNT — gated to <lg viewports. On desktop the
+  // ProductExperience is the active showcase (this component is
+  // mounted but hidden via `lg:hidden`). If we still ran setupShowcase
+  // + window.scrollTo here on desktop, the native scrollTo would
+  // hijack the page scroll AND desync Lenis (which ProductExperience
+  // uses to manage scroll); then desktop's enterDetail needsSnap
+  // check would trip on the resulting sub-pixel mismatch between
+  // lenis.scroll and the trigger's snap target, causing the unwanted
+  // 0.4s glide-before-entry on every first click.
   useLayoutEffect(() => {
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia("(min-width: 1024px)").matches
+    ) {
+      // Desktop — let ProductExperience own the scroll. Skip setup
+      // entirely so this component is fully inert here.
+      return;
+    }
+
     const ctx = gsap.context(() => {
       setupShowcase();
 
       requestAnimationFrame(() => {
         const st = ScrollTrigger.getById(SHOWCASE_ST_ID);
         if (!st) return;
+        // Mid-cycle mount — original logic, lets the user wrap
+        // backward through the modular catalog from cycle
+        // floor(SHOWCASE_CYCLES/2). Same mount-scroll formula as the
+        // desktop ProductExperience for parity.
         const totalTransitions = N * SHOWCASE_CYCLES;
         const initialT =
           Math.floor(SHOWCASE_CYCLES / 2) * N + safeInitialIdx;

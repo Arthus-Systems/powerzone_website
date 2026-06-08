@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState, type FormEvent } from 'react';
+import { motion } from 'framer-motion';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 import TiltedFrame from '@/components/ui/TiltedFrame';
 
@@ -308,33 +309,31 @@ export default function Footer() {
     </footer>
   );
 
-  // Two render modes — both use the sticky slide-up reveal now, but
-  // with different stage sizing:
-  //   MOBILE (<md): full-viewport (h-screen) stage so the dense
-  //     mobile-stacked content (subscribe + map + 3 link columns +
-  //     brand strip with PowerZone + FPT logos) gets the full
-  //     viewport to breathe. The sticky inner allows internal scroll
-  //     so the brand strip stays reachable even if content exceeds
-  //     100vh on short phones. `[&>footer]` overrides cancel the
-  //     inner footer's h-full + overflow-hidden constraints so
-  //     content can extend to its natural height inside the
-  //     scrollable sticky.
-  //   DESKTOP (md+): 90vh stage, content fits comfortably so no
-  //     internal scroll needed.
+  // Two render modes:
+  //   MOBILE (<md): plain block wrapped in a framer-motion slide-up +
+  //     fade entrance animation. The sticky-reveal mechanic kept
+  //     clipping the brand strip at the bottom (sticky h-screen had
+  //     no way to show content past 100vh without weird nested
+  //     internal scroll). Plain block lets every footer row land
+  //     naturally as the user scrolls. The whileInView animation
+  //     gives a similar "rising into view" feel without the
+  //     content-clipping side effect. `[&>footer]` overrides cancel
+  //     the inner <footer>'s h-full + overflow-hidden so the natural
+  //     content height takes over.
+  //   DESKTOP (md+): sticky-reveal mechanic preserved unchanged —
+  //     desktop content fits comfortably in 90vh so no clipping.
   return (
     <>
-      {/* MOBILE — sticky reveal on a full-viewport stage with internal
-          scroll fallback so the brand strip is always reachable. */}
-      <div
-        className="relative h-screen w-full md:hidden"
-        style={{ clipPath: 'polygon(0% 0, 100% 0%, 100% 100%, 0 100%)' }}
+      {/* MOBILE — plain block with entrance slide-up animation. */}
+      <motion.div
+        initial={{ y: 60, opacity: 0 }}
+        whileInView={{ y: 0, opacity: 1 }}
+        viewport={{ once: true, amount: 0.15 }}
+        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+        className="block w-full bg-black md:hidden [&>footer]:h-auto [&>footer]:overflow-visible"
       >
-        <div className="relative h-[calc(100vh+100vh)] -top-[100vh]">
-          <div className="sticky top-0 h-screen overflow-y-auto [&>footer]:h-auto [&>footer]:min-h-full [&>footer]:overflow-visible">
-            {footerInner}
-          </div>
-        </div>
-      </div>
+        {footerInner}
+      </motion.div>
 
       {/* DESKTOP — sticky-reveal mechanic at 90vh. */}
       <div

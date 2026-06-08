@@ -30,7 +30,6 @@
 import {
   useCallback,
   useEffect,
-  useRef,
   useState,
   type MouseEvent as ReactMouseEvent,
   type ReactNode,
@@ -214,19 +213,17 @@ export default function ProductsRoot() {
     }
   }, []);
 
-  // Per-category memory of the last-visible product index. A ref (not
-  // state) so updates don't trigger a re-render of ProductsRoot — only
-  // the next mount of ProductExperience reads it.
-  const memoryRef = useRef<Record<string, number>>({});
+  // No per-category memory of the last-visible product index. The user
+  // explicitly wanted the catalog to always open at the FIRST product
+  // (FPT for generators, BESS for storage) rather than restoring the
+  // last-viewed product across category toggles. Keeping the callback
+  // as a no-op so the showcase components' onActiveChange prop still
+  // has a valid handler.
+  const handleActiveChange = useCallback((_idx: number) => {
+    // intentional no-op
+  }, []);
 
-  const handleActiveChange = useCallback(
-    (idx: number) => {
-      memoryRef.current[categoryId] = idx;
-    },
-    [categoryId],
-  );
-
-  const initialIdx = memoryRef.current[categoryId] ?? 0;
+  const initialIdx = 0;
 
   return (
     <>
