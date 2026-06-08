@@ -297,22 +297,23 @@ function ProcessCard({
       style={{ y, scale, zIndex: 10 + index }}
       className="pointer-events-none absolute inset-0 flex items-center justify-center px-3 py-[clamp(6px,1vh,16px)] md:px-8"
     >
-      {/* Mobile: EXPLICIT h-[80vh] (not h-auto + max-h) — the previous
-          h-auto meant the grid-rows-[45%_55%] had no defined parent
-          height to percentage off, and since the image side is
-          absolute-positioned (no intrinsic height), the card collapsed
-          to text-content height. With an explicit 80vh the grid rows
-          divide a known space: image gets 45% (~36vh), text gets 55%
-          (~44vh). Result: actual tall portrait rectangle.
-          Width capped at 92vw so a thin horizontal margin frames the
-          card on phone widths.
+      {/* Mobile: h-full so the card fills exactly the cards container
+          (which is `flex-1 min-h-0` inside the sticky h-screen — i.e.
+          viewport minus header). h-[80vh] was sizing relative to the
+          VIEWPORT rather than the available area, so the card was
+          taller than its container and overflowed both directions
+          (covered the "See more Applications" button above, and ran
+          off-screen below). h-full keeps it inside its lane.
+          Grid rows split 38% image / 62% text — text gets the larger
+          portion so the step number + title + description don't crowd.
+          Width capped at 92vw for a thin horizontal margin.
           Desktop unchanged — md:h-full md:grid-cols-2 still gives the
           full sticky-height side-by-side text|image layout. */}
       <div
         className="
           pointer-events-auto
           relative grid w-full max-w-[1400px]
-          h-[80vh] max-w-[92vw] grid-rows-[45%_55%]
+          h-full max-w-[92vw] grid-rows-[38%_62%]
           md:h-full md:max-w-[1400px] md:grid-rows-1 md:grid-cols-2
           overflow-hidden rounded-[2rem]
           border border-white/10
@@ -331,21 +332,26 @@ function ProcessCard({
           ) : null}
         </div>
 
-        {/* Text side. Sizes bumped so the type fills the card properly
-         * (was visibly too small inside the 15%-shrunk card — the card
-         * looked half empty). Padding tightened slightly to give the
-         * larger type more breathing room. */}
-        <div className="flex min-h-0 flex-col justify-between p-4 sm:p-[clamp(18px,2.6vh,48px)] md:p-[clamp(22px,3vh,56px)]">
+        {/* Text side.
+            Mobile: `justify-start` + small gap stacks the number / title
+              / description tightly at the top of the text area. The old
+              `justify-between` pushed them apart to fill the full text
+              column height, which left a big empty void between the
+              number and the title block on the now-shorter card.
+            Desktop (sm+): `justify-between` restores the dramatic
+              number-at-top / title-at-bottom layout that fills the
+              entire side-by-side card. */}
+        <div className="flex min-h-0 flex-col justify-start gap-2 p-4 sm:justify-between sm:gap-0 sm:p-[clamp(18px,2.6vh,48px)] md:p-[clamp(22px,3vh,56px)]">
           {/* Step number — italic serif. Smaller on mobile so it doesn't
               dominate the shorter card. */}
-          <div className="font-heading italic leading-none text-white/65 text-[32px] sm:text-[clamp(56px,9vh,140px)]">
+          <div className="font-heading italic leading-none text-white/65 text-[28px] sm:text-[clamp(56px,9vh,140px)]">
             {String(index + 1).padStart(2, '0')}
           </div>
 
-          {/* Title + description sit at the bottom */}
+          {/* Title + description */}
           <div className="max-w-[36rem]">
             <h3
-              className="font-heading font-bold uppercase leading-[1.05] tracking-tight text-white text-[20px] sm:text-[clamp(30px,6.5vh,72px)] sm:leading-[1.02]"
+              className="font-heading font-bold uppercase leading-[1.05] tracking-tight text-white text-[18px] sm:text-[clamp(30px,6.5vh,72px)] sm:leading-[1.02]"
               style={{ letterSpacing: '-0.01em' }}
             >
               {step.titlePrimary}
@@ -354,7 +360,7 @@ function ProcessCard({
                 {step.titleAccent}
               </span>
             </h3>
-            <p className="font-body mt-2 text-[12px] leading-snug text-white/75 sm:mt-[clamp(14px,3vh,35px)] sm:text-[clamp(16px,2.8vh,25px)] sm:leading-relaxed">
+            <p className="font-body mt-1.5 text-[12px] leading-snug text-white/75 sm:mt-[clamp(14px,3vh,35px)] sm:text-[clamp(16px,2.8vh,25px)] sm:leading-relaxed">
               {step.description}
             </p>
           </div>
