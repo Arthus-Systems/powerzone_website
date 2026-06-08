@@ -287,18 +287,16 @@ export default function MobileProductDetail({ product, onClose }: Props) {
           </>
         )}
 
-        {/* CTA — same component as Applications page Contact Sales
-            (InteractiveHoverButton, dot-fill radial animation).
-            Plain wrapper, no transform / isolation / will-change.
-            The earlier GPU-layer promotion added `transform:
-            translateZ(0)` + `isolation: isolate` to "fix" paint lag,
-            but those each create a stacking context that CAPS the
-            dot's z-10 inside the wrapper — the dot then can't paint
-            above sibling overlay content. Removing the promotion
-            restores normal stacking: the red dot fills in front of
-            everything as intended (matches the Applications mobile
-            wrapper which is also a plain div with no transform). */}
-        <div className="mt-10" style={{ color: fg }}>
+        {/* CTA — InteractiveHoverButton (dot-fill radial). Wrapper is
+            `relative z-50` so the button sits ABOVE any other content
+            in the overlay (the sticky top bar is z-10, applications
+            list items have implicit stacking from `border` styles,
+            etc.). Plain wrapper otherwise — no transform / isolation
+            / will-change here (those create stacking contexts that
+            cap the dot's internal z-10 inside the wrapper and make
+            it render behind sibling overlay content). The button has
+            its own z-managed internals (dot z-10, labels z-20). */}
+        <div className="relative z-50 mt-10" style={{ color: fg }}>
           <InteractiveHoverButton href="/contact">
             Contact Sales
           </InteractiveHoverButton>
