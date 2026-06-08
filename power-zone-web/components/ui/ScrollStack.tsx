@@ -328,18 +328,32 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
 
     // Branch: Lenis (smooth) vs native (no smoothing, no global side
     // effect on other scroll-driven sections on the page).
-    let nativeScrollTarget: Window | HTMLElement | null = null;
     if (useLenis) {
       setupLenis();
     } else {
-      // Native scroll path. Update transforms on every scroll event +
-      // call once at mount so the first card lands correctly without
-      // requiring the user to scroll. Falls back to window when
-      // useWindowScroll=true; otherwise listens on the scroller div.
-      nativeScrollTarget = useWindowScroll ? window : scroller;
-      nativeScrollTarget.addEventListener('scroll', handleScroll, {
-        passive: true,
-      } as AddEventListenerOptions);
+      // RAF poll loop. Polls the scroll position every animation frame
+      // and updates card transforms whenever it has changed.
+      //
+      // Why not a `scroll` event listener? iOS Safari (and some Android
+      // browsers) don't fire 'scroll' events on the window in real-time
+      // during touch-momentum scrolling — events only fire at the
+      // beginning and end of the gesture. That makes cards LAG the
+      // page during the swipe, which reads as "page and cards both
+      // scrolling at different speeds" instead of cards pinning in
+      // place. A RAF loop polling window.scrollY each frame side-steps
+      // the bug entirely on every browser, mobile or desktop.
+      let lastSc = -1;
+      const tick = () => {
+        const sc = useWindowScroll
+          ? window.scrollY
+          : (scrollerRef.current?.scrollTop ?? 0);
+        if (sc !== lastSc) {
+          lastSc = sc;
+          updateCardTransforms();
+        }
+        animationFrameRef.current = requestAnimationFrame(tick);
+      };
+      animationFrameRef.current = requestAnimationFrame(tick);
     }
 
     updateCardTransforms();
@@ -351,9 +365,6 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
       if (lenisRef.current) {
         lenisRef.current.destroy();
         lenisRef.current = null;
-      }
-      if (nativeScrollTarget) {
-        nativeScrollTarget.removeEventListener('scroll', handleScroll);
       }
       stackCompletedRef.current = false;
       cardsRef.current = [];
@@ -375,7 +386,6 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
     onStackComplete,
     setupLenis,
     updateCardTransforms,
-    handleScroll,
   ]);
 
   return (

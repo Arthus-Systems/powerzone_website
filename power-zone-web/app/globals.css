@@ -146,64 +146,6 @@ body::-webkit-scrollbar {
 }
 
 /* -----------------------------------------------------------------------------
- * ProcessSection ("Our Solutions") ScrollStack overrides.
- *
- * ScrollStack is configured with useWindowScroll=true + useLenis=false
- * (see components/ProcessSection.tsx). In this mode the scroller is
- * just a layout wrapper — no internal scroll, no Lenis. Page scroll
- * drives the card transforms via a native scroll listener.
- *
- * Card sizing:
- *   - height 70vh on desktop, 78vh on mobile so a phone card has room
- *     for its portrait image-on-top / text-on-bottom split.
- *   - max-h cap so really tall monitors don't get oversized cards.
- *   - padding 0 (the ProcessCardContent inner grid handles padding).
- *   - 2rem border radius + deep box shadow.
- *
- * Footer hand-off:
- *   inner padding bottom is intentionally small (12vh) so the
- *   .scroll-stack-end spacer arrives just after the last card pins.
- *   Once scroll reaches pinEnd, the cards release and the page
- *   continues naturally into the Footer's sticky-reveal mechanic.
- * -------------------------------------------------------------------------- */
-.pz-process-stack .scroll-stack-scroller {
-  /* No internal scroll — content flows in document. height:auto +
-     overflow:visible overrides ScrollStack.css defaults. */
-  height: auto !important;
-  overflow: visible !important;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-.pz-process-stack .scroll-stack-scroller::-webkit-scrollbar {
-  display: none;
-}
-.pz-process-stack .scroll-stack-inner {
-  padding: 4vh 4rem 12vh;
-  min-height: auto;
-}
-.pz-process-stack .scroll-stack-card {
-  height: 70vh;
-  min-height: 460px;
-  max-height: 720px;
-  padding: 0;
-  border-radius: 2rem;
-  box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.28);
-}
-/* Mobile — taller portrait card, less horizontal padding so the card
-   gets close to the screen edges; smaller card-to-spacer bottom
-   padding so footer arrives quickly after the last card lands. */
-@media (max-width: 767px) {
-  .pz-process-stack .scroll-stack-inner {
-    padding: 3vh 1rem 10vh;
-  }
-  .pz-process-stack .scroll-stack-card {
-    height: 78vh;
-    min-height: 460px;
-    max-height: none;
-  }
-}
-
-/* -----------------------------------------------------------------------------
  * Mobile-only PeekProducts card sizing.
  *
  * The TiltedCard component uses inline-style height/width on the figure +
