@@ -171,10 +171,12 @@ export default function ProductCard({
       role="button"
       tabIndex={0}
       aria-label={`Open ${currentProduct?.title ?? "product"} detail`}
+      /* Card height: halved on mobile (8.5vh) per the design ask, full
+         17vh on md+. Both breakpoints share the same width clamp. */
       className="
         relative overflow-hidden cursor-pointer
         w-[58vw] md:w-[28vw]
-        h-[17vh]
+        h-[8.5vh] md:h-[17vh]
         rounded-[2px]
         ring-1 ring-white/10
         shadow-[0_2px_4px_-1px_rgba(0,0,0,0.35),0_24px_55px_-12px_rgba(0,0,0,0.6),0_8px_18px_-6px_rgba(0,0,0,0.4)]

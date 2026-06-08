@@ -784,12 +784,12 @@ function MobileIndustrySlide({
       {/* Per-industry tint on the lower text half */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-[58%]"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-[62%]"
         style={{ backgroundColor: industry.tint }}
       />
 
-      {/* ── Image on top (42% of viewport) ─────────────────────────── */}
-      <div className="relative h-[42%] w-full shrink-0 overflow-hidden">
+      {/* ── Image on top (38% of viewport) ─────────────────────────── */}
+      <div className="relative h-[38%] w-full shrink-0 overflow-hidden">
         <motion.div
           initial={animated ? { scale: 1.06 } : false}
           animate={{ scale: 1 }}
@@ -814,50 +814,52 @@ function MobileIndustrySlide({
         </motion.div>
       </div>
 
-      {/* ── Text below (58% of viewport) — compact to fit ──────────── */}
-      <div className="relative z-10 flex h-[58%] w-full flex-col px-5 py-4 sm:px-8 sm:py-6">
+      {/* ── Text below (62% of viewport) — packed tightly to fit ──── */}
+      <div className="relative z-10 flex h-[62%] w-full flex-col px-5 py-3 sm:px-8 sm:py-4">
         <motion.p
-          initial={init({ opacity: 0, y: d * 16 })}
+          initial={init({ opacity: 0, y: d * 14 })}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, delay: 0.08, ease: CONTENT_EASE }}
-          className="font-tiny text-[10px] font-semibold uppercase tracking-[0.32em] text-red-600"
+          className="font-tiny text-[9px] font-semibold uppercase tracking-[0.3em] text-red-600"
         >
           {industry.label}
         </motion.p>
 
         <motion.h2
-          initial={init({ opacity: 0, y: d * 22 })}
+          initial={init({ opacity: 0, y: d * 18 })}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.14, ease: CONTENT_EASE }}
-          className="mt-2 font-heading text-[19px] font-bold leading-[1.12] tracking-tight text-[#1A1A1A] sm:text-[22px]"
+          className="mt-1.5 font-heading text-[17px] font-bold leading-[1.1] tracking-tight text-[#1A1A1A] sm:text-[20px]"
         >
           {industry.headline}
         </motion.h2>
 
         <motion.p
-          initial={init({ opacity: 0, y: d * 16 })}
+          initial={init({ opacity: 0, y: d * 14 })}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, delay: 0.2, ease: CONTENT_EASE }}
-          className="mt-2 font-body text-[12px] leading-snug text-[#555] sm:text-[13px]"
+          className="mt-1.5 font-body text-[11px] leading-[1.35] text-[#555] sm:text-[12px]"
         >
           {industry.description}
         </motion.p>
 
-        {/* Benefits — one per row, full screen width. */}
-        <div className="mt-3 flex flex-col gap-2">
-          {industry.benefits.slice(0, 4).map((benefit, bi) => (
+        {/* Benefits — one per row, slim. Capped at 3 so the column
+            (4 items × ~52px = 208px) doesn't blow past the available
+            text height on shorter phones. */}
+        <div className="mt-2 flex flex-col gap-1.5">
+          {industry.benefits.slice(0, 3).map((benefit, bi) => (
             <motion.div
               key={bi}
-              initial={init({ opacity: 0, y: d * 12 })}
+              initial={init({ opacity: 0, y: d * 10 })}
               animate={{ opacity: 1, y: 0 }}
               transition={{
                 duration: 0.4,
                 delay: 0.26 + bi * 0.05,
                 ease: CONTENT_EASE,
               }}
-              className="flex w-full items-center gap-3 rounded-xl bg-white px-3.5 py-2.5 shadow-[0_2px_6px_rgba(0,0,0,0.06)]"
+              className="flex w-full items-center gap-2.5 rounded-lg bg-white px-3 py-1.5 shadow-[0_2px_6px_rgba(0,0,0,0.06)]"
             >
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-50">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-red-50">
                 <svg
                   viewBox="0 0 24 24"
                   fill="none"
@@ -865,17 +867,17 @@ function MobileIndustrySlide({
                   strokeWidth={1.75}
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="h-4 w-4"
+                  className="h-3.5 w-3.5"
                   aria-hidden
                 >
                   <path d={benefit.iconPath} />
                 </svg>
               </div>
               <div className="min-w-0 flex-1">
-                <p className="font-heading text-[13px] font-bold leading-tight text-[#1A1A1A]">
+                <p className="font-heading text-[12px] font-bold leading-tight text-[#1A1A1A]">
                   {benefit.stat}
                 </p>
-                <p className="mt-0.5 font-body text-[10px] leading-tight text-[#888]">
+                <p className="font-body text-[9px] leading-tight text-[#888]">
                   {benefit.label}
                 </p>
               </div>
@@ -886,8 +888,8 @@ function MobileIndustrySlide({
         <motion.div
           initial={init({ opacity: 0, y: d * 10 })}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.45, ease: CONTENT_EASE }}
-          className="mt-auto pt-3 text-black"
+          transition={{ duration: 0.4, delay: 0.42, ease: CONTENT_EASE }}
+          className="mt-auto pt-2 text-black"
         >
           <InteractiveHoverButton href="/contact">
             Contact Sales

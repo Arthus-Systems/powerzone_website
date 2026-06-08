@@ -60,6 +60,19 @@ export const metadata: Metadata = {
   },
 };
 
+/* viewport meta — Next.js App Router separates this from `metadata`.
+ *   - interactiveWidget: 'resizes-content' tells mobile browsers to
+ *     resize the layout to match the visible area (excludes the
+ *     auto-hiding URL bar) rather than letting the body scroll trigger
+ *     chrome to slide away. Net effect on iOS Safari + Android Chrome:
+ *     the browser chrome stays pinned during scroll instead of
+ *     animating in/out as the user scrolls. */
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  interactiveWidget: 'resizes-content' as const,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{

@@ -149,10 +149,17 @@ function CategorySwitch({
   };
 
   return (
-    // Outer fixed wrapper positions the switch top-centered below the
-    // navbar. Pointer events disabled at the wrapper so the empty side
-    // area doesn't intercept clicks meant for the page underneath.
-    <div className="pointer-events-none fixed left-0 right-0 top-[64px] z-[85] flex justify-center">
+    // Outer fixed wrapper.
+    //   Mobile (<md): switch sits INSIDE the navbar row (top-[14px]
+    //     centers it vertically in the 62px navbar, between the
+    //     StaggeredMenu's logo on the left and toggle button on the
+    //     right). z-[95] is above the navbar (z-[90]) so the pill
+    //     paints on top.
+    //   Desktop (md+): unchanged — switch sits just below the 62px
+    //     navbar at top-[64px].
+    // Pointer events disabled at the wrapper so the empty side area
+    // doesn't intercept clicks meant for the page underneath.
+    <div className="pointer-events-none fixed left-0 right-0 top-[14px] z-[95] flex justify-center md:top-[64px] md:z-[85]">
       <motion.div
         animate={{ y: hidden ? -160 : 0 }}
         transition={{ duration: 0.45, ease: [0.76, 0, 0.24, 1] }}
