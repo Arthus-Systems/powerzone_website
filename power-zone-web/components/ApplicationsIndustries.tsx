@@ -664,25 +664,34 @@ function MobileIndustryStack() {
 
   // Touch-swipe-gesture-driven active index. Each ONE swipe gesture
   // (touchstart → touchend) advances the slide by ONE — gated by
-  // `animating`, so the user can't compound multiple advances mid-
-  // animation. The scroll-position-driven approach (every 100vh of
-  // native scroll = next slide) skipped slides on long momentum
-  // gestures; this is one gesture = one slide regardless of
-  // momentum scroll distance.
+  // `animating`. Each navigate ALSO syncs the native window scroll
+  // to the matching slot in the section's N×100vh budget, so the
+  // browser scroll position never drifts away from the visible slide.
+  // Without that sync, momentum scroll from a swipe-down could rip
+  // the page all the way to scroll=0 while the user was still on
+  // mid-section card 2 / 3, and the next swipe-down would hit the
+  // browser's pull-to-refresh trigger instead of being swallowed by
+  // the section.
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     let touchStartY = 0;
     let touchActive = false;
-    const SWIPE_THRESHOLD = 40; // pixels of finger travel to count as a swipe
+    const SWIPE_THRESHOLD = 40;
+
+    const getSectionScrollFor = (idx: number): number | null => {
+      const outer = outerRef.current;
+      if (!outer) return null;
+      const rect = outer.getBoundingClientRect();
+      const sectionTop = rect.top + window.scrollY;
+      return sectionTop + idx * window.innerHeight;
+    };
 
     const isInSection = () => {
       const outer = outerRef.current;
       if (!outer) return false;
       const rect = outer.getBoundingClientRect();
       const vh = window.innerHeight;
-      // Section sticky-pinned when its top is at/above viewport top
-      // AND its bottom is at/below viewport bottom.
       return rect.top <= 0 && rect.bottom >= vh;
     };
 
@@ -699,18 +708,27 @@ function MobileIndustryStack() {
       if (animating.current) return;
 
       const endY = e.changedTouches[0]?.clientY ?? touchStartY;
-      const deltaY = touchStartY - endY; // +ve = swipe up (advance)
+      const deltaY = touchStartY - endY;
       if (Math.abs(deltaY) < SWIPE_THRESHOLD) return;
 
       const dir: 1 | -1 = deltaY > 0 ? 1 : -1;
       const next = activeRef.current + dir;
-      if (next < 0 || next >= N) return; // edge — let native scroll out
+      if (next < 0 || next >= N) return;
 
       activeRef.current = next;
       setHasNavigated(true);
       setDirection(dir);
       setActiveIndex(next);
       animating.current = true;
+
+      // SCROLL SYNC — pin native scroll to the slot for the new slide
+      // so subsequent swipes operate from the correct scroll context.
+      // 'instant' so there's no animated scroll wrestling with the
+      // slide transition; the transition itself masks the snap.
+      const targetScroll = getSectionScrollFor(next);
+      if (targetScroll !== null) {
+        window.scrollTo({ top: targetScroll, behavior: 'instant' as ScrollBehavior });
+      }
     };
 
     window.addEventListener('touchstart', onTouchStart, { passive: true });
@@ -720,6 +738,38 @@ function MobileIndustryStack() {
       window.removeEventListener('touchend', onTouchEnd);
     };
   }, [N]);
+
+  // Block browser pull-to-refresh + scroll-chaining while the
+  // Applications section is in view. Without this, a swipe-down past
+  // the section's top can travel all the way to scroll-0 of the
+  // document and trigger pull-to-refresh on Chrome/Safari mobile.
+  // Restores the original value when leaving the section or unmounting.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const outer = outerRef.current;
+    if (!outer) return;
+
+    const originalHtml = document.documentElement.style.overscrollBehaviorY;
+    const originalBody = document.body.style.overscrollBehaviorY;
+
+    const apply = (contain: boolean) => {
+      const v = contain ? 'contain' : '';
+      document.documentElement.style.overscrollBehaviorY = v;
+      document.body.style.overscrollBehaviorY = v;
+    };
+
+    const io = new IntersectionObserver(
+      ([entry]) => apply(entry.isIntersecting),
+      { threshold: 0 },
+    );
+    io.observe(outer);
+
+    return () => {
+      io.disconnect();
+      document.documentElement.style.overscrollBehaviorY = originalHtml;
+      document.body.style.overscrollBehaviorY = originalBody;
+    };
+  }, []);
 
   return (
     <div
