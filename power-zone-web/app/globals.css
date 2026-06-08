@@ -74,6 +74,43 @@ body::-webkit-scrollbar {
  * framer-motion AnimatePresence — works in every browser. */
 
 /* -----------------------------------------------------------------------------
+ * GoalsSection — when a card is "enlarged" on desktop (morphed to
+ * centered fullscreen), its back-face typography and bullet sizing scale
+ * up so the content reads at the larger size. Scoped to .pz-goal-enlarged
+ * so the in-grid (small) state isn't affected.
+ * -------------------------------------------------------------------------- */
+.pz-goal-flip-stage.pz-goal-enlarged .pz-goal-back-content {
+  padding: 2.5rem 2.5rem 2rem;
+}
+.pz-goal-flip-stage.pz-goal-enlarged .pz-goal-back-title {
+  font-size: 14px;
+  letter-spacing: 0.28em;
+}
+.pz-goal-flip-stage.pz-goal-enlarged .pz-goal-back-list {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.pz-goal-flip-stage.pz-goal-enlarged .pz-goal-back-list > li {
+  gap: 1rem;
+}
+.pz-goal-flip-stage.pz-goal-enlarged .pz-goal-back-dot {
+  margin-top: 12px;
+  height: 6px;
+  width: 6px;
+}
+.pz-goal-flip-stage.pz-goal-enlarged .pz-goal-back-text {
+  font-size: 16px;
+  line-height: 1.6;
+}
+.pz-goal-flip-stage.pz-goal-enlarged .pz-goal-back-flipbtn {
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  margin-top: 1.5rem;
+}
+
+/* -----------------------------------------------------------------------------
  * Mobile-only PeekProducts card sizing.
  *
  * The TiltedCard component uses inline-style height/width on the figure +

@@ -139,7 +139,9 @@ function LogoChip({ n }: { n: number }) {
         opacity-65 grayscale
         transition duration-300 ease-out
         group-hover:opacity-100 group-hover:grayscale-0
-        sm:h-16 md:h-20 lg:h-24
+        sm:h-16
+        md:h-20 md:opacity-100 md:grayscale-0
+        lg:h-24
       "
     />
   );

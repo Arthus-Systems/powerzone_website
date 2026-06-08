@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useSpring, useTransform } from 'framer-motion';
 import type { MotionValue } from 'framer-motion';
 import { useMemo, useRef } from 'react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
@@ -69,8 +69,11 @@ const PROCESS_STEPS: ProcessStep[] = [
 // Lower  = FASTER (less scrolling per card transition).
 //   60  → snappy
 //   100 → balanced
-//   150 → slow / cinematic (current — cards were flicking past at 100)
-const SECTION_VH_PER_STEP = 150;
+//   150 → slow / cinematic
+//   240 → very slow (current — feedback said 150 was still too quick;
+//          combined with the lower-stiffness spring below this gives a
+//          much more deliberate, glassy-smooth card-to-card transition)
+const SECTION_VH_PER_STEP = 240;
 
 // ───────────────────────────────────────────────────────────────────────────
 // LOOK / DEPTH KNOBS
@@ -115,6 +118,31 @@ export default function ProcessSection() {
     Math.max(0, Math.min(1, v)),
   );
 
+  // SMOOTHING LAYER — feed the clamped scroll progress through a spring
+  // so the cards' y / scale tweens don't follow scroll position with
+  // raw 1:1 fidelity. With the spring, every scroll delta gets
+  // attenuated through stiffness/damping, which turns the otherwise
+  // mechanical linear-interpolation between checkpoints into smooth,
+  // physics-driven transitions. The card stacking still completes at
+  // the same checkpoints — it just gets there with momentum instead
+  // of snap-tracking the scroll position.
+  //
+  // Tuning (low stiffness + critical damping = glassy ease):
+  //   stiffness: 40  → loose chase, cards lag noticeably behind scroll
+  //                    so every transition feels deliberate
+  //   damping:   30  → critically damped; no bounce/overshoot at all
+  //   restDelta: 0.0001 → tighter settle (smaller threshold = the spring
+  //                    keeps running until visually pixel-perfect rather
+  //                    than snapping to rest a frame too early)
+  // Combined with the bumped SECTION_VH_PER_STEP = 240 above, each card
+  // transition now spans ~240vh of scroll and is filtered through a
+  // gentle spring — net result is much smoother card-to-card motion.
+  const smoothProgress = useSpring(clampedProgress, {
+    stiffness: 40,
+    damping: 30,
+    restDelta: 0.0001,
+  });
+
   return (
     <section
       ref={containerRef}
@@ -155,7 +183,7 @@ export default function ProcessSection() {
               step={step}
               index={i}
               total={PROCESS_STEPS.length}
-              scrollYProgress={clampedProgress}
+              scrollYProgress={smoothProgress}
             />
           ))}
         </div>

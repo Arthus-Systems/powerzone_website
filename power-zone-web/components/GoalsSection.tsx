@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // ───────────────────────────────────────────────────────────────────────────
 // GOALS — edit text, icons, and back-card content here
@@ -140,60 +141,167 @@ function GoalCard({
   goal: Goal;
 }) {
   const [isFlipped, setIsFlipped] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
 
-  return (
-    // Card height: shorter on mobile (2-up grid) so two cards fit a phone
-    // viewport comfortably; bumps to the original 48vh range at sm+ where
-    // the card is wider and has more vertical room to breathe.
-    <div className="h-[clamp(260px,40vh,340px)] sm:h-[clamp(360px,48vh,500px)]">
-      <div className="h-full" style={{ perspective: '1200px' }}>
+  // Track viewport breakpoint so the click handler can decide whether
+  // to morph (desktop) or just flip in place (mobile). Starts false so
+  // SSR matches mobile defaults; useEffect upgrades after hydration.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mq = window.matchMedia('(min-width: 768px)');
+    const onChange = () => setIsDesktop(mq.matches);
+    onChange();
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+
+  // Body-scroll lock + Escape close, ONLY when the desktop card is
+  // enlarged. Mobile in-place flip doesn't need either.
+  const isEnlarged = isDesktop && isFlipped;
+  useEffect(() => {
+    if (!isEnlarged) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsFlipped(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [isEnlarged]);
+
+  // SHARED flip inner — the same DOM regardless of whether the card
+  // is in its grid slot or morphed to fullscreen. rotateY is driven by
+  // isFlipped; the front face hides via backface-visibility when the
+  // card is past 90deg, exposing the back face. When enlarged on
+  // desktop, the back-face content scales its typography up via
+  // .pz-goal-enlarged scoped classes so the bullets read at full size.
+  const flipInner = (
+    <div
+      className={`pz-goal-flip-stage h-full w-full ${isEnlarged ? 'pz-goal-enlarged' : ''}`}
+      style={{ perspective: '1200px' }}
+    >
+      <motion.div
+        initial={false}
+        animate={{ rotateY: isFlipped ? 180 : 0 }}
+        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+        style={{ transformStyle: 'preserve-3d' }}
+        className="relative h-full w-full"
+      >
+        {/* FRONT FACE — same as before. Hidden by backface-visibility
+            when the card has flipped past 90deg. */}
         <div
-          className="relative h-full cursor-pointer transition-transform duration-700 ease-in-out"
-          style={{
-            transformStyle: 'preserve-3d',
-            transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-          }}
-          onClick={() => setIsFlipped((f) => !f)}
+          className="
+            absolute inset-0 flex flex-col
+            rounded-2xl bg-white p-4 sm:p-6 md:p-7
+            shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06),0_12px_32px_-8px_rgba(0,0,0,0.10)]
+          "
+          style={{ backfaceVisibility: 'hidden' }}
         >
-          {/* ── FRONT FACE ─────────────────────────────────────────────── */}
-          <div
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-50 sm:h-12 sm:w-12 sm:rounded-xl md:h-14 md:w-14">
+            <GoalIcon type={goal.icon} className="h-5 w-5 text-red-600 sm:h-6 sm:w-6 md:h-7 md:w-7" />
+          </div>
+
+          <div className="mt-3 sm:mt-5 md:mt-6">
+            <h3 className="font-heading text-[14px] font-semibold leading-[1.18] tracking-tight text-black sm:text-[clamp(18px,1.5vw,26px)] sm:leading-[1.15]">
+              {goal.title}
+            </h3>
+            <p className="font-body mt-1.5 text-[11px] leading-snug text-black/65 sm:mt-2.5 sm:text-[13px] sm:leading-relaxed md:text-[14px] lg:text-[15px]">
+              {goal.description}
+            </p>
+          </div>
+
+          <div className="flex-1" />
+
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setIsFlipped(true); }}
             className="
-              absolute inset-0 flex flex-col
-              rounded-2xl bg-white p-4 sm:p-6 md:p-7
-              shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06),0_12px_32px_-8px_rgba(0,0,0,0.10)]
+              font-tiny mt-3 inline-flex items-center gap-1.5
+              text-[9px] font-semibold uppercase tracking-[0.14em] text-black
+              transition-colors hover:text-red-600
+              sm:mt-5 sm:gap-2 sm:text-[11px] sm:tracking-[0.18em]
             "
-            style={{ backfaceVisibility: 'hidden' }}
           >
-            {/* Icon badge — smaller on mobile 2-up, bumps to original at sm+. */}
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-50 sm:h-12 sm:w-12 sm:rounded-xl md:h-14 md:w-14">
-              <GoalIcon type={goal.icon} className="h-5 w-5 text-red-600 sm:h-6 sm:w-6 md:h-7 md:w-7" />
-            </div>
+            Flip to see more
+            <svg
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.5}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-3.5 w-3.5"
+              aria-hidden
+            >
+              <path d="M13 8H3" />
+              <path d="M9 4L13 8 9 12" />
+            </svg>
+          </button>
+        </div>
 
-            <div className="mt-3 sm:mt-5 md:mt-6">
-              <h3 className="font-heading text-[14px] font-semibold leading-[1.18] tracking-tight text-black sm:text-[clamp(18px,1.5vw,26px)] sm:leading-[1.15]">
-                {goal.title}
-              </h3>
-              <p className="font-body mt-1.5 text-[11px] leading-snug text-black/65 sm:mt-2.5 sm:text-[13px] sm:leading-relaxed md:text-[14px] lg:text-[15px]">
-                {goal.description}
-              </p>
-            </div>
+        {/* BACK FACE — content + sizing scale up automatically when the
+            parent has the .pz-goal-enlarged class. */}
+        <div
+          className="
+            pz-goal-back
+            absolute inset-0 overflow-hidden rounded-2xl
+            shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06),0_12px_32px_-8px_rgba(0,0,0,0.10)]
+          "
+          style={{
+            backfaceVisibility: 'hidden',
+            transform: 'rotateY(180deg)',
+          }}
+        >
+          {goal.backImage && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={goal.backImage}
+              alt=""
+              aria-hidden
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          )}
+          <div
+            aria-hidden
+            className="absolute inset-0"
+            style={{
+              background:
+                'linear-gradient(180deg, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.62) 55%, rgba(0,0,0,0.78) 100%)',
+            }}
+          />
 
-            {/* Flex spacer so the flip-button stays anchored to the bottom
-                of the card; description sits naturally above it without the
-                bullet block in between. */}
-            <div className="flex-1" />
+          <div className="pz-goal-back-content relative z-10 flex h-full flex-col p-3 sm:p-5 md:p-6">
+            <p className="pz-goal-back-title font-tiny shrink-0 text-[8px] font-semibold uppercase tracking-[0.2em] text-red-400 sm:text-[11px] sm:tracking-[0.22em]">
+              {goal.title}
+            </p>
+            <ul className="pz-goal-back-list mt-2 flex-1 space-y-1 sm:mt-3 sm:space-y-2">
+              {goal.backPoints.map((point) => (
+                <li key={point} className="flex items-start gap-1.5 sm:gap-2">
+                  <span
+                    aria-hidden
+                    className="pz-goal-back-dot mt-[5px] h-[3px] w-[3px] shrink-0 rounded-full bg-red-500 sm:mt-[7px] sm:h-1 sm:w-1"
+                  />
+                  <span className="pz-goal-back-text font-body text-[9px] leading-[1.25] text-white/90 sm:text-[12px] sm:leading-snug md:text-[13px]">
+                    {point}
+                  </span>
+                </li>
+              ))}
+            </ul>
 
             <button
               type="button"
-              onClick={(e) => { e.stopPropagation(); setIsFlipped(true); }}
+              onClick={(e) => { e.stopPropagation(); setIsFlipped(false); }}
               className="
-                font-tiny mt-3 inline-flex items-center gap-1.5
-                text-[9px] font-semibold uppercase tracking-[0.14em] text-black
-                transition-colors hover:text-red-600
-                sm:mt-5 sm:gap-2 sm:text-[11px] sm:tracking-[0.18em]
+                pz-goal-back-flipbtn
+                font-tiny mt-2 inline-flex shrink-0 items-center gap-1
+                text-[8px] font-semibold uppercase tracking-[0.14em] text-white/70
+                transition-colors hover:text-red-400
+                sm:mt-3 sm:gap-2 sm:text-[11px] sm:tracking-[0.18em]
               "
             >
-              Flip to see more
               <svg
                 viewBox="0 0 16 16"
                 fill="none"
@@ -204,92 +312,60 @@ function GoalCard({
                 className="h-3.5 w-3.5"
                 aria-hidden
               >
-                <path d="M13 8H3" />
-                <path d="M9 4L13 8 9 12" />
+                <path d="M3 8H13" />
+                <path d="M7 4L3 8 7 12" />
               </svg>
+              Flip back
             </button>
           </div>
-
-          {/* ── BACK FACE ──────────────────────────────────────────────────
-              Full-bleed background image, dark gradient overlay, all copy
-              in white over the photo. Bullet count tightened to 5 in the
-              GOALS data so the list fits without `overflow-y` scrolling
-              even on shorter aspect ratios. */}
-          <div
-            className="
-              absolute inset-0 overflow-hidden rounded-2xl
-              shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06),0_12px_32px_-8px_rgba(0,0,0,0.10)]
-            "
-            style={{
-              backfaceVisibility: 'hidden',
-              transform: 'rotateY(180deg)',
-            }}
-          >
-            {goal.backImage && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={goal.backImage}
-                alt=""
-                aria-hidden
-                className="absolute inset-0 h-full w-full object-cover"
-              />
-            )}
-            <div
-              aria-hidden
-              className="absolute inset-0"
-              style={{
-                background:
-                  'linear-gradient(180deg, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.62) 55%, rgba(0,0,0,0.78) 100%)',
-              }}
-            />
-
-            <div className="relative z-10 flex h-full flex-col p-3 sm:p-5 md:p-6">
-              <p className="font-tiny shrink-0 text-[8px] font-semibold uppercase tracking-[0.2em] text-red-400 sm:text-[11px] sm:tracking-[0.22em]">
-                {goal.title}
-              </p>
-              <ul className="mt-2 flex-1 space-y-1 sm:mt-3 sm:space-y-2">
-                {goal.backPoints.map((point) => (
-                  <li key={point} className="flex items-start gap-1.5 sm:gap-2">
-                    <span
-                      aria-hidden
-                      className="mt-[5px] h-[3px] w-[3px] shrink-0 rounded-full bg-red-500 sm:mt-[7px] sm:h-1 sm:w-1"
-                    />
-                    <span className="font-body text-[9px] leading-[1.25] text-white/90 sm:text-[12px] sm:leading-snug md:text-[13px]">
-                      {point}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); setIsFlipped(false); }}
-                className="
-                  font-tiny mt-2 inline-flex shrink-0 items-center gap-1
-                  text-[8px] font-semibold uppercase tracking-[0.14em] text-white/70
-                  transition-colors hover:text-red-400
-                  sm:mt-3 sm:gap-2 sm:text-[11px] sm:tracking-[0.18em]
-                "
-              >
-                <svg
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={1.5}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-3.5 w-3.5"
-                  aria-hidden
-                >
-                  <path d="M3 8H13" />
-                  <path d="M7 4L3 8 7 12" />
-                </svg>
-                Flip back
-              </button>
-            </div>
-          </div>
         </div>
-      </div>
+      </motion.div>
+    </div>
+  );
+
+  return (
+    // Outer grid item — fixed clamp height so the grid slot never collapses
+    // when the card is "lifted" to position:fixed on desktop. Position
+    // relative gives `absolute inset-0` a containing block.
+    <div className="relative h-[clamp(260px,40vh,340px)] sm:h-[clamp(360px,48vh,500px)]">
+      {/* Desktop-only backdrop. Appears below the enlarged card to dim
+          the rest of the page and provide a click-to-close target. */}
+      <AnimatePresence>
+        {isEnlarged && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            onClick={() => setIsFlipped(false)}
+            className="fixed inset-0 z-[140] bg-black/65 backdrop-blur-sm cursor-pointer"
+          />
+        )}
+      </AnimatePresence>
+
+      {/* THE ONE CARD. Stays mounted across the morph — `layout` makes
+          framer-motion FLIP-animate the bbox change from "absolute
+          inset-0 inside the grid slot" to "fixed inset-0 m-auto
+          centered + viewport-sized" (and back on close). The rotateY
+          flip happens simultaneously via the inner motion.div, so
+          enlarge + flip read as a single coordinated gesture.
+
+          inset-0 + m-auto + explicit w/h centers a fixed element via
+          margin auto — no translate transform needed (translate would
+          fight with the layout-driven transform that drives the FLIP). */}
+      <motion.div
+        layout
+        initial={false}
+        transition={{ layout: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } }}
+        onClick={() => setIsFlipped((f) => !f)}
+        className={`cursor-pointer ${
+          isEnlarged
+            ? 'fixed inset-0 m-auto w-[min(880px,88vw)] h-[min(640px,85vh)] z-[150]'
+            : 'absolute inset-0'
+        }`}
+      >
+        {flipInner}
+      </motion.div>
     </div>
   );
 }
