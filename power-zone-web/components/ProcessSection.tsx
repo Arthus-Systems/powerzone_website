@@ -146,8 +146,18 @@ export default function ProcessSection() {
   return (
     <section
       ref={containerRef}
-      className="relative bg-[#F4EFE7]"
-      style={{ height: `${PROCESS_STEPS.length * SECTION_VH_PER_STEP}vh`, scrollSnapAlign: 'start' }}
+      /* Per-step scroll budget is responsive via a CSS custom property:
+           mobile:  --pz-step-vh = 400vh per step (touch scroll covers
+                     a lot of pixels per swipe, so a wider budget keeps
+                     each card's transition from rushing past)
+           md+:     --pz-step-vh = 240vh per step (same as before)
+         Total section height = N * --pz-step-vh, applied via inline
+         style so a Tailwind class can set the var responsively. */
+      className="relative bg-[#F4EFE7] [--pz-step-vh:400vh] md:[--pz-step-vh:240vh]"
+      style={{
+        height: `calc(${PROCESS_STEPS.length} * var(--pz-step-vh))`,
+        scrollSnapAlign: 'start',
+      }}
     >
       <div className="sticky top-0 flex h-screen flex-col overflow-hidden">
         {/* Section header. vh-aware padding shrinks on short laptops
@@ -287,18 +297,23 @@ function ProcessCard({
       style={{ y, scale, zIndex: 10 + index }}
       className="pointer-events-none absolute inset-0 flex items-center justify-center px-3 py-[clamp(6px,1vh,16px)] md:px-8"
     >
-      {/* Mobile: tall portrait rectangle — bumped to 84vh so the card
-          actually fills the available vertical space instead of feeling
-          condensed. Width capped at 92vw (small horizontal margin) so
-          the aspect stays clearly portrait on any phone. Image gets
-          45% of the height, text gets 55%. Desktop unchanged — keeps
+      {/* Mobile: EXPLICIT h-[80vh] (not h-auto + max-h) — the previous
+          h-auto meant the grid-rows-[45%_55%] had no defined parent
+          height to percentage off, and since the image side is
+          absolute-positioned (no intrinsic height), the card collapsed
+          to text-content height. With an explicit 80vh the grid rows
+          divide a known space: image gets 45% (~36vh), text gets 55%
+          (~44vh). Result: actual tall portrait rectangle.
+          Width capped at 92vw so a thin horizontal margin frames the
+          card on phone widths.
+          Desktop unchanged — md:h-full md:grid-cols-2 still gives the
           full sticky-height side-by-side text|image layout. */}
       <div
         className="
           pointer-events-auto
           relative grid w-full max-w-[1400px]
-          h-auto max-h-[84vh] max-w-[92vw] grid-rows-[45%_55%]
-          md:h-full md:max-h-none md:max-w-[1400px] md:grid-rows-1 md:grid-cols-2
+          h-[80vh] max-w-[92vw] grid-rows-[45%_55%]
+          md:h-full md:max-w-[1400px] md:grid-rows-1 md:grid-cols-2
           overflow-hidden rounded-[2rem]
           border border-white/10
           bg-[#1A1A1A]
