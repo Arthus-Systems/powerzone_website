@@ -30,6 +30,13 @@ interface ScrollStackProps {
   rotationAmount?: number;
   blurAmount?: number;
   useWindowScroll?: boolean;
+  /** When false, skip installing a Lenis smooth-scroll instance and
+   *  drive card transforms from the native scroll event instead. Use
+   *  this when you want ScrollStack's animation but DON'T want
+   *  ScrollStack to install a page-wide (or wrapper-wide) Lenis that
+   *  could conflict with other scroll-driven animations on the page.
+   *  Defaults to true to keep existing consumers' behavior. */
+  useLenis?: boolean;
   onStackComplete?: () => void;
 }
 
@@ -53,6 +60,7 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
   rotationAmount = 0,
   blurAmount = 0,
   useWindowScroll = false,
+  useLenis = true,
   onStackComplete,
 }) => {
   const scrollerRef = useRef<HTMLDivElement>(null);
@@ -318,7 +326,21 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
       card.style.webkitPerspective = '1000px';
     });
 
-    setupLenis();
+    // Branch: Lenis (smooth) vs native (no smoothing, no global side
+    // effect on other scroll-driven sections on the page).
+    let nativeScrollTarget: Window | HTMLElement | null = null;
+    if (useLenis) {
+      setupLenis();
+    } else {
+      // Native scroll path. Update transforms on every scroll event +
+      // call once at mount so the first card lands correctly without
+      // requiring the user to scroll. Falls back to window when
+      // useWindowScroll=true; otherwise listens on the scroller div.
+      nativeScrollTarget = useWindowScroll ? window : scroller;
+      nativeScrollTarget.addEventListener('scroll', handleScroll, {
+        passive: true,
+      } as AddEventListenerOptions);
+    }
 
     updateCardTransforms();
 
@@ -328,6 +350,10 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
       }
       if (lenisRef.current) {
         lenisRef.current.destroy();
+        lenisRef.current = null;
+      }
+      if (nativeScrollTarget) {
+        nativeScrollTarget.removeEventListener('scroll', handleScroll);
       }
       stackCompletedRef.current = false;
       cardsRef.current = [];
@@ -345,9 +371,11 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
     rotationAmount,
     blurAmount,
     useWindowScroll,
+    useLenis,
     onStackComplete,
     setupLenis,
     updateCardTransforms,
+    handleScroll,
   ]);
 
   return (
