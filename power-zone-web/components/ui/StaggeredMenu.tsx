@@ -128,6 +128,18 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
     }
     itemEntranceTweenRef.current?.kill();
 
+    // Reset inline-style hides that instantCloseMenu may have applied,
+    // so the panel can become visible again as the open timeline plays.
+    const clearHardHide = (el: HTMLElement) => {
+      el.style.opacity = '';
+      el.style.visibility = '';
+      el.style.pointerEvents = '';
+      // transform left to gsap to manage via xPercent
+    };
+    clearHardHide(panel);
+    layers.forEach((el) => el && clearHardHide(el));
+    if (preLayersRef.current) clearHardHide(preLayersRef.current);
+
     const itemEls = Array.from(panel.querySelectorAll('.sm-panel-itemLabel')) as HTMLElement[];
     const numberEls = Array.from(
       panel.querySelectorAll('.sm-panel-list[data-numbering] .sm-panel-item'),
@@ -376,9 +388,16 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 
   // INSTANT close — no GSAP tween. Used by closeOnItemClick so the
   // sidebar disappears the moment a link is tapped instead of playing
-  // its 320ms slide-out (which read as "menu lingers while page
-  // navigates"). gsap.set jumps the panel + prelayers offscreen on
-  // the same frame the click fires.
+  // its 320ms slide-out.
+  //
+  // Belt-and-suspenders hide: xPercent offscreen + opacity 0 +
+  // visibility hidden + pointer-events none, set via INLINE styles
+  // (not gsap.set inside a context). Why inline styles: the Navbar
+  // is persistent across routes and the menu's useLayoutEffect re-
+  // runs when `menuButtonColor` changes per-route. That effect's
+  // gsap.context.revert() would undo any gsap-tracked styles, but
+  // not inline styles — so inline guarantees the menu stays hidden
+  // through the route change.
   const instantCloseMenu = useCallback(() => {
     if (!openRef.current) return;
     openRef.current = false;
@@ -387,15 +406,32 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 
     openTlRef.current?.kill();
     closeTweenRef.current?.kill();
+    spinTweenRef.current?.kill();
+    colorTweenRef.current?.kill();
+    textCycleAnimRef.current?.kill();
 
     const panel = panelRef.current;
     const layers = preLayerElsRef.current;
-    if (panel) {
-      const offscreen = position === 'left' ? -100 : 100;
-      gsap.set([panel, ...layers], { xPercent: offscreen, overwrite: 'auto' });
+    const preContainer = preLayersRef.current;
+    const offscreen = position === 'left' ? -100 : 100;
 
-      // Reset inner item / numbering / socials to their pre-open state so
-      // the next open replays its full entrance.
+    // INLINE hide for the panel + each prelayer + the prelayers wrapper.
+    // The transform also moves them off-screen, but opacity + visibility
+    // + pointer-events ensure they're completely inert even if the
+    // transform gets reverted by a subsequent gsap.context cleanup.
+    const hardHide = (el: HTMLElement) => {
+      el.style.transform = `translate3d(${offscreen}%, 0, 0)`;
+      el.style.opacity = '0';
+      el.style.visibility = 'hidden';
+      el.style.pointerEvents = 'none';
+    };
+    if (panel) hardHide(panel);
+    layers.forEach((el) => el && hardHide(el));
+    if (preContainer) hardHide(preContainer);
+
+    // Reset inner item / numbering / socials to their pre-open state so
+    // the next open replays its full entrance cleanly.
+    if (panel) {
       const itemEls = Array.from(
         panel.querySelectorAll('.sm-panel-itemLabel'),
       ) as HTMLElement[];
@@ -414,19 +450,13 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
       if (socialLinks.length) gsap.set(socialLinks, { y: 25, opacity: 0 });
     }
 
-    // Snap icon / color / text label back to their closed state without
-    // the usual tween. Reusing animateIcon/Color/Text would play their
-    // ~300-800ms animations; here we want zero motion.
     if (iconRef.current) {
-      spinTweenRef.current?.kill();
       gsap.set(iconRef.current, { rotate: 0, overwrite: 'auto' });
     }
     if (toggleBtnRef.current) {
-      colorTweenRef.current?.kill();
       gsap.set(toggleBtnRef.current, { color: menuButtonColor });
     }
     if (textInnerRef.current) {
-      textCycleAnimRef.current?.kill();
       gsap.set(textInnerRef.current, { yPercent: 0 });
       setTextLines(['Menu', 'Close']);
     }

@@ -68,11 +68,12 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-// Per-product scroll budget. Bumped from 140 → 240vh so each swipe
-// advances the wipe more gradually — fast swipes don't blast through
-// products in one gesture. Higher than desktop's 220 because mobile
-// momentum scrolls cover more pixels per gesture.
-const SHOWCASE_TRANSITION_VH = 240;
+// Per-product scroll budget. Bumped to 380vh — each swipe advances
+// the wipe quite gradually, so even hard fast-fling gestures take
+// multiple swipes to cross a product boundary. Considerably higher
+// than desktop's 220 because mobile momentum scrolls cover way more
+// pixels per gesture than desktop wheels.
+const SHOWCASE_TRANSITION_VH = 380;
 const SHOWCASE_CYCLES = 30;
 const SHOWCASE_ST_ID = "pz-mobile-showcase";
 

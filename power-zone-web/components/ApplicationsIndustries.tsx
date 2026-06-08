@@ -637,97 +637,239 @@ function IndustrySlide({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// MobileIndustryStack — <lg fallback: plain vertical list of industries
+// MobileIndustryStack — sticky-pinned, scroll-driven slide swap
 // ─────────────────────────────────────────────────────────────────────────────
-// No GSAP, no sticky pin, no wheel interception. Each industry renders as a
-// natural-flow section with the image stacked above the description so a
-// touch user can simply swipe-scroll through the whole list.
+// Same conceptual mechanic as DesktopCinematic but adapted for touch:
+//   - Outer container is N * 100vh tall (provides scroll budget)
+//   - A sticky top-0 h-screen child holds the active slide
+//   - As the user swipes / scrolls through the section, we compute which
+//     slide should be active from the scroll position and update state
+//   - AnimatePresence swaps slides with the SAME PANEL_VARIANTS (vertical
+//     slide-up/down) so the swipe transition matches the desktop feel
+//
+// Slide layout adapted for mobile: image on TOP (45% of viewport), text
+// content BELOW (55% of viewport). Sized tightly so the whole slide fits
+// in 100vh — no scroll-within-slide; the only scroll is the section-level
+// scroll that advances the activeIndex.
 
 function MobileIndustryStack() {
+  const N = INDUSTRIES.length;
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [direction, setDirection] = useState<1 | -1>(1);
+  const [hasNavigated, setHasNavigated] = useState(false);
+
+  const outerRef = useRef<HTMLDivElement>(null);
+  const activeRef = useRef(0);
+  const animating = useRef(false);
+
+  // Scroll-position-driven active index. As the user scrolls into the
+  // tall outer container (N * 100vh), every 100vh of scroll past the
+  // section top advances the active slide by one. AnimatePresence
+  // handles the visual transition via PANEL_VARIANTS.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const onScroll = () => {
+      const outer = outerRef.current;
+      if (!outer) return;
+      const rect = outer.getBoundingClientRect();
+      const vh = window.innerHeight;
+      if (vh <= 0) return;
+
+      // How many pixels past the section top has the viewport scrolled?
+      // Negative while still above the section; clamped at the end.
+      const scrolled = -rect.top;
+      const sectionMaxScroll = (N - 1) * vh;
+      const clamped = Math.max(0, Math.min(sectionMaxScroll, scrolled));
+      const idx = Math.max(0, Math.min(N - 1, Math.round(clamped / vh)));
+
+      if (idx !== activeRef.current && !animating.current) {
+        const dir: 1 | -1 = idx > activeRef.current ? 1 : -1;
+        activeRef.current = idx;
+        setHasNavigated(true);
+        setDirection(dir);
+        setActiveIndex(idx);
+      }
+    };
+
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [N]);
+
   return (
-    <div className="relative bg-[#F4EFE7]">
-      {INDUSTRIES.map((industry) => (
-        <section
-          key={industry.id}
-          aria-label={industry.label}
-          className="relative flex w-full flex-col"
-          style={{ backgroundColor: '#F4EFE7' }}
+    <div
+      ref={outerRef}
+      style={{ height: `${N * 100}vh` }}
+      className="relative"
+    >
+      <div className="sticky top-0 h-screen overflow-hidden bg-[#F4EFE7]">
+        <AnimatePresence
+          initial={false}
+          custom={direction}
+          onExitComplete={() => {
+            animating.current = false;
+          }}
         >
-          {/* Image on top */}
-          <div className="relative w-full overflow-hidden">
-            {industry.imageSrc ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={industry.imageSrc}
-                alt={industry.label}
-                className="h-[42vh] w-full object-cover sm:h-[50vh]"
-              />
-            ) : (
-              <div className="flex h-[42vh] w-full items-center justify-center bg-zinc-200/80 sm:h-[50vh]">
-                <span className="select-none font-tiny text-[10px] uppercase tracking-[0.3em] text-zinc-400">
-                  {industry.placeholder}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Description below, with per-industry tint */}
-          <div
-            className="relative w-full px-5 py-10 sm:px-8 sm:py-12"
-            style={{ backgroundColor: industry.tint || '#F4EFE7' }}
+          <motion.div
+            key={activeIndex}
+            custom={direction}
+            variants={PANEL_VARIANTS}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            onAnimationStart={() => {
+              animating.current = true;
+            }}
+            className="absolute inset-0 will-change-transform"
           >
-            <p className="font-tiny text-[11px] font-semibold uppercase tracking-[0.32em] text-red-600">
-              {industry.label}
-            </p>
-
-            <h2 className="mt-3 font-heading text-[clamp(22px,6vw,30px)] font-bold leading-[1.15] tracking-tight text-[#1A1A1A]">
-              {industry.headline}
-            </h2>
-
-            <p className="mt-3 font-body text-[14px] leading-relaxed text-[#555] sm:text-[15px]">
-              {industry.description}
-            </p>
-
-            <div className="mt-6 flex flex-col gap-2.5">
-              {industry.benefits.map((benefit, bi) => (
-                <div
-                  key={bi}
-                  className="flex items-center gap-3 rounded-xl bg-white px-4 py-3.5 shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
-                >
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-50">
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="#D93025"
-                      strokeWidth={1.75}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="h-5 w-5"
-                      aria-hidden
-                    >
-                      <path d={benefit.iconPath} />
-                    </svg>
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-heading text-[14px] font-bold leading-tight text-[#1A1A1A]">
-                      {benefit.stat}
-                    </p>
-                    <p className="mt-0.5 font-body text-[11px] leading-snug text-[#888]">
-                      {benefit.label}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-7 text-black">
-              <InteractiveHoverButton href="/contact">
-                Contact Sales
-              </InteractiveHoverButton>
-            </div>
-          </div>
-        </section>
-      ))}
+            <MobileIndustrySlide
+              industry={INDUSTRIES[activeIndex]}
+              direction={direction}
+              animated={hasNavigated}
+            />
+          </motion.div>
+        </AnimatePresence>
+      </div>
     </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MobileIndustrySlide — image-top / text-below variant sized for 100vh
+// ─────────────────────────────────────────────────────────────────────────────
+function MobileIndustrySlide({
+  industry,
+  direction,
+  animated,
+}: {
+  industry: Industry;
+  direction: 1 | -1;
+  animated: boolean;
+}) {
+  const d = direction > 0 ? 1 : -1;
+  const init = (props: TargetAndTransition): TargetAndTransition | false =>
+    animated ? props : false;
+
+  return (
+    <section
+      aria-label={industry.label}
+      className="relative flex h-full w-full flex-col"
+      style={{ backgroundColor: '#F4EFE7' }}
+    >
+      {/* Per-industry tint on the lower text half */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-[58%]"
+        style={{ backgroundColor: industry.tint }}
+      />
+
+      {/* ── Image on top (42% of viewport) ─────────────────────────── */}
+      <div className="relative h-[42%] w-full shrink-0 overflow-hidden">
+        <motion.div
+          initial={animated ? { scale: 1.06 } : false}
+          animate={{ scale: 1 }}
+          transition={{ duration: 0.9, ease: CONTENT_EASE }}
+          className="absolute inset-0 will-change-transform"
+          style={{ transformOrigin: 'center center' }}
+        >
+          {industry.imageSrc ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={industry.imageSrc}
+              alt={industry.label}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-zinc-200/80">
+              <span className="select-none font-tiny text-[10px] uppercase tracking-[0.3em] text-zinc-400">
+                {industry.placeholder}
+              </span>
+            </div>
+          )}
+        </motion.div>
+      </div>
+
+      {/* ── Text below (58% of viewport) — compact to fit ──────────── */}
+      <div className="relative z-10 flex h-[58%] w-full flex-col px-5 py-4 sm:px-8 sm:py-6">
+        <motion.p
+          initial={init({ opacity: 0, y: d * 16 })}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.08, ease: CONTENT_EASE }}
+          className="font-tiny text-[10px] font-semibold uppercase tracking-[0.32em] text-red-600"
+        >
+          {industry.label}
+        </motion.p>
+
+        <motion.h2
+          initial={init({ opacity: 0, y: d * 22 })}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.14, ease: CONTENT_EASE }}
+          className="mt-2 font-heading text-[19px] font-bold leading-[1.12] tracking-tight text-[#1A1A1A] sm:text-[22px]"
+        >
+          {industry.headline}
+        </motion.h2>
+
+        <motion.p
+          initial={init({ opacity: 0, y: d * 16 })}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.2, ease: CONTENT_EASE }}
+          className="mt-2 font-body text-[12px] leading-snug text-[#555] sm:text-[13px]"
+        >
+          {industry.description}
+        </motion.p>
+
+        {/* Benefits — 2-col compact grid */}
+        <div className="mt-3 grid grid-cols-2 gap-1.5 sm:gap-2">
+          {industry.benefits.slice(0, 4).map((benefit, bi) => (
+            <motion.div
+              key={bi}
+              initial={init({ opacity: 0, y: d * 12 })}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.4,
+                delay: 0.26 + bi * 0.05,
+                ease: CONTENT_EASE,
+              }}
+              className="flex items-center gap-2 rounded-lg bg-white px-2 py-1.5 shadow-[0_1px_4px_rgba(0,0,0,0.06)]"
+            >
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-red-50">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#D93025"
+                  strokeWidth={1.75}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-4 w-4"
+                  aria-hidden
+                >
+                  <path d={benefit.iconPath} />
+                </svg>
+              </div>
+              <div className="min-w-0">
+                <p className="truncate font-heading text-[11px] font-bold leading-tight text-[#1A1A1A]">
+                  {benefit.stat}
+                </p>
+                <p className="truncate font-body text-[9px] leading-tight text-[#888]">
+                  {benefit.label}
+                </p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        <motion.div
+          initial={init({ opacity: 0, y: d * 10 })}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.45, ease: CONTENT_EASE }}
+          className="mt-auto pt-3 text-black"
+        >
+          <InteractiveHoverButton href="/contact">
+            Contact Sales
+          </InteractiveHoverButton>
+        </motion.div>
+      </div>
+    </section>
   );
 }
