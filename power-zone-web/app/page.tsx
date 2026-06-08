@@ -46,19 +46,13 @@ const HERO_ITEM_VARIANTS = {
 };
 
 export default function Home() {
-  // Lenis on the homepage — tuned ONLY to CAP MAX SCROLL VELOCITY,
-  // not to add general smoothing. Why these specific values:
-  //   - syncTouch:true + syncTouchLerp:0.06 → fast mobile swipes
-  //     get heavily dampened (the lerp's slow catch-up cap-limits
-  //     scroll-per-frame); slow swipes barely notice it since the
-  //     lerp target is tiny.
-  //   - touchMultiplier:0.85 → swipe distance ~15% less than native,
-  //     reinforces the velocity cap.
-  // NOT setting custom `lerp` for desktop wheel — leaves it at Lenis
-  // defaults so desktop scroll feels native (no double-smoothing
-  // with ProcessSection's useSpring, which was the source of the
-  // earlier jitter when we had `lerp:0.25` + `duration:0.6`).
-  useLenis({ syncTouch: true, syncTouchLerp: 0.06, touchMultiplier: 0.85 });
+  // Lenis on the homepage — tuned to CAP MAX SCROLL VELOCITY without
+  // over-throttling. Previous syncTouchLerp:0.06 + touchMultiplier:0.85
+  // felt sluggish on a normal scroll. New values let normal scrolls
+  // feel near-native while still dampening fast flings:
+  //   - syncTouchLerp:0.12 → catches up roughly 2× faster than 0.06
+  //   - touchMultiplier:0.95 → only ~5% reduction from native distance
+  useLenis({ syncTouch: true, syncTouchLerp: 0.12, touchMultiplier: 0.95 });
 
   // `introDone` defaults to TRUE so the server renders the post-intro hero
   // (real marketing copy in the SSR HTML — SEO, view-source, no-JS users).

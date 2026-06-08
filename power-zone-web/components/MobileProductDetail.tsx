@@ -22,6 +22,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import type { Product } from "@/data/products";
 import { textOn } from "@/data/products";
+import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
 
 type Props = {
   product: Product;
@@ -286,24 +287,18 @@ export default function MobileProductDetail({ product, onClose }: Props) {
           </>
         )}
 
-        {/* CTAs — only Contact Sales now. The "View on powerzone.com.pk"
-            external link has been removed per the design ask.
+        {/* CTA — exact same component as Applications page Contact
+            Sales (InteractiveHoverButton: dot-fill radial animation).
             onClick triggers the overlay's exit IMMEDIATELY before the
-            navigation fires. Without that, the heavy overlay (clip-path
-            transition, big content area) was still mounted during the
-            page transition's radial curtain reveal — and the curtain
-            paint had to composite against the still-animating overlay
-            on every frame, producing the visible stutter. Closing the
-            overlay first lets the curtain animate against a clean page. */}
-        <div className="mt-10">
-          <a
+            navigation fires so the page-transition curtain doesn't
+            stutter compositing against the still-animating overlay. */}
+        <div className="mt-10 text-black" style={{ color: fg }}>
+          <InteractiveHoverButton
             href="/contact"
             onClick={() => onClose()}
-            className="font-tiny inline-flex items-center justify-center rounded-full border px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.22em] transition-colors"
-            style={{ borderColor: `${fg}55`, color: fg }}
           >
             Contact Sales
-          </a>
+          </InteractiveHoverButton>
         </div>
       </div>
     </div>

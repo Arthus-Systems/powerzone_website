@@ -939,7 +939,9 @@ function MobileIndustrySlide({
           initial={init({ opacity: 0, y: d * 10 })}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.42, ease: CONTENT_EASE }}
-          className="mt-auto pt-2 text-black"
+          /* mt-3 puts the CTA directly under the benefit cards instead
+             of pinning it to the bottom of the text column with mt-auto. */
+          className="mt-3 text-black"
         >
           <InteractiveHoverButton href="/contact">
             Contact Sales

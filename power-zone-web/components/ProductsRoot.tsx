@@ -159,7 +159,7 @@ function CategorySwitch({
     //     navbar at top-[64px].
     // Pointer events disabled at the wrapper so the empty side area
     // doesn't intercept clicks meant for the page underneath.
-    <div className="pointer-events-none fixed left-0 right-0 top-[14px] z-[95] flex justify-center md:top-[64px] md:z-[85]">
+    <div className="pointer-events-none fixed left-0 right-0 top-[12px] z-[95] flex justify-center md:top-[64px] md:z-[85]">
       <motion.div
         animate={{ y: hidden ? -160 : 0 }}
         transition={{ duration: 0.45, ease: [0.76, 0, 0.24, 1] }}
@@ -168,10 +168,10 @@ function CategorySwitch({
         <div
           role="group"
           aria-label="Switch product category"
-          /* Mobile: 25% smaller (gap-0.5 p-0.5). Desktop: original
-             gap-1 p-1. */
+          /* Mobile: gap-1 + p-0.5 (slightly larger than the previous
+             gap-0.5/p-0.5 — issue 4's +10% bump). Desktop unchanged. */
           className="
-            flex items-center gap-0.5 rounded-full
+            flex items-center gap-1 rounded-full
             border border-white/15 bg-black/55 p-0.5
             shadow-[0_4px_18px_rgba(0,0,0,0.35)]
             backdrop-blur-md
@@ -187,12 +187,11 @@ function CategorySwitch({
                 onClick={(e) => handleClick(e, cat.id)}
                 aria-pressed={active}
                 aria-label={`Switch to ${cat.label}`}
-                /* Mobile: 25% smaller padding + font (px-3.5 py-1
-                   text-[8px] tracking-0.16em). Desktop: original
-                   px-5 py-1.5 text-[11px] tracking-0.2em. */
+                /* Mobile: +10% bump — px-4 py-1.5 text-[9px]
+                   tracking-0.18em. Desktop unchanged. */
                 className={
-                  "font-tiny cursor-pointer rounded-full px-3.5 py-1 " +
-                  "text-[8px] font-semibold uppercase tracking-[0.16em] " +
+                  "font-tiny cursor-pointer rounded-full px-4 py-1.5 " +
+                  "text-[9px] font-semibold uppercase tracking-[0.18em] " +
                   "transition-colors duration-300 " +
                   "md:px-5 md:py-1.5 md:text-[11px] md:tracking-[0.2em] " +
                   (active

@@ -15,6 +15,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import StaggeredMenu, { type StaggeredMenuItem } from '@/components/ui/StaggeredMenu';
 
 export const NAV_LINKS = [
@@ -39,6 +41,35 @@ const STAGGERED_ITEMS: StaggeredMenuItem[] = NAV_LINKS.map((l) => ({
 
 export default function Navbar({ className = '' }: { className?: string }) {
   const pathname = usePathname() || '/';
+
+  // ── Footer-near detection (mobile only) ─────────────────────────
+  // Same IntersectionObserver pattern as ContactFloatingCTA: watch
+  // the page's <footer> with a small bottom inset on the rootMargin
+  // and toggle `footerNear` when it intersects. Used below to slide
+  // the mobile StaggeredMenu (logo + toggle) up + fade out before
+  // the footer arrives, matching the contact-CTA behavior.
+  const [footerNear, setFooterNear] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    let observer: IntersectionObserver | null = null;
+    let attempt = 0;
+    const tryAttach = () => {
+      const footer = document.querySelector('footer');
+      if (!footer) {
+        if (attempt++ < 30) window.setTimeout(tryAttach, 300);
+        return;
+      }
+      observer = new IntersectionObserver(
+        ([entry]) => setFooterNear(entry.isIntersecting),
+        { rootMargin: '0px 0px -10% 0px' },
+      );
+      observer.observe(footer);
+    };
+    tryAttach();
+    return () => {
+      observer?.disconnect();
+    };
+  }, []);
 
   // A link is "active" when the user is on its route, or — for non-home
   // routes — when they're on a sub-route of it (e.g. /blog/some-post).
@@ -142,7 +173,20 @@ export default function Navbar({ className = '' }: { className?: string }) {
           `displayItemNumbering={false}` removes the 01/02/03 superscripts.
           `closeOnItemClick` triggers the menu's slide-out animation the
           moment a link is tapped so the close + page transition overlap. */}
-      <div className="md:hidden">
+      {/* Mobile StaggeredMenu wrapped in a motion.div that slides up +
+          fades when the footer enters view. Same animation pattern as
+          ContactFloatingCTA so the two hide together. Desktop wrapper
+          above is NOT wrapped — desktop stays always-visible. */}
+      <motion.div
+        className="md:hidden"
+        initial={false}
+        animate={
+          footerNear
+            ? { opacity: 0, y: -60, scale: 0.92, pointerEvents: 'none' }
+            : { opacity: 1, y: 0, scale: 1, pointerEvents: 'auto' }
+        }
+        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+      >
         <StaggeredMenu
           isFixed
           position="right"
@@ -162,7 +206,7 @@ export default function Navbar({ className = '' }: { className?: string }) {
           colors={[PZ_RED, PZ_BLUE]}
           accentColor={PZ_RED}
         />
-      </div>
+      </motion.div>
     </nav>
   );
 }

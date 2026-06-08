@@ -67,6 +67,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 }: StaggeredMenuProps) => {
   const [open, setOpen] = useState(false);
   const openRef = useRef(false);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const preLayersRef = useRef<HTMLDivElement | null>(null);
   const preLayerElsRef = useRef<HTMLElement[]>([]);
@@ -133,6 +134,12 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
     // (instantCloseMenu doesn't set it either) — the panel keeps the
     // opacity:1 it got from useLayoutEffect at mount, so clearing
     // visibility is enough to make it visible again.
+    // Restore the wrapper's display FIRST (instantCloseMenu set it to
+    // 'none'); then clear the per-element visibility/pointer-events
+    // hides so the slide-in animation has something to animate against.
+    if (wrapperRef.current) {
+      wrapperRef.current.style.display = '';
+    }
     const clearHardHide = (el: HTMLElement) => {
       el.style.visibility = '';
       el.style.pointerEvents = '';
@@ -472,8 +479,35 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
       gsap.set(textInnerRef.current, { yPercent: 0 });
       setTextLines(['Menu', 'Close']);
     }
+
+    // PRIMARY hide: display:none on the outer wrapper. Removes the
+    // entire menu subtree from the render tree, so no browser paint
+    // scheduling quirk (Brave/Chromium) can expose the panel between
+    // the GlobalTransitions curtain and the new page paint. The
+    // visibility:hidden / pointer-events:none above are belt-and-
+    // suspenders kept for the rare case where the wrapper is itself
+    // re-mounted with display restored before buildOpenTimeline gets
+    // to run.
+    if (wrapperRef.current) {
+      wrapperRef.current.style.display = 'none';
+    }
+
     busyRef.current = false;
   }, [position, onMenuClose, menuButtonColor]);
+
+  // ── BODY SCROLL LOCK while menu is open ──────────────────────────
+  // Prevents the underlying page from scrolling behind the sidebar.
+  // Captures the original `body.style.overflow` value on open and
+  // restores it on close so we don't clobber any other code that
+  // might be managing overflow.
+  React.useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
 
   React.useEffect(() => {
     if (!closeOnClickAway || !open) return;
@@ -495,6 +529,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 
   return (
     <div
+      ref={wrapperRef}
       className={(className ? className + ' ' : '') + 'staggered-menu-wrapper' + (isFixed ? ' fixed-wrapper' : '')}
       style={accentColor ? ({ ['--sm-accent']: accentColor } as React.CSSProperties) : undefined}
       data-position={position}

@@ -265,7 +265,7 @@ function ProcessCardContent({
       className="
         pointer-events-auto
         relative grid
-        w-[88vw] h-[60vh] max-h-[440px]
+        w-[88vw] h-full
         grid-rows-[40%_60%]
         md:w-full md:max-w-[1100px] md:h-[60vh] md:max-h-[560px] md:min-h-[440px]
         md:grid-rows-1 md:grid-cols-2
