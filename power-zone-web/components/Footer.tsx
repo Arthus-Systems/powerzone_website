@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState, type FormEvent } from 'react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
+import TiltedFrame from '@/components/ui/TiltedFrame';
 
 // ───────────────────────────────────────────────────────────────────────────
 // CONTENT
@@ -176,59 +177,71 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* COL 2 — Lahore warehouse map */}
+          {/* COL 2 — Lahore warehouse map (tilted card) */}
           <div className="flex flex-col">
             <h3 className="font-tiny text-[14px] font-semibold text-white md:text-[15px]">
               Visit Our Warehouse
             </h3>
-            <a
-              href={LAHORE_MAPS_LINK}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="
-                group mt-3 flex flex-1 flex-col overflow-hidden rounded-xl
-                border border-white/15 bg-white/[0.03]
-                transition-colors duration-200
-                hover:border-white/35
-              "
-              aria-label="Open Power Zone Lahore warehouse in Google Maps"
+            {/* TiltedFrame applies the same hover-tilt mechanic the
+                PeekProducts cards use, scaled gently (rotateAmplitude
+                8, scaleOnHover 1.03) since this is a small footer
+                element rather than a hero card. flex-1 lets the
+                wrapper grow to fill the column's vertical space. */}
+            <TiltedFrame
+              className="mt-3 flex-1"
+              rotateAmplitude={8}
+              scaleOnHover={1.03}
             >
-              {/* Map fills all available vertical space inside the
-                  column — flex-1 keeps the address strip pinned at
-                  the bottom regardless of the column's actual height. */}
-              <div className="relative min-h-[160px] flex-1 bg-black/40 md:min-h-[140px]">
-                <iframe
-                  src={LAHORE_MAPS_EMBED}
-                  title="Power Zone Lahore warehouse location"
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  className="
-                    pointer-events-none absolute inset-0 h-full w-full
-                    opacity-90 transition-opacity duration-200
-                    group-hover:opacity-100
-                  "
-                  style={{ border: 0, filter: 'grayscale(0.15)' }}
-                />
-              </div>
-              <div className="flex items-start gap-2.5 border-t border-white/10 px-3.5 py-3">
-                <svg
-                  aria-hidden
-                  viewBox="0 0 12 16"
-                  fill="currentColor"
-                  className="mt-[3px] h-3 w-3 shrink-0 text-red-500"
-                >
-                  <path d="M6 0C3.79 0 2 1.79 2 4c0 2.5 4 8 4 8s4-5.5 4-8c0-2.21-1.79-4-4-4Zm0 5.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z" />
-                </svg>
-                <div className="min-w-0">
-                  <p className="font-tiny text-[11px] font-semibold uppercase tracking-[0.16em] text-white/85">
-                    Lahore
-                  </p>
-                  <p className="font-tiny mt-1 text-[11px] leading-snug text-white/60 md:text-[12px]">
-                    {LAHORE_ADDRESS}
-                  </p>
+              <a
+                href={LAHORE_MAPS_LINK}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="
+                  group flex h-full flex-col overflow-hidden rounded-xl
+                  border border-white/15 bg-white/[0.03]
+                  shadow-[0_18px_40px_-20px_rgba(0,0,0,0.55)]
+                  transition-colors duration-200
+                  hover:border-white/35
+                "
+                aria-label="Open Power Zone Lahore warehouse in Google Maps"
+              >
+                {/* Map fills all available vertical space inside the
+                    column — flex-1 keeps the address strip pinned at
+                    the bottom regardless of the column's actual height. */}
+                <div className="relative min-h-[160px] flex-1 bg-black/40 md:min-h-[140px]">
+                  <iframe
+                    src={LAHORE_MAPS_EMBED}
+                    title="Power Zone Lahore warehouse location"
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    className="
+                      pointer-events-none absolute inset-0 h-full w-full
+                      opacity-90 transition-opacity duration-200
+                      group-hover:opacity-100
+                    "
+                    style={{ border: 0, filter: 'grayscale(0.15)' }}
+                  />
                 </div>
-              </div>
-            </a>
+                <div className="flex items-start gap-2.5 border-t border-white/10 px-3.5 py-3">
+                  <svg
+                    aria-hidden
+                    viewBox="0 0 12 16"
+                    fill="currentColor"
+                    className="mt-[3px] h-3 w-3 shrink-0 text-red-500"
+                  >
+                    <path d="M6 0C3.79 0 2 1.79 2 4c0 2.5 4 8 4 8s4-5.5 4-8c0-2.21-1.79-4-4-4Zm0 5.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z" />
+                  </svg>
+                  <div className="min-w-0">
+                    <p className="font-tiny text-[11px] font-semibold uppercase tracking-[0.16em] text-white/85">
+                      Lahore
+                    </p>
+                    <p className="font-tiny mt-1 text-[11px] leading-snug text-white/60 md:text-[12px]">
+                      {LAHORE_ADDRESS}
+                    </p>
+                  </div>
+                </div>
+              </a>
+            </TiltedFrame>
           </div>
 
           {/* COL 3 — Link columns, stacked vertically for a tidy
