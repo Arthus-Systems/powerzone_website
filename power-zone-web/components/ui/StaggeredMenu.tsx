@@ -128,13 +128,14 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
     }
     itemEntranceTweenRef.current?.kill();
 
-    // Reset inline-style hides that instantCloseMenu may have applied,
-    // so the panel can become visible again as the open timeline plays.
+    // Reset the inline visibility / pointer-events hides that
+    // instantCloseMenu may have applied. We DO NOT touch opacity here
+    // (instantCloseMenu doesn't set it either) — the panel keeps the
+    // opacity:1 it got from useLayoutEffect at mount, so clearing
+    // visibility is enough to make it visible again.
     const clearHardHide = (el: HTMLElement) => {
-      el.style.opacity = '';
       el.style.visibility = '';
       el.style.pointerEvents = '';
-      // transform left to gsap to manage via xPercent
     };
     clearHardHide(panel);
     layers.forEach((el) => el && clearHardHide(el));
@@ -416,18 +417,29 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
     const offscreen = position === 'left' ? -100 : 100;
 
     // INLINE hide for the panel + each prelayer + the prelayers wrapper.
-    // The transform also moves them off-screen, but opacity + visibility
-    // + pointer-events ensure they're completely inert even if the
-    // transform gets reverted by a subsequent gsap.context cleanup.
+    // We use ONLY visibility + pointer-events here — NOT opacity.
+    // Why: the panel's CSS default is `opacity: 0` (overridden once at
+    // mount by useLayoutEffect's gsap.set to `1`). If we set inline
+    // opacity to anything and then later cleared it, the CSS default
+    // would re-apply and the panel would become permanently invisible
+    // on the next open. Setting xPercent via gsap.set (below) gives us
+    // the off-screen transform; visibility:hidden is the bulletproof
+    // hide that gsap.context.revert() can't undo.
     const hardHide = (el: HTMLElement) => {
-      el.style.transform = `translate3d(${offscreen}%, 0, 0)`;
-      el.style.opacity = '0';
       el.style.visibility = 'hidden';
       el.style.pointerEvents = 'none';
     };
-    if (panel) hardHide(panel);
+    if (panel) {
+      gsap.set([panel, ...layers], { xPercent: offscreen, overwrite: 'auto' });
+      hardHide(panel);
+    } else if (layers.length) {
+      gsap.set(layers, { xPercent: offscreen, overwrite: 'auto' });
+    }
     layers.forEach((el) => el && hardHide(el));
-    if (preContainer) hardHide(preContainer);
+    if (preContainer) {
+      gsap.set(preContainer, { xPercent: 0, overwrite: 'auto' });
+      hardHide(preContainer);
+    }
 
     // Reset inner item / numbering / socials to their pre-open state so
     // the next open replays its full entrance cleanly.

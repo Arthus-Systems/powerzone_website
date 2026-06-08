@@ -662,39 +662,63 @@ function MobileIndustryStack() {
   const activeRef = useRef(0);
   const animating = useRef(false);
 
-  // Scroll-position-driven active index. As the user scrolls into the
-  // tall outer container (N * 100vh), every 100vh of scroll past the
-  // section top advances the active slide by one. AnimatePresence
-  // handles the visual transition via PANEL_VARIANTS.
+  // Touch-swipe-gesture-driven active index. Each ONE swipe gesture
+  // (touchstart → touchend) advances the slide by ONE — gated by
+  // `animating`, so the user can't compound multiple advances mid-
+  // animation. The scroll-position-driven approach (every 100vh of
+  // native scroll = next slide) skipped slides on long momentum
+  // gestures; this is one gesture = one slide regardless of
+  // momentum scroll distance.
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const onScroll = () => {
+    let touchStartY = 0;
+    let touchActive = false;
+    const SWIPE_THRESHOLD = 40; // pixels of finger travel to count as a swipe
+
+    const isInSection = () => {
       const outer = outerRef.current;
-      if (!outer) return;
+      if (!outer) return false;
       const rect = outer.getBoundingClientRect();
       const vh = window.innerHeight;
-      if (vh <= 0) return;
-
-      // How many pixels past the section top has the viewport scrolled?
-      // Negative while still above the section; clamped at the end.
-      const scrolled = -rect.top;
-      const sectionMaxScroll = (N - 1) * vh;
-      const clamped = Math.max(0, Math.min(sectionMaxScroll, scrolled));
-      const idx = Math.max(0, Math.min(N - 1, Math.round(clamped / vh)));
-
-      if (idx !== activeRef.current && !animating.current) {
-        const dir: 1 | -1 = idx > activeRef.current ? 1 : -1;
-        activeRef.current = idx;
-        setHasNavigated(true);
-        setDirection(dir);
-        setActiveIndex(idx);
-      }
+      // Section sticky-pinned when its top is at/above viewport top
+      // AND its bottom is at/below viewport bottom.
+      return rect.top <= 0 && rect.bottom >= vh;
     };
 
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    const onTouchStart = (e: TouchEvent) => {
+      if (!isInSection()) return;
+      touchStartY = e.touches[0]?.clientY ?? 0;
+      touchActive = true;
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      if (!touchActive) return;
+      touchActive = false;
+      if (!isInSection()) return;
+      if (animating.current) return;
+
+      const endY = e.changedTouches[0]?.clientY ?? touchStartY;
+      const deltaY = touchStartY - endY; // +ve = swipe up (advance)
+      if (Math.abs(deltaY) < SWIPE_THRESHOLD) return;
+
+      const dir: 1 | -1 = deltaY > 0 ? 1 : -1;
+      const next = activeRef.current + dir;
+      if (next < 0 || next >= N) return; // edge — let native scroll out
+
+      activeRef.current = next;
+      setHasNavigated(true);
+      setDirection(dir);
+      setActiveIndex(next);
+      animating.current = true;
+    };
+
+    window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchend', onTouchEnd, { passive: true });
+    return () => {
+      window.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchend', onTouchEnd);
+    };
   }, [N]);
 
   return (
@@ -819,8 +843,8 @@ function MobileIndustrySlide({
           {industry.description}
         </motion.p>
 
-        {/* Benefits — 2-col compact grid */}
-        <div className="mt-3 grid grid-cols-2 gap-1.5 sm:gap-2">
+        {/* Benefits — one per row, full screen width. */}
+        <div className="mt-3 flex flex-col gap-2">
           {industry.benefits.slice(0, 4).map((benefit, bi) => (
             <motion.div
               key={bi}
@@ -831,9 +855,9 @@ function MobileIndustrySlide({
                 delay: 0.26 + bi * 0.05,
                 ease: CONTENT_EASE,
               }}
-              className="flex items-center gap-2 rounded-lg bg-white px-2 py-1.5 shadow-[0_1px_4px_rgba(0,0,0,0.06)]"
+              className="flex w-full items-center gap-3 rounded-xl bg-white px-3.5 py-2.5 shadow-[0_2px_6px_rgba(0,0,0,0.06)]"
             >
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-red-50">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-50">
                 <svg
                   viewBox="0 0 24 24"
                   fill="none"
@@ -847,11 +871,11 @@ function MobileIndustrySlide({
                   <path d={benefit.iconPath} />
                 </svg>
               </div>
-              <div className="min-w-0">
-                <p className="truncate font-heading text-[11px] font-bold leading-tight text-[#1A1A1A]">
+              <div className="min-w-0 flex-1">
+                <p className="font-heading text-[13px] font-bold leading-tight text-[#1A1A1A]">
                   {benefit.stat}
                 </p>
-                <p className="truncate font-body text-[9px] leading-tight text-[#888]">
+                <p className="mt-0.5 font-body text-[10px] leading-tight text-[#888]">
                   {benefit.label}
                 </p>
               </div>
