@@ -35,6 +35,7 @@
 }
 
 .sm-logo {
+  position: relative;
   display: flex;
   align-items: center;
   user-select: none;
@@ -45,6 +46,28 @@
   height: 32px;
   width: auto;
   object-fit: contain;
+}
+/* Two logo variants — closed (default visible) and open (stacked on
+ * top, hidden by default). Toggling `data-open` on the wrapper swaps
+ * which one is visible. Avoids the prior `filter: invert(100%)` color
+ * flip the user explicitly didn't want. */
+.sm-logo-img--open {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease 0.15s;
+}
+.sm-logo-img--closed {
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+.staggered-menu-wrapper[data-open] .sm-logo-img--closed {
+  opacity: 0;
+}
+.staggered-menu-wrapper[data-open] .sm-logo-img--open {
+  opacity: 1;
 }
 
 .sm-toggle {
@@ -331,9 +354,6 @@
     left: 0;
     right: 0;
   }
-  .staggered-menu-wrapper[data-open] .sm-logo-img {
-    filter: invert(100%);
-  }
 }
 
 @media (max-width: 640px) {
@@ -347,8 +367,5 @@
     width: 100%;
     left: 0;
     right: 0;
-  }
-  .staggered-menu-wrapper[data-open] .sm-logo-img {
-    filter: invert(100%);
   }
 }

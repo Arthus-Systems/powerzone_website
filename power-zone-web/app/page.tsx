@@ -21,6 +21,7 @@ import PeekProductsSection from '@/components/PeekProductsSection';
 import CustomerLogos from '@/components/CustomerLogos';
 import Footer from '@/components/Footer';
 import ContactFloatingCTA from '@/components/ContactFloatingCTA';
+import { useLenis } from '@/hooks/useLenis';
 
 // Pre-rendered final frame of /poweron.mp4 — painted as the hero
 // background for return visits that skip the intro.
@@ -45,6 +46,14 @@ const HERO_ITEM_VARIANTS = {
 };
 
 export default function Home() {
+  // Lenis smooth-scroll on the homepage. `syncTouch: true` is the
+  // critical bit — it lerps mobile touch scroll, taming fast-swipe
+  // momentum that was previously blasting past pinned sections
+  // (SolutionsSection's GSAP horizontal scroll especially) faster
+  // than the user could see the animations resolve. Also gives the
+  // wheel scroll a slight glide on desktop for consistency.
+  useLenis({ syncTouch: true });
+
   // `introDone` defaults to TRUE so the server renders the post-intro hero
   // (real marketing copy in the SSR HTML — SEO, view-source, no-JS users).
   // The fresh-desktop-visit case flips it to false in useEffect below, which

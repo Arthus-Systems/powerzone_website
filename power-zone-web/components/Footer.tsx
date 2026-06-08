@@ -308,29 +308,35 @@ export default function Footer() {
     </footer>
   );
 
-  // Two render modes:
-  //   MOBILE (<md): plain block, natural height. The footer content
-  //     (subscribe + map + 3 link columns + brand strip with PowerZone
-  //     + FPT logos) is dense and stacks tall on phone widths — the
-  //     sticky-reveal h-[90vh] mode clipped the brand strip off the
-  //     bottom because `overflow-hidden` on the inner <footer> cut
-  //     anything past the sticky container. Plain block lets every
-  //     row land on screen as the user scrolls.
-  //   DESKTOP (md+): sticky-reveal mechanic preserved — the footer
-  //     slides up from below as the user reaches the page bottom, on
-  //     a fixed 90vh stage where all content fits comfortably.
+  // Two render modes — both use the sticky slide-up reveal now, but
+  // with different stage sizing:
+  //   MOBILE (<md): full-viewport (h-screen) stage so the dense
+  //     mobile-stacked content (subscribe + map + 3 link columns +
+  //     brand strip with PowerZone + FPT logos) gets the full
+  //     viewport to breathe. The sticky inner allows internal scroll
+  //     so the brand strip stays reachable even if content exceeds
+  //     100vh on short phones. `[&>footer]` overrides cancel the
+  //     inner footer's h-full + overflow-hidden constraints so
+  //     content can extend to its natural height inside the
+  //     scrollable sticky.
+  //   DESKTOP (md+): 90vh stage, content fits comfortably so no
+  //     internal scroll needed.
   return (
     <>
-      {/* MOBILE — plain block. The [&>footer]:h-auto override lets the
-          inner <footer>'s h-full give up its full-height constraint so
-          natural content height takes over. */}
-      <div className="block w-full bg-black md:hidden">
-        <div className="min-h-fit w-full [&>footer]:h-auto [&>footer]:overflow-visible">
-          {footerInner}
+      {/* MOBILE — sticky reveal on a full-viewport stage with internal
+          scroll fallback so the brand strip is always reachable. */}
+      <div
+        className="relative h-screen w-full md:hidden"
+        style={{ clipPath: 'polygon(0% 0, 100% 0%, 100% 100%, 0 100%)' }}
+      >
+        <div className="relative h-[calc(100vh+100vh)] -top-[100vh]">
+          <div className="sticky top-0 h-screen overflow-y-auto [&>footer]:h-auto [&>footer]:min-h-full [&>footer]:overflow-visible">
+            {footerInner}
+          </div>
         </div>
       </div>
 
-      {/* DESKTOP — sticky-reveal mechanic. */}
+      {/* DESKTOP — sticky-reveal mechanic at 90vh. */}
       <div
         className="relative hidden h-[90vh] w-full md:block"
         style={{ clipPath: 'polygon(0% 0, 100% 0%, 100% 100%, 0 100%)' }}

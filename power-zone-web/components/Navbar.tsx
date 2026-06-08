@@ -152,6 +152,10 @@ export default function Navbar({ className = '' }: { className?: string }) {
           displayItemNumbering={false}
           closeOnItemClick
           logoUrl="/images/logo-on-dark.webp"
+          /* When the menu opens its panel is white — swap to the
+             dark-on-light logo asset so the logo stays as itself
+             instead of color-flipping via CSS invert. */
+          openLogoUrl="/images/logo-on-light.webp"
           menuButtonColor={menuToggleColor}
           openMenuButtonColor="#000"
           changeMenuColorOnOpen

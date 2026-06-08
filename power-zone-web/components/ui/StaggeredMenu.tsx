@@ -35,6 +35,11 @@ export interface StaggeredMenuProps {
    *  manually dismissed, which reads as a jarring "sidebar lingers,
    *  then disappears" beat between routes. */
   closeOnItemClick?: boolean;
+  /** Optional alternate logo shown when the menu is OPEN. Useful when
+   *  `logoUrl` is a white-on-dark asset and the open panel has a light
+   *  background — passing a dark-on-light version here avoids the
+   *  visually jarring CSS invert filter that would otherwise be needed. */
+  openLogoUrl?: string;
   onMenuOpen?: () => void;
   onMenuClose?: () => void;
   isFixed?: boolean;
@@ -56,6 +61,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   isFixed = false,
   closeOnClickAway = true,
   closeOnItemClick = false,
+  openLogoUrl,
   onMenuOpen,
   onMenuClose,
 }: StaggeredMenuProps) => {
@@ -406,14 +412,30 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
       </div>
       <header className="staggered-menu-header" aria-label="Main navigation header">
         <div className="sm-logo" aria-label="Logo">
+          {/* Two logo variants — closed (default) and open (for when
+              the white panel covers the page). CSS hides one based on
+              the wrapper's data-open attribute. Avoids the previous
+              `filter: invert(100%)` trick which read as a jarring
+              color flip. If no openLogoUrl is provided, the same logo
+              shows in both states. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={logoUrl}
             alt="Logo"
-            className="sm-logo-img"
+            className="sm-logo-img sm-logo-img--closed"
             draggable={false}
             width={110}
             height={24}
+          />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={openLogoUrl || logoUrl}
+            alt="Logo"
+            className="sm-logo-img sm-logo-img--open"
+            draggable={false}
+            width={110}
+            height={24}
+            aria-hidden
           />
         </div>
         <button
