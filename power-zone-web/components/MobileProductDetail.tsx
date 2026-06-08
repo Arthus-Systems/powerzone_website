@@ -287,26 +287,18 @@ export default function MobileProductDetail({ product, onClose }: Props) {
           </>
         )}
 
-        {/* CTA — exact same component as Applications page Contact
-            Sales (InteractiveHoverButton: dot-fill radial animation).
-            Wrapped in a div with `transform: translateZ(0)` + `isolation`
-            so the button gets its OWN compositor layer — the overlay's
-            heavy content (clip-path, image, dense text) was forcing
-            paint composition every frame of the hover animation,
-            producing the lag. Promoting the button to its own layer
-            lets the radial dot-fill animate against an empty buffer.
-            onClick removed — letting the click flow naturally lets
-            the radial animation play uninterrupted before navigation;
-            the overlay gets cleared by Next.js route change anyway. */}
-        <div
-          className="mt-10"
-          style={{
-            color: fg,
-            transform: 'translateZ(0)',
-            isolation: 'isolate',
-            willChange: 'transform',
-          }}
-        >
+        {/* CTA — same component as Applications page Contact Sales
+            (InteractiveHoverButton, dot-fill radial animation).
+            Plain wrapper, no transform / isolation / will-change.
+            The earlier GPU-layer promotion added `transform:
+            translateZ(0)` + `isolation: isolate` to "fix" paint lag,
+            but those each create a stacking context that CAPS the
+            dot's z-10 inside the wrapper — the dot then can't paint
+            above sibling overlay content. Removing the promotion
+            restores normal stacking: the red dot fills in front of
+            everything as intended (matches the Applications mobile
+            wrapper which is also a plain div with no transform). */}
+        <div className="mt-10" style={{ color: fg }}>
           <InteractiveHoverButton href="/contact">
             Contact Sales
           </InteractiveHoverButton>
