@@ -29,6 +29,12 @@ export interface StaggeredMenuProps {
   accentColor?: string;
   changeMenuColorOnOpen?: boolean;
   closeOnClickAway?: boolean;
+  /** When true, clicking a menu item triggers the close animation
+   *  immediately (the click then proceeds to navigate via the anchor's
+   *  href). Without this the menu stays mounted on the new page until
+   *  manually dismissed, which reads as a jarring "sidebar lingers,
+   *  then disappears" beat between routes. */
+  closeOnItemClick?: boolean;
   onMenuOpen?: () => void;
   onMenuClose?: () => void;
   isFixed?: boolean;
@@ -49,6 +55,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   accentColor = '#5227FF',
   isFixed = false,
   closeOnClickAway = true,
+  closeOnItemClick = false,
   onMenuOpen,
   onMenuClose,
 }: StaggeredMenuProps) => {
@@ -440,7 +447,22 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
             {items && items.length ? (
               items.map((it, idx) => (
                 <li className="sm-panel-itemWrap" key={it.label + idx}>
-                  <a className="sm-panel-item" href={it.link} aria-label={it.ariaLabel} data-index={idx + 1}>
+                  <a
+                    className="sm-panel-item"
+                    href={it.link}
+                    aria-label={it.ariaLabel}
+                    data-index={idx + 1}
+                    onClick={() => {
+                      // Kick off the close animation BEFORE the anchor's
+                      // default navigation fires. The browser/Next.js
+                      // navigation runs in parallel with the GSAP slide-
+                      // out tween, so by the time the new page paints,
+                      // the menu is already most of the way off-screen
+                      // (revealing the new page underneath instead of
+                      // lingering on top of it).
+                      if (closeOnItemClick) closeMenu();
+                    }}
+                  >
                     <span className="sm-panel-itemLabel">{it.label}</span>
                   </a>
                 </li>

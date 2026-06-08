@@ -119,28 +119,28 @@ export default function ProcessSection() {
   );
 
   // SMOOTHING LAYER — feed the clamped scroll progress through a spring
-  // so the cards' y / scale tweens don't follow scroll position with
-  // raw 1:1 fidelity. With the spring, every scroll delta gets
-  // attenuated through stiffness/damping, which turns the otherwise
-  // mechanical linear-interpolation between checkpoints into smooth,
-  // physics-driven transitions. The card stacking still completes at
-  // the same checkpoints — it just gets there with momentum instead
-  // of snap-tracking the scroll position.
+  // so the cards' y / scale tweens follow scroll position with smooth
+  // physics-driven momentum rather than 1:1 snap-tracking.
   //
-  // Tuning (low stiffness + critical damping = glassy ease):
-  //   stiffness: 40  → loose chase, cards lag noticeably behind scroll
-  //                    so every transition feels deliberate
-  //   damping:   30  → critically damped; no bounce/overshoot at all
-  //   restDelta: 0.0001 → tighter settle (smaller threshold = the spring
-  //                    keeps running until visually pixel-perfect rather
-  //                    than snapping to rest a frame too early)
-  // Combined with the bumped SECTION_VH_PER_STEP = 240 above, each card
-  // transition now spans ~240vh of scroll and is filtered through a
-  // gentle spring — net result is much smoother card-to-card motion.
+  // Tuning:
+  //   stiffness: 110  → fast enough to catch up before the user exits
+  //                     the section on a hard fast scroll (was 40 — the
+  //                     spring lagged so far behind on fast wheels that
+  //                     the first/last card "skipped" because the user
+  //                     was past the section's boundary before the
+  //                     spring reached its target)
+  //   damping:   28   → still no bounce/overshoot
+  //   restDelta: 0.0002 → tight settle so the cards land exactly on
+  //                     their checkpoint values
+  // 110 still feels glassy because the inputs themselves are spread
+  // over SECTION_VH_PER_STEP = 240 vh per card — the spring smooths
+  // the within-checkpoint linear interp without lagging far behind
+  // scroll. Net: cards move smoothly AND a fast wheel still lands you
+  // on the last (or first) card at the section boundaries.
   const smoothProgress = useSpring(clampedProgress, {
-    stiffness: 40,
-    damping: 30,
-    restDelta: 0.0001,
+    stiffness: 110,
+    damping: 28,
+    restDelta: 0.0002,
   });
 
   return (
@@ -215,18 +215,28 @@ function ProcessCard({
     const scaleValues: number[] = [];
     const opacityValues: number[] = [];
 
-    // Reserve the last DWELL_FRACTION of progress as dwell time for the
-    // final card. Without this, the last card's "active" checkpoint sits at
-    // progress=1.0 (the exact frame the section unsticks), so the user
-    // never sees it before Section 4 takes over. With dwell, all the
-    // transitions complete by progress=(1 - DWELL_FRACTION), and the final
-    // card stays at the front for the remaining scroll thanks to
-    // useTransform's automatic clamping past the last input keyframe.
-    const DWELL_FRACTION = 0.15;
+    // Reserve dwell time at BOTH ends of the scroll range so the
+    // first/last cards have settle room at the section boundaries:
+    //   - INTRO_FRACTION (top dwell) — gives the spring time to land
+    //     on card-0's "active" target after a hard fast scroll into the
+    //     section from above. Without this, the first card's active
+    //     checkpoint sits at progress=0 (the exact frame the section
+    //     becomes sticky), and a fast spring lag would skip it.
+    //   - DWELL_FRACTION (bottom dwell) — same logic for the last card
+    //     on a hard fast scroll out the bottom. The last card's
+    //     "active" checkpoint sits at (1 - DWELL_FRACTION) instead of
+    //     1.0, so the section's last DWELL_FRACTION-worth of scroll is
+    //     pure settle time for the spring to land on it.
+    // Bumped both to 0.22 (was 0.15 / 0) so even at hard fast wheels
+    // the spring has comfortable buffer to reach the boundary cards.
+    const INTRO_FRACTION = 0.22;
+    const DWELL_FRACTION = 0.22;
+    const transitionStart = INTRO_FRACTION;
     const transitionEnd = 1 - DWELL_FRACTION;
+    const transitionSpan = transitionEnd - transitionStart;
 
     for (let i = 0; i < total; i++) {
-      inputs.push((i / (total - 1)) * transitionEnd);
+      inputs.push(transitionStart + (i / (total - 1)) * transitionSpan);
       const level = i - index;
 
       if (level < 0) {
@@ -277,17 +287,18 @@ function ProcessCard({
       style={{ y, scale, zIndex: 10 + index }}
       className="pointer-events-none absolute inset-0 flex items-center justify-center px-3 py-[clamp(6px,1vh,16px)] md:px-8"
     >
-      {/* Mobile: cap card height at ~70vh so the card is a clear portrait
-          rectangle (not stretched square) and the section doesn't try to
-          fill every available pixel. Mobile layout stacks image on top +
-          text below; desktop keeps the original side-by-side text|image
-          layout that fills the full sticky viewport. */}
+      {/* Mobile: tall portrait rectangle — bumped to 84vh so the card
+          actually fills the available vertical space instead of feeling
+          condensed. Width capped at 92vw (small horizontal margin) so
+          the aspect stays clearly portrait on any phone. Image gets
+          45% of the height, text gets 55%. Desktop unchanged — keeps
+          full sticky-height side-by-side text|image layout. */}
       <div
         className="
           pointer-events-auto
           relative grid w-full max-w-[1400px]
-          h-auto max-h-[70vh] grid-rows-[42%_58%]
-          md:h-full md:max-h-none md:grid-rows-1 md:grid-cols-2
+          h-auto max-h-[84vh] max-w-[92vw] grid-rows-[45%_55%]
+          md:h-full md:max-h-none md:max-w-[1400px] md:grid-rows-1 md:grid-cols-2
           overflow-hidden rounded-[2rem]
           border border-white/10
           bg-[#1A1A1A]

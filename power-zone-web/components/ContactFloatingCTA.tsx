@@ -76,7 +76,11 @@ export default function ContactFloatingCTA() {
       <Link
         href="/contact"
         aria-label="Contact us"
-        className="group flex h-12 w-12 items-center overflow-hidden rounded-full bg-[#e8302a] text-white shadow-[0_10px_28px_rgba(232,48,42,0.45)] ring-1 ring-white/15 transition-[width,box-shadow] duration-300 ease-out hover:w-[180px] hover:shadow-[0_14px_34px_rgba(232,48,42,0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+        /* Hover-expand pill behavior gated to md+ only. On mobile a tap
+           should navigate immediately to /contact (the page's radial
+           reveal animation handles the visual transition) — the
+           expand-to-pill animation in the middle was wasted motion. */
+        className="group flex h-12 w-12 items-center overflow-hidden rounded-full bg-[#e8302a] text-white shadow-[0_10px_28px_rgba(232,48,42,0.45)] ring-1 ring-white/15 transition-[width,box-shadow] duration-300 ease-out md:hover:w-[180px] md:hover:shadow-[0_14px_34px_rgba(232,48,42,0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
       >
         <span className="flex h-12 w-12 flex-none items-center justify-center">
           <svg
@@ -92,7 +96,7 @@ export default function ContactFloatingCTA() {
             <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
           </svg>
         </span>
-        <span className="pr-5 whitespace-nowrap font-tiny text-[12px] font-bold uppercase tracking-[0.18em] opacity-0 transition-opacity duration-200 delay-75 group-hover:opacity-100">
+        <span className="pr-5 whitespace-nowrap font-tiny text-[12px] font-bold uppercase tracking-[0.18em] opacity-0 transition-opacity duration-200 delay-75 md:group-hover:opacity-100">
           Contact Us
         </span>
       </Link>

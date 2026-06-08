@@ -71,68 +71,77 @@ export default function Navbar({ className = '' }: { className?: string }) {
   return (
     <nav
       aria-label="Site navigation"
-      className={`
-        relative h-[62px] w-full
-        ${isHaloNavRoute ? '' : isBlackTextRoute ? 'text-black' : 'text-white mix-blend-difference'}
-        ${className}
-      `.trim()}
+      /* IMPORTANT: NO blend mode / route color on the root anymore.
+         Previously this was where the mix-blend-difference + text color
+         lived, which caused the StaggeredMenu (a child of <nav>) to
+         render with INVERTED colors on the homepage — the white panel
+         and the dark menu items got composited through the difference
+         blend against whatever page surface sat behind. The blend mode
+         now applies only to the desktop-content wrapper below, leaving
+         the mobile StaggeredMenu free of any blend influence; its
+         colors come straight from its own props. */
+      className={`relative h-[62px] w-full ${className}`.trim()}
     >
-      {/* Logo — visual only on desktop (md+). On mobile the StaggeredMenu
-          renders its own logo in its header, so we hide this one to avoid
-          double-rendering. */}
+      {/* DESKTOP scope — logo + horizontal link row. Route-based
+          color/blend treatment is scoped to THIS wrapper so it never
+          touches the mobile menu. */}
       <div
-        aria-hidden
-        className="absolute left-8 top-1/2 hidden -translate-y-1/2 select-none md:block"
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/images/logo-on-dark.webp"
-          alt=""
-          draggable={false}
-          className="pointer-events-none h-12 w-auto select-none"
-        />
-      </div>
-
-      {/* Desktop horizontal link row (md+) — unchanged from the original
-          desktop nav. Stays hidden on mobile, where the StaggeredMenu
-          takes over. */}
-      <ul
         className={`
-          hidden md:flex h-full items-center justify-center gap-8
-          font-tiny text-[14px] font-bold uppercase tracking-[0.24em]
-          ${isHaloNavRoute ? 'text-white [text-shadow:0_0_10px_rgba(0,0,0,0.95),_0_0_3px_rgba(0,0,0,1),_0_2px_6px_rgba(0,0,0,0.7)]' : ''}
+          absolute inset-0 hidden md:block
+          ${isHaloNavRoute ? '' : isBlackTextRoute ? 'text-black' : 'text-white mix-blend-difference'}
         `.trim()}
       >
-        {NAV_LINKS.map((link) => {
-          const active = isActive(link.href);
-          return (
-            <li key={link.href}>
-              <Link
-                href={link.href}
-                aria-current={active ? 'page' : undefined}
-                className={`
-                  relative inline-block py-1
-                  after:pointer-events-none after:absolute after:left-0 after:right-0 after:-bottom-0.5
-                  after:h-px after:origin-left after:scale-x-0
-                  after:bg-current
-                  ${isHaloNavRoute ? 'after:[box-shadow:0_0_8px_rgba(0,0,0,0.9),_0_0_2px_rgba(0,0,0,1)]' : ''}
-                  after:transition-transform after:duration-300 after:ease-out
-                  hover:after:scale-x-100
-                  ${active ? 'after:scale-x-100' : ''}
-                `}
-              >
-                {link.label}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+        <div
+          aria-hidden
+          className="absolute left-8 top-1/2 -translate-y-1/2 select-none"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/logo-on-dark.webp"
+            alt=""
+            draggable={false}
+            className="pointer-events-none h-12 w-auto select-none"
+          />
+        </div>
 
-      {/* Mobile StaggeredMenu (<md). `isFixed` makes its own wrapper
-          position:fixed / 100vw × 100vh so the slide-in panel can fill
-          the entire viewport — without it, the wrapper would inherit
-          the navbar's 62px height and the panel would render as a thin
-          horizontal strip at the top of the page. */}
+        <ul
+          className={`
+            flex h-full items-center justify-center gap-8
+            font-tiny text-[14px] font-bold uppercase tracking-[0.24em]
+            ${isHaloNavRoute ? 'text-white [text-shadow:0_0_10px_rgba(0,0,0,0.95),_0_0_3px_rgba(0,0,0,1),_0_2px_6px_rgba(0,0,0,0.7)]' : ''}
+          `.trim()}
+        >
+          {NAV_LINKS.map((link) => {
+            const active = isActive(link.href);
+            return (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  aria-current={active ? 'page' : undefined}
+                  className={`
+                    relative inline-block py-1
+                    after:pointer-events-none after:absolute after:left-0 after:right-0 after:-bottom-0.5
+                    after:h-px after:origin-left after:scale-x-0
+                    after:bg-current
+                    ${isHaloNavRoute ? 'after:[box-shadow:0_0_8px_rgba(0,0,0,0.9),_0_0_2px_rgba(0,0,0,1)]' : ''}
+                    after:transition-transform after:duration-300 after:ease-out
+                    hover:after:scale-x-100
+                    ${active ? 'after:scale-x-100' : ''}
+                  `}
+                >
+                  {link.label}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
+      {/* Mobile StaggeredMenu (<md) — SIBLING of the desktop wrapper
+          above, so the mix-blend-difference scope never reaches it.
+          `displayItemNumbering={false}` removes the 01/02/03 superscripts.
+          `closeOnItemClick` triggers the menu's slide-out animation the
+          moment a link is tapped so the close + page transition overlap. */}
       <div className="md:hidden">
         <StaggeredMenu
           isFixed
@@ -140,7 +149,8 @@ export default function Navbar({ className = '' }: { className?: string }) {
           items={STAGGERED_ITEMS}
           socialItems={[]}
           displaySocials={false}
-          displayItemNumbering
+          displayItemNumbering={false}
+          closeOnItemClick
           logoUrl="/images/logo-on-dark.webp"
           menuButtonColor={menuToggleColor}
           openMenuButtonColor="#000"

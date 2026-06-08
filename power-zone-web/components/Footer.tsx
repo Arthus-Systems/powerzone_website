@@ -295,22 +295,38 @@ export default function Footer() {
     </footer>
   );
 
-  // Unified sticky-reveal mechanic — same on mobile + desktop. The mobile
-  // branch previously rendered the footer in normal flow because vh-based
-  // sticky behavior interacted badly with browser-chrome resizing; that's
-  // accepted here as a trade for matching the desktop "slide-up from
-  // behind" reveal the user explicitly asked for on mobile. The footer's
-  // inner content fills h-full of the 90vh sticky child, so it adapts to
-  // whatever the live viewport actually is on that frame.
+  // Two render modes:
+  //   MOBILE (<md): plain block, natural height. The footer content
+  //     (subscribe + map + 3 link columns + brand strip with PowerZone
+  //     + FPT logos) is dense and stacks tall on phone widths — the
+  //     sticky-reveal h-[90vh] mode clipped the brand strip off the
+  //     bottom because `overflow-hidden` on the inner <footer> cut
+  //     anything past the sticky container. Plain block lets every
+  //     row land on screen as the user scrolls.
+  //   DESKTOP (md+): sticky-reveal mechanic preserved — the footer
+  //     slides up from below as the user reaches the page bottom, on
+  //     a fixed 90vh stage where all content fits comfortably.
   return (
-    <div
-      className="relative h-[90vh] w-full"
-      style={{ clipPath: 'polygon(0% 0, 100% 0%, 100% 100%, 0 100%)' }}
-    >
-      <div className="relative h-[calc(100vh+90vh)] -top-[100vh]">
-        <div className="sticky top-[10vh] h-[90vh]">{footerInner}</div>
+    <>
+      {/* MOBILE — plain block. The [&>footer]:h-auto override lets the
+          inner <footer>'s h-full give up its full-height constraint so
+          natural content height takes over. */}
+      <div className="block w-full bg-black md:hidden">
+        <div className="min-h-fit w-full [&>footer]:h-auto [&>footer]:overflow-visible">
+          {footerInner}
+        </div>
       </div>
-    </div>
+
+      {/* DESKTOP — sticky-reveal mechanic. */}
+      <div
+        className="relative hidden h-[90vh] w-full md:block"
+        style={{ clipPath: 'polygon(0% 0, 100% 0%, 100% 100%, 0 100%)' }}
+      >
+        <div className="relative h-[calc(100vh+90vh)] -top-[100vh]">
+          <div className="sticky top-[10vh] h-[90vh]">{footerInner}</div>
+        </div>
+      </div>
+    </>
   );
 }
 

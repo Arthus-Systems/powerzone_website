@@ -141,23 +141,15 @@ function GoalCard({
   goal: Goal;
 }) {
   const [isFlipped, setIsFlipped] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
 
-  // Track viewport breakpoint so the click handler can decide whether
-  // to morph (desktop) or just flip in place (mobile). Starts false so
-  // SSR matches mobile defaults; useEffect upgrades after hydration.
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const mq = window.matchMedia('(min-width: 768px)');
-    const onChange = () => setIsDesktop(mq.matches);
-    onChange();
-    mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
-  }, []);
+  // Enlarge-on-flip now runs on EVERY breakpoint — mobile gets a
+  // portrait-rectangle enlarged card, desktop gets a landscape one.
+  // (Previously this was gated to desktop only; mobile used in-place
+  // flip, which was hard to read.)
+  const isEnlarged = isFlipped;
 
-  // Body-scroll lock + Escape close, ONLY when the desktop card is
-  // enlarged. Mobile in-place flip doesn't need either.
-  const isEnlarged = isDesktop && isFlipped;
+  // Body-scroll lock + Escape close while enlarged. Applies on every
+  // breakpoint now since the morph runs on mobile too.
   useEffect(() => {
     if (!isEnlarged) return;
     const prev = document.body.style.overflow;
@@ -358,9 +350,17 @@ function GoalCard({
         initial={false}
         transition={{ layout: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } }}
         onClick={() => setIsFlipped((f) => !f)}
+        /* Enlarged dimensions are responsive:
+             mobile (<md): portrait rectangle — w-min(340px,90vw) ×
+                            h-min(560px,82vh). Matches the in-grid
+                            card's portrait aspect, just larger.
+             desktop (md+): landscape rectangle — w-min(880px,88vw) ×
+                            h-min(640px,85vh). Larger horizontal
+                            surface where the back-face content reads
+                            well at the bumped typography. */
         className={`cursor-pointer ${
           isEnlarged
-            ? 'fixed inset-0 m-auto w-[min(880px,88vw)] h-[min(640px,85vh)] z-[150]'
+            ? 'fixed inset-0 m-auto w-[min(340px,90vw)] h-[min(560px,82vh)] z-[150] md:w-[min(880px,88vw)] md:h-[min(640px,85vh)]'
             : 'absolute inset-0'
         }`}
       >
