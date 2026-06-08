@@ -68,10 +68,11 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-// Less vertical scroll per product on mobile so phones with short touch-
-// scroll affordance can still traverse the catalog quickly. Desktop uses
-// 220vh per transition; mobile feels better at ~140vh.
-const SHOWCASE_TRANSITION_VH = 140;
+// Per-product scroll budget. Bumped from 140 → 240vh so each swipe
+// advances the wipe more gradually — fast swipes don't blast through
+// products in one gesture. Higher than desktop's 220 because mobile
+// momentum scrolls cover more pixels per gesture.
+const SHOWCASE_TRANSITION_VH = 240;
 const SHOWCASE_CYCLES = 30;
 const SHOWCASE_ST_ID = "pz-mobile-showcase";
 
@@ -169,50 +170,33 @@ export default function MobileProductShowcase({
     });
   }, [N]);
 
-  // INITIAL MOUNT — gated to <lg viewports. On desktop the
-  // ProductExperience is the active showcase (this component is
-  // mounted but hidden via `lg:hidden`). If we still ran setupShowcase
-  // + window.scrollTo here on desktop, the native scrollTo would
-  // hijack the page scroll AND desync Lenis (which ProductExperience
-  // uses to manage scroll); then desktop's enterDetail needsSnap
-  // check would trip on the resulting sub-pixel mismatch between
-  // lenis.scroll and the trigger's snap target, causing the unwanted
-  // 0.4s glide-before-entry on every first click.
+  // INITIAL MOUNT — gated to <lg viewports.
+  // On desktop the ProductExperience owns the scroll; this component
+  // is mounted but visually hidden (`lg:hidden`) and stays fully
+  // inert so nothing here hijacks the window scroll.
+  // On mobile we set up the ScrollTrigger but DO NOT auto-scroll the
+  // page. The user lands wherever the browser placed them (top of
+  // section on a fresh navigation) and advances through the showcase
+  // by scrolling. The forward modular wrap still works; backward
+  // wrapping from the entry point is sacrificed for the cleaner
+  // "page doesn't jump on arrival" UX the user explicitly asked for.
   useLayoutEffect(() => {
     if (
       typeof window !== "undefined" &&
       window.matchMedia("(min-width: 1024px)").matches
     ) {
-      // Desktop — let ProductExperience own the scroll. Skip setup
-      // entirely so this component is fully inert here.
       return;
     }
 
     const ctx = gsap.context(() => {
       setupShowcase();
-
-      requestAnimationFrame(() => {
-        const st = ScrollTrigger.getById(SHOWCASE_ST_ID);
-        if (!st) return;
-        // Mid-cycle mount — original logic, lets the user wrap
-        // backward through the modular catalog from cycle
-        // floor(SHOWCASE_CYCLES/2). Same mount-scroll formula as the
-        // desktop ProductExperience for parity.
-        const totalTransitions = N * SHOWCASE_CYCLES;
-        const initialT =
-          Math.floor(SHOWCASE_CYCLES / 2) * N + safeInitialIdx;
-        const targetProgress = initialT / totalTransitions;
-        const targetScroll =
-          st.start + targetProgress * (st.end - st.start);
-        window.scrollTo({ top: targetScroll, behavior: "auto" });
-      });
     }, containerRef);
 
     return () => {
       ScrollTrigger.getById(SHOWCASE_ST_ID)?.kill();
       ctx.revert();
     };
-  }, [setupShowcase, N, safeInitialIdx]);
+  }, [setupShowcase]);
 
   // Notify the parent every time the visible product changes so it can
   // persist a per-category memory across category switches.

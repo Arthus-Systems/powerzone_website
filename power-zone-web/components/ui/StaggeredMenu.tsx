@@ -374,6 +374,65 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
     }
   }, [playClose, animateIcon, animateColor, animateText, onMenuClose]);
 
+  // INSTANT close — no GSAP tween. Used by closeOnItemClick so the
+  // sidebar disappears the moment a link is tapped instead of playing
+  // its 320ms slide-out (which read as "menu lingers while page
+  // navigates"). gsap.set jumps the panel + prelayers offscreen on
+  // the same frame the click fires.
+  const instantCloseMenu = useCallback(() => {
+    if (!openRef.current) return;
+    openRef.current = false;
+    setOpen(false);
+    onMenuClose?.();
+
+    openTlRef.current?.kill();
+    closeTweenRef.current?.kill();
+
+    const panel = panelRef.current;
+    const layers = preLayerElsRef.current;
+    if (panel) {
+      const offscreen = position === 'left' ? -100 : 100;
+      gsap.set([panel, ...layers], { xPercent: offscreen, overwrite: 'auto' });
+
+      // Reset inner item / numbering / socials to their pre-open state so
+      // the next open replays its full entrance.
+      const itemEls = Array.from(
+        panel.querySelectorAll('.sm-panel-itemLabel'),
+      ) as HTMLElement[];
+      if (itemEls.length) gsap.set(itemEls, { yPercent: 140, rotate: 10 });
+      const numberEls = Array.from(
+        panel.querySelectorAll('.sm-panel-list[data-numbering] .sm-panel-item'),
+      ) as HTMLElement[];
+      if (numberEls.length) gsap.set(numberEls, { '--sm-num-opacity': 0 });
+      const socialTitle = panel.querySelector(
+        '.sm-socials-title',
+      ) as HTMLElement | null;
+      const socialLinks = Array.from(
+        panel.querySelectorAll('.sm-socials-link'),
+      ) as HTMLElement[];
+      if (socialTitle) gsap.set(socialTitle, { opacity: 0 });
+      if (socialLinks.length) gsap.set(socialLinks, { y: 25, opacity: 0 });
+    }
+
+    // Snap icon / color / text label back to their closed state without
+    // the usual tween. Reusing animateIcon/Color/Text would play their
+    // ~300-800ms animations; here we want zero motion.
+    if (iconRef.current) {
+      spinTweenRef.current?.kill();
+      gsap.set(iconRef.current, { rotate: 0, overwrite: 'auto' });
+    }
+    if (toggleBtnRef.current) {
+      colorTweenRef.current?.kill();
+      gsap.set(toggleBtnRef.current, { color: menuButtonColor });
+    }
+    if (textInnerRef.current) {
+      textCycleAnimRef.current?.kill();
+      gsap.set(textInnerRef.current, { yPercent: 0 });
+      setTextLines(['Menu', 'Close']);
+    }
+    busyRef.current = false;
+  }, [position, onMenuClose, menuButtonColor]);
+
   React.useEffect(() => {
     if (!closeOnClickAway || !open) return;
     const handleClickOutside = (event: MouseEvent) => {
@@ -475,14 +534,13 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                     aria-label={it.ariaLabel}
                     data-index={idx + 1}
                     onClick={() => {
-                      // Kick off the close animation BEFORE the anchor's
-                      // default navigation fires. The browser/Next.js
-                      // navigation runs in parallel with the GSAP slide-
-                      // out tween, so by the time the new page paints,
-                      // the menu is already most of the way off-screen
-                      // (revealing the new page underneath instead of
-                      // lingering on top of it).
-                      if (closeOnItemClick) closeMenu();
+                      // INSTANT close — the panel + prelayers + icon /
+                      // color / text label all snap back to their
+                      // closed state on the same frame as the click,
+                      // before the anchor's navigation fires. No
+                      // slide-out animation, no lingering menu on top
+                      // of the destination page.
+                      if (closeOnItemClick) instantCloseMenu();
                     }}
                   >
                     <span className="sm-panel-itemLabel">{it.label}</span>
