@@ -46,16 +46,12 @@ const HERO_ITEM_VARIANTS = {
 };
 
 export default function Home() {
-  // Lenis on the homepage with MODERATE syncTouch — meant to be a
-  // gentle slowdown vs native, not a heavy throttle. The position:
-  // fixed scroll lock used by StaggeredMenu works regardless of
-  // syncTouch (locks the body's layout, not its scroll handler).
-  //   - syncTouchLerp:0.18 → lerp catches up quickly on slow swipes;
-  //     fast flings glide in noticeably slower than native but not
-  //     painfully so.
-  //   - touchMultiplier:0.9 → ~10% less scroll distance per swipe
-  //     than native, reinforces the speed cap.
-  useLenis({ syncTouch: true, syncTouchLerp: 0.18, touchMultiplier: 0.9 });
+  // Lenis on the homepage WITHOUT syncTouch — mobile touch scrolling
+  // is fully native. Keeps browser-chrome auto-show on scroll-up,
+  // native pull-to-refresh, and the StaggeredMenu's body scroll
+  // lock all working correctly. Desktop wheel still gets Lenis's
+  // smoothWheel default.
+  useLenis();
 
   // `introDone` defaults to TRUE so the server renders the post-intro hero
   // (real marketing copy in the SSR HTML — SEO, view-source, no-JS users).
