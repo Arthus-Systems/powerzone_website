@@ -30,7 +30,7 @@
 
 import { motion, useScroll, useSpring, useTransform } from 'framer-motion';
 import type { MotionValue } from 'framer-motion';
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 
 type ProcessStep = {
@@ -147,6 +147,118 @@ export default function ProcessSection() {
     damping: 30,
     restDelta: 0.0003,
   });
+
+  // ── MOBILE swipe-to-advance — exactly 1 card per gesture ────────
+  // The scroll-driven mechanic above (useScroll → useSpring) keeps
+  // running on every breakpoint. On MOBILE we additionally intercept
+  // touch swipes inside the section: each gesture programmatically
+  // scrolls the window to the next card's checkpoint (regardless of
+  // how hard or softly the user swiped), and the useSpring naturally
+  // animates the cards from current → target. So:
+  //   tiny swipe = next card
+  //   hard fling = same next card (one card max per swipe)
+  // Desktop wheel is unchanged (handler gated to <768px).
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!window.matchMedia('(max-width: 767px)').matches) return;
+    const section = containerRef.current;
+    if (!section) return;
+
+    const N = PROCESS_STEPS.length;
+    const SWIPE_THRESHOLD = 30;
+    const COOLDOWN_MS = 750;
+    let touchStartY = 0;
+    let touchActive = false;
+    let busy = false;
+    let currentIdx = 0;
+
+    const scrollPerCardPx = () =>
+      (SECTION_VH_PER_STEP * window.innerHeight) / 100;
+
+    const isInSection = () => {
+      const rect = section.getBoundingClientRect();
+      return rect.top <= 0 && rect.bottom >= window.innerHeight;
+    };
+
+    const initIdxFromScroll = () => {
+      const rect = section.getBoundingClientRect();
+      const sectionTop = rect.top + window.scrollY;
+      const scrolled = Math.max(0, window.scrollY - sectionTop);
+      const per = scrollPerCardPx();
+      if (per <= 0) {
+        currentIdx = 0;
+        return;
+      }
+      currentIdx = Math.max(0, Math.min(N - 1, Math.round(scrolled / per)));
+    };
+
+    const scrollToCard = (idx: number) => {
+      const rect = section.getBoundingClientRect();
+      const sectionTop = rect.top + window.scrollY;
+      const target = sectionTop + idx * scrollPerCardPx();
+      window.scrollTo({ top: target, behavior: 'smooth' });
+    };
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (!isInSection()) return;
+      initIdxFromScroll();
+      touchStartY = e.touches[0]?.clientY ?? 0;
+      touchActive = true;
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (!touchActive || !isInSection()) return;
+      const currentY = e.touches[0]?.clientY ?? touchStartY;
+      const deltaY = touchStartY - currentY;
+      // If at an edge AND swiping in the edge direction, let native
+      // momentum carry the user OUT of the section. Otherwise block
+      // native scroll so our programmatic scroll-to-next-card wins.
+      if (currentIdx === 0 && deltaY < 0) return;
+      if (currentIdx === N - 1 && deltaY > 0) return;
+      e.preventDefault();
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      if (!touchActive) return;
+      touchActive = false;
+      if (!isInSection()) return;
+      if (busy) return;
+
+      const endY = e.changedTouches[0]?.clientY ?? touchStartY;
+      const deltaY = touchStartY - endY;
+      if (Math.abs(deltaY) < SWIPE_THRESHOLD) {
+        // Sub-threshold — snap back to current card so a partial
+        // touch-then-release doesn't leave the cards mid-transition.
+        scrollToCard(currentIdx);
+        return;
+      }
+
+      const dir: 1 | -1 = deltaY > 0 ? 1 : -1;
+      const next = currentIdx + dir;
+      if (next < 0 || next >= N) {
+        // Edge — let native momentum from this swipe carry the user
+        // out (no programmatic scroll; their touchmove was not
+        // preventDefaulted at the edge).
+        return;
+      }
+
+      currentIdx = next;
+      busy = true;
+      scrollToCard(next);
+      window.setTimeout(() => {
+        busy = false;
+      }, COOLDOWN_MS);
+    };
+
+    section.addEventListener('touchstart', onTouchStart, { passive: true });
+    section.addEventListener('touchmove', onTouchMove, { passive: false });
+    section.addEventListener('touchend', onTouchEnd, { passive: true });
+    return () => {
+      section.removeEventListener('touchstart', onTouchStart);
+      section.removeEventListener('touchmove', onTouchMove);
+      section.removeEventListener('touchend', onTouchEnd);
+    };
+  }, []);
 
   return (
     <section
