@@ -483,13 +483,22 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
     // PRIMARY hide: display:none on the outer wrapper. Removes the
     // entire menu subtree from the render tree, so no browser paint
     // scheduling quirk (Brave/Chromium) can expose the panel between
-    // the GlobalTransitions curtain and the new page paint. The
-    // visibility:hidden / pointer-events:none above are belt-and-
-    // suspenders kept for the rare case where the wrapper is itself
-    // re-mounted with display restored before buildOpenTimeline gets
-    // to run.
+    // the GlobalTransitions curtain and the new page paint.
+    //
+    // SAFETY-NET restore: if the click target is the CURRENT page,
+    // Next.js doesn't fire a navigation → no route change → React
+    // doesn't re-render → the wrapper would stay display:none forever
+    // (menu button + logo invisible until reload). Restore display
+    // after 700ms (covers the curtain's ~550ms slide-out + buffer).
+    // For real navigations, buildOpenTimeline's `display = ''` runs
+    // when the user next opens the menu on the new page, so this
+    // restore is just belt-and-suspenders.
     if (wrapperRef.current) {
       wrapperRef.current.style.display = 'none';
+      const wrapper = wrapperRef.current;
+      window.setTimeout(() => {
+        if (wrapper) wrapper.style.display = '';
+      }, 700);
     }
 
     busyRef.current = false;
