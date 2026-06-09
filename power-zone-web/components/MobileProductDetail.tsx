@@ -245,7 +245,7 @@ export default function MobileProductDetail({ product, onClose }: Props) {
           </>
         )}
 
-        {/* Gallery — second photo */}
+        {/* Gallery — second photo (image[0]) */}
         {product.gallery[0] && product.gallery[0] !== product.image && (
           <div
             className="relative mt-10 h-[30vh] w-full overflow-hidden rounded-2xl"
@@ -286,6 +286,29 @@ export default function MobileProductDetail({ product, onClose }: Props) {
             </ul>
           </>
         )}
+
+        {/* Gallery — third photo (image[1]). Sits after Applications so
+            the three images (hero + gallery[0] + gallery[1]) bracket
+            the article: top, mid (between Capabilities and Applications),
+            and bottom (just before the CTA). Mirrors the desktop detail
+            layout where image[1] lives in the applications panel.
+            Guarded against duplicates with product.image AND gallery[0]. */}
+        {product.gallery[1] &&
+          product.gallery[1] !== product.image &&
+          product.gallery[1] !== product.gallery[0] && (
+            <div
+              className="relative mt-10 h-[30vh] w-full overflow-hidden rounded-2xl"
+              style={{ backgroundColor: product.leftColor }}
+            >
+              <Image
+                src={product.gallery[1]}
+                alt={`${product.title} — additional view`}
+                fill
+                sizes="100vw"
+                className="object-contain"
+              />
+            </div>
+          )}
 
         {/* CTA — InteractiveHoverButton (dot-fill radial). Wrapper is
             `relative z-50` so the button sits ABOVE any other content
