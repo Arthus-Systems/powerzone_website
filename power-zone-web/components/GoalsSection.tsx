@@ -39,10 +39,10 @@ const GOALS: Goal[] = [
   {
     title: 'Prevent Downtime',
     description:
-      'Generator + battery storage combined for cleaner, faster outage protection. Millisecond switchover keeps servers and critical equipment online while cutting electricity bills by up to 30%.',
+      'Generator + battery storage combined for cleaner, faster outage protection. 250ms switchover keeps servers and critical equipment online while cutting electricity bills by up to 30%.',
     icon: 'time',
     backPoints: [
-      'Millisecond response during outages — zero interruptions, shutdowns or costly restarts',
+      '250ms response during outages — zero interruptions, shutdowns or costly restarts',
       'Battery + generator combo delivers continuous backup for the full outage duration',
       'Runs intelligently 24/7 — optimizing energy and power quality, not only in emergencies',
       'Reduces emissions by up to 90% vs conventional standby generators',

@@ -206,7 +206,7 @@ export default function MobileProductDetail({ product, onClose }: Props) {
           className="font-heading mt-10 text-[20px] font-semibold tracking-tight"
           style={{ color: fg }}
         >
-          What&apos;s in the box
+          Engineering breakdown
         </h2>
         <p
           className="mt-3 text-[14px] leading-relaxed"

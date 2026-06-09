@@ -198,13 +198,13 @@ export const products: Product[] = [
       "/images/yuchai_product_3.webp",
     ],
     descriptionLong:
-      "High-value diesel power from China's largest engine manufacturer. Yuchai gensets are built around a strong output-to-fuel ratio and a wide capacity range — a pragmatic answer for sites that need real industrial reliability without the import-tier price tag. Power Zone handles supply, installation, and ongoing maintenance, with prime and standby configurations sized to the actual load.",
+      "High-value diesel power from one of China's largest engine manufacturers. Yuchai gensets are built around a strong output-to-fuel ratio and a wide capacity range — a pragmatic answer for sites that need real industrial reliability without the import-tier price tag. Power Zone handles supply, installation, and ongoing maintenance, with prime and standby configurations sized to the actual load.",
     engineering:
       "Modern Chinese engine technology with high-efficiency combustion and a long-runtime build. Voltage and frequency hold steady through peak load spikes; protection circuits guard sensitive equipment from electrical fluctuations. Extended service intervals and a robust alternator design mean low intervention rates over a long working life.",
     origin: "Chinese Manufacturing",
     tagline: "High value performance",
     overview:
-      "Cost-effective diesel generators from China's largest engine manufacturer. Reliable prime and standby power across a wide load spectrum, engineered for continuous service in demanding environments.",
+      "Cost-effective diesel generators from one of China's largest engine manufacturers. Reliable prime and standby power across a wide load spectrum, engineered for continuous service in demanding environments.",
     features: [
       "Strong engine output with low fuel consumption",
       "Voltage and frequency stability under peak load",
@@ -252,19 +252,21 @@ export const bessProducts: Product[] = [
       "/images/bess_product_3.webp",
     ],
     descriptionLong:
-      "A compact, IP65-rated battery energy storage cabinet built around LFP cells. Intelligent battery profiles route energy across operational priorities; redundant dual-path cooling and continuous thermal monitoring keep the system stable under sustained load. The pre-engineered modular architecture means rapid deployment for commercial and industrial sites, and integrates cleanly with existing solar or grid infrastructure.",
+      "The Compact ESS — a Chint Power-partnered, IP65-rated battery energy storage cabinet built around LFP (lithium iron phosphate) cells. An integrated BMS routes energy across operational priorities with cell-level balancing; redundant dual-path cooling and continuous thermal monitoring keep the stack stable under sustained load. The pre-engineered modular architecture is plug-and-play for rapid deployment on commercial and industrial sites, and integrates cleanly with existing solar or grid infrastructure.",
     engineering:
-      "LFP cells with intelligent cell balancing keep state of charge equalized across the stack. Dual cooling paths plus active thermal monitoring handle sustained discharge without throttling. Automated fault detection isolates problems before they cascade, and the system supports black-start as well as on-grid and off-grid operation.",
-    origin: "Pakistan Engineered",
-    tagline: "Compact LFP cabinet, ready for grid-edge",
+      "LFP chemistry with an integrated BMS for intelligent cell balancing — state of charge stays equalized across the stack. Dual cooling paths plus active thermal monitoring handle sustained discharge without throttling. Automated fault detection and isolation prevents cascade failures, and the system supports black-start plus on-grid and off-grid operation. Engineered in partnership with Chint Power Systems.",
+    origin: "Pakistan Engineered · Chint Partner",
+    tagline: "Compact ESS — LFP, IP65, Chint-powered",
     overview:
-      "IP65 cabinet with LFP cells, intelligent battery profiles, dual-path cooling, and automated fault isolation. Modular and pre-engineered for fast deployment.",
+      "Compact ESS — IP65 LFP cabinet with integrated BMS, dual-path cooling, automated fault isolation, and black-start. Modular plug-and-play deployment, engineered with Chint Power Systems.",
     features: [
+      "LFP (lithium iron phosphate) chemistry",
       "IP65 outdoor-rated enclosure",
-      "Intelligent battery profiles for dynamic allocation",
+      "Integrated BMS with cell balancing",
       "Redundant dual-path cooling with thermal monitoring",
       "Automated fault detection and isolation",
       "Black-start capable; on-grid and off-grid",
+      "Modular plug-and-play deployment",
     ],
     applications: [
       "Industrial peak shaving",

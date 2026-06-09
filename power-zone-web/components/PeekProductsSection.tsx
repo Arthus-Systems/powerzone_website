@@ -25,7 +25,7 @@ export default function PeekProductsSection() {
         {/* Header — dark text on the cream surface */}
         <div className="text-center">
           <h2 className="font-heading text-[clamp(28px,4.6vh,60px)] font-semibold leading-[1.05] tracking-tight text-black">
-            Peek Our Products
+            Explore Our Products
           </h2>
           <p className="font-body mx-auto mt-[clamp(12px,2vh,24px)] max-w-[40rem] text-[clamp(13px,1.7vh,16px)] leading-relaxed text-black/55">
             Diesel generators and battery storage systems engineered for the
@@ -149,6 +149,40 @@ export default function PeekProductsSection() {
             />
           </div>
         </div>
+
+        {/* ── Company credibility band ─────────────────────────────────────
+         * Folds in the founding year, the engineer-supervised coupling
+         * differentiator, and the nationwide service-van network — all
+         * carry-over content from the old Mission page that's a stronger
+         * buy-side signal than any product spec. Closes with the company-
+         * behind-the-product after-sales line that ran across the old
+         * homepage and is the spine of the B2B value pitch. */}
+        <div className="flex w-full max-w-[1280px] flex-col items-center">
+          <p className="font-tiny mb-[clamp(12px,1.8vh,22px)] text-[clamp(13px,1.6vh,16px)] uppercase tracking-[0.34em] text-black/55">
+            Since 2003
+          </p>
+          <div className="grid w-full gap-3 md:grid-cols-3 md:gap-4">
+            <StatCard
+              stat="20+ Years"
+              label="Founded 2003"
+              body="Two decades of supplying, integrating, and supporting industrial power across Pakistan — long enough to know what actually works on the country's grid."
+            />
+            <StatCard
+              stat="First in Pakistan"
+              label="Engineer-Supervised Coupling"
+              body="The first generator coupling line in Pakistan overseen by qualified engineers to international standards — built once, built right, with documented assembly tolerances."
+            />
+            <StatCard
+              stat="Nationwide"
+              label="Mobile Service Vans"
+              body="Mobile service vans for doorstep after-sales support, anywhere in Pakistan — service is part of the product, not a separate contract."
+            />
+          </div>
+          <p className="font-body mt-[clamp(16px,2.4vh,28px)] max-w-[44rem] text-center text-[clamp(14px,1.8vh,18px)] italic leading-relaxed text-black/70">
+            It&apos;s not just the product. It&apos;s the company behind the product —
+            engineered, installed, and supported by Power Zone.
+          </p>
+        </div>
       </div>
     </section>
   );
@@ -186,6 +220,41 @@ function CredentialCard({
       <div aria-hidden className="hidden sm:block h-9 w-px shrink-0 bg-black/15" />
       <p className="font-body text-[12px] sm:text-[clamp(11px,1.4vh,13px)] leading-snug text-black/65">
         {tagline}
+      </p>
+    </div>
+  );
+}
+
+/* ── StatCard ────────────────────────────────────────────────────────────
+ * Sibling of CredentialCard, used for the "Since 2003" credibility band.
+ * Big stat number on top, small uppercase label, body copy beneath. Same
+ * visual language as CredentialCard (rounded, soft hairline, subtle hover
+ * lift) so the two bands read as one continuous credentials story. */
+function StatCard({
+  stat,
+  label,
+  body,
+}: {
+  stat: string;
+  label: string;
+  body: string;
+}) {
+  return (
+    <div className="group flex flex-col items-start gap-2 rounded-2xl border border-black/15 bg-black/[0.02] px-4 py-4 sm:px-5 sm:py-5 md:px-6 md:py-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-black/30 hover:bg-black/[0.04] hover:shadow-[0_10px_28px_rgba(0,0,0,0.08)]">
+      <div className="flex items-center gap-2.5">
+        <span
+          aria-hidden
+          className="inline-block h-2 w-2 shrink-0 rounded-full bg-red-600 transition-transform duration-200 group-hover:scale-125"
+        />
+        <span className="font-tiny text-[9px] uppercase tracking-[0.22em] text-red-600">
+          {label}
+        </span>
+      </div>
+      <h3 className="font-heading text-[clamp(20px,2.6vh,28px)] font-semibold leading-none tracking-tight text-black">
+        {stat}
+      </h3>
+      <p className="font-body text-[12px] sm:text-[clamp(11px,1.4vh,13px)] leading-snug text-black/65">
+        {body}
       </p>
     </div>
   );

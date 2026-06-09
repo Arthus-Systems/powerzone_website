@@ -1004,7 +1004,7 @@ export default function ProductExperience({
                     className="pz-anim font-display font-semibold leading-[1.04] text-[clamp(28px,3.4vw,48px)]"
                     style={{ letterSpacing: "-0.02em" }}
                   >
-                    What's actually in the box
+                    Engineering breakdown
                   </h2>
                   <p
                     className="pz-anim max-w-[36rem] text-[14px] md:text-[15px] leading-relaxed"
