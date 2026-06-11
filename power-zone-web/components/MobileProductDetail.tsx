@@ -23,6 +23,7 @@ import Image from "next/image";
 import type { Product } from "@/data/products";
 import { textOn } from "@/data/products";
 import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
+import RatingTable from "@/components/RatingTable";
 
 type Props = {
   product: Product;
@@ -200,6 +201,30 @@ export default function MobileProductDetail({ product, onClose }: Props) {
         >
           {product.descriptionLong}
         </p>
+
+        {/* Manufacturer rating table — generators that ship a model
+            list (FPT, Perkins, Cummins [×2], Yuchai). The table is
+            internally scrollable for long lists (Cummins AOSIF has
+            60+ rows) so the page doesn't balloon vertically. Sits
+            between the story and the engineering deep-dive so the
+            reader gets context → reference → spec in that order. */}
+        {product.ratings && product.ratings.length > 0 && (
+          <div className="mt-10">
+            <h2
+              className="font-heading text-[20px] font-semibold tracking-tight"
+              style={{ color: fg }}
+            >
+              Model Ratings
+            </h2>
+            <div className="mt-4">
+              <RatingTable
+                tables={product.ratings}
+                fg={fg}
+                bg={product.descriptionBgColor}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Engineering */}
         <h2

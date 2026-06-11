@@ -22,6 +22,7 @@ import CustomerLogos from '@/components/CustomerLogos';
 import Footer from '@/components/Footer';
 import ContactFloatingCTA from '@/components/ContactFloatingCTA';
 import { useLenis } from '@/hooks/useLenis';
+import { SHOW_INTRO_CONCEPT, SHOW_CUSTOMER_LOGOS } from '@/config/featureFlags';
 
 // Pre-rendered final frame of /poweron.mp4 — painted as the hero
 // background for return visits that skip the intro.
@@ -68,6 +69,18 @@ export default function Home() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+
+    // Feature-flag gate: if the cinematic intro concept is OFF for this
+    // build, never mount ControlPanel — every visitor lands directly on
+    // the static post-intro hero. The sessionStorage decision logic
+    // below is only relevant when SHOW_INTRO_CONCEPT is true. The init
+    // overlay still fades out via the same requestAnimationFrame so the
+    // hero doesn't flash through the masking layer on first paint.
+    if (!SHOW_INTRO_CONCEPT) {
+      requestAnimationFrame(() => setOverlayHiding(true));
+      return;
+    }
+
     const seen = sessionStorage.getItem(INTRO_SEEN_KEY) === 'true';
     // Mobile + tablet (<lg) bypass the cinematic — ControlPanel was
     // designed at 16:9 with mouse-driven interactions and doesn't
@@ -114,99 +127,109 @@ export default function Home() {
   // regular site Navbar and the downstream marketing sections.
   // ContactFloatingCTA renders unconditionally as a top-level sibling — its
   // own internal scroll-visibility gate handles when to appear.
+  // ── Hero content (shared between the CustomerLogos slide-up wrapper
+  // and the plain-hero wrapper) ────────────────────────────────────────
+  // Extracted into a const so flipping SHOW_CUSTOMER_LOGOS doesn't
+  // require duplicating the hero markup. Same Navbar, same headline +
+  // subheadline + floor paragraph, just hosted by a different wrapper.
+  const heroContent = (
+    <>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={INTRO_END_FRAME}
+        alt=""
+        draggable={false}
+        className="absolute inset-0 z-0 h-full w-full object-cover"
+        style={{ opacity: 0.6 }}
+      />
+
+      <motion.div
+        initial={{ opacity: 0, y: -48 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.9, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+        className="absolute left-0 right-0 top-0 z-[90]"
+      >
+        <Navbar />
+      </motion.div>
+
+      <motion.div
+        variants={HERO_CONTAINER_VARIANTS}
+        initial="hidden"
+        animate="show"
+        className="pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-center px-6 text-center md:px-8"
+      >
+        <motion.h1
+          variants={HERO_ITEM_VARIANTS}
+          className="font-heading mt-5 font-semibold leading-[1.05] text-[clamp(40px,11vw,72px)] tracking-[-0.02em] text-white [text-shadow:0_2px_18px_rgba(0,0,0,0.55)] md:leading-[1.02] md:text-[clamp(36px,5vw,78px)]"
+        >
+          Diesel Generators
+          <br />
+          by Power Zone
+        </motion.h1>
+        <motion.p
+          variants={HERO_ITEM_VARIANTS}
+          className="font-tiny mt-5 text-[12px] font-bold uppercase tracking-[0.28em] text-white/90 [text-shadow:0_1px_4px_rgba(0,0,0,0.7)] sm:text-[14px] md:mt-7 md:text-[18px] md:tracking-[0.34em]"
+        >
+          Reliable Backup Power
+        </motion.p>
+      </motion.div>
+
+      <motion.p
+        variants={HERO_ITEM_VARIANTS}
+        initial="hidden"
+        animate="show"
+        transition={{ delay: 0.95 }}
+        className="
+          font-body
+          pointer-events-none absolute left-1/2 bottom-[clamp(32px,8vh,96px)]
+          -translate-x-1/2 z-20
+          w-[min(36rem,92vw)] px-4 text-center
+          text-[12px] leading-relaxed text-white/75
+          [text-shadow:0_1px_4px_rgba(0,0,0,0.7)]
+          sm:text-[14px]
+          md:w-[min(40rem,90vw)] md:bottom-[clamp(40px,10vh,160px)] md:px-6 md:text-[18px]
+        "
+      >
+        Power Zone delivers high performance diesel generators and
+        advanced battery energy storage systems, ensuring uninterrupted
+        power for industries across Pakistan.
+      </motion.p>
+    </>
+  );
+
   return (
     <>
-      {!introDone ? (
+      {SHOW_INTRO_CONCEPT && !introDone ? (
         <ControlPanel onHero={handleIntroComplete} />
       ) : (
         <>
-      {/* Hero → CustomerLogos slide-up cinematic. Same pattern on all
-          breakpoints but the wrapper HEIGHT differs:
-            mobile  (<md): h-[200vh] → no dwell — hero reveals
-                            CustomerLogos in 100vh, then 100vh of un-stick
-                            so PeekProducts arrives immediately after.
-            desktop (md+): h-[280vh] → 80vh dwell on CustomerLogos
-                            sandwiched between the reveal and the un-stick.
-
-          Desktop budget:
-            0   →100vh : hero scrolls up, CustomerLogos is revealed
-            100→180vh : DWELL — CustomerLogos pinned, nothing else moves
-            180→280vh : CustomerLogos un-sticks; PeekProducts enters
-          Mobile budget:
-            0   →100vh : hero scrolls up, CustomerLogos is revealed
-            100→200vh : CustomerLogos un-sticks; PeekProducts enters
-                         (no scroll-break / dwell — per design ask) */}
+      {/* Hero block — sticky-reveal wrapper. The underneath layer is
+          either CustomerLogos (when SHOW_CUSTOMER_LOGOS is on) or
+          PeekProductsSection (default). Either way the mechanic is
+          the same: hero is absolutely positioned on top, scrolls UP
+          1:1 with the wrapper's scroll, exposing the sticky element
+          underneath. That element pins for the rest of the wrapper's
+          scroll budget, then unsticks and the next section follows.
+          PeekProductsSection is now a fixed h-screen single-viewport
+          surface (after its credentials/stats moved to SolutionsSection),
+          so it fits the sticky underneath cleanly with no clipped
+          content. The wrapper's height = 200vh (mobile) / 280vh
+          (desktop): 100vh of hero-scroll-away + ~100vh of un-stick. */}
       <div className="relative h-[200vh] md:h-[280vh]">
         <div className="sticky top-0 z-0 h-screen">
-          <CustomerLogos />
+          {SHOW_CUSTOMER_LOGOS ? <CustomerLogos /> : <PeekProductsSection />}
         </div>
         <div className="absolute inset-x-0 top-0 z-10 h-screen w-screen overflow-hidden bg-black">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={INTRO_END_FRAME}
-            alt=""
-            draggable={false}
-            className="absolute inset-0 z-0 h-full w-full object-cover"
-            style={{ opacity: 0.6 }}
-          />
-
-          <motion.div
-            initial={{ opacity: 0, y: -48 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute left-0 right-0 top-0 z-[90]"
-          >
-            <Navbar />
-          </motion.div>
-
-          <motion.div
-            variants={HERO_CONTAINER_VARIANTS}
-            initial="hidden"
-            animate="show"
-            className="pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-center px-6 text-center md:px-8"
-          >
-            <motion.h1
-              variants={HERO_ITEM_VARIANTS}
-              className="font-heading mt-5 font-semibold leading-[1.05] text-[clamp(40px,11vw,72px)] tracking-[-0.02em] text-white [text-shadow:0_2px_18px_rgba(0,0,0,0.55)] md:leading-[1.02] md:text-[clamp(36px,5vw,78px)]"
-            >
-              Diesel Generators
-              <br />
-              by Power Zone
-            </motion.h1>
-            <motion.p
-              variants={HERO_ITEM_VARIANTS}
-              className="font-tiny mt-5 text-[12px] font-bold uppercase tracking-[0.28em] text-white/90 [text-shadow:0_1px_4px_rgba(0,0,0,0.7)] sm:text-[14px] md:mt-7 md:text-[18px] md:tracking-[0.34em]"
-            >
-              Reliable Backup Power
-            </motion.p>
-          </motion.div>
-
-          {/* Floor-anchored body paragraph — pinned near the bottom edge. */}
-          <motion.p
-            variants={HERO_ITEM_VARIANTS}
-            initial="hidden"
-            animate="show"
-            transition={{ delay: 0.95 }}
-            className="
-              font-body
-              pointer-events-none absolute left-1/2 bottom-[clamp(32px,8vh,96px)]
-              -translate-x-1/2 z-20
-              w-[min(36rem,92vw)] px-4 text-center
-              text-[12px] leading-relaxed text-white/75
-              [text-shadow:0_1px_4px_rgba(0,0,0,0.7)]
-              sm:text-[14px]
-              md:w-[min(40rem,90vw)] md:bottom-[clamp(40px,10vh,160px)] md:px-6 md:text-[18px]
-            "
-          >
-            Power Zone delivers high performance diesel generators and
-            advanced battery energy storage systems, ensuring uninterrupted
-            power for industries across Pakistan.
-          </motion.p>
+          {heroContent}
         </div>
       </div>
-      {/* PeekProductsSection enters in normal flow after the cinematic
-          wrapper above. Same on mobile + desktop. */}
-      <PeekProductsSection />
+      {/* If CustomerLogos is acting as the sticky underneath, the real
+          PeekProductsSection follows here in normal flow. Otherwise
+          PeekProducts is already rendered inside the sticky above and
+          we skip the duplicate render. The Authorized Partner
+          credentials are folded INTO PeekProductsSection itself — no
+          separate strip needed. */}
+      {SHOW_CUSTOMER_LOGOS && <PeekProductsSection />}
       <SolutionsSection />
       <GoalsSection />
       <ProcessSection />

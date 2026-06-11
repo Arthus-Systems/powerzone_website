@@ -70,6 +70,20 @@ body::-webkit-scrollbar {
   display: none;                 /* Chromium / Safari */
 }
 
+/* Reusable scrollbar-hide utility for internally-scrollable containers
+ * (e.g. the manufacturer rating table) — same effect as body's
+ * scrollbar hide above but scoped via class so it can be opted into
+ * deliberately rather than affecting every overflow:auto element. */
+.pz-no-scrollbar {
+  scrollbar-width: none;         /* Firefox */
+  -ms-overflow-style: none;      /* IE / old Edge */
+}
+.pz-no-scrollbar::-webkit-scrollbar {
+  display: none;                 /* Chromium / Safari */
+  width: 0;
+  height: 0;
+}
+
 /* Page transitions are now handled by GlobalTransitions.tsx via
  * framer-motion AnimatePresence — works in every browser. */
 

@@ -54,6 +54,7 @@ import { useLenis } from "@/hooks/useLenis";
 import { textOn, type Product } from "@/data/products";
 import ImageReel from "./ImageReel";
 import SpecReel from "./SpecReel";
+import RatingTable from "./RatingTable";
 import ProductCard from "./ProductCard";
 import {
   TextStaggerHover,
@@ -69,6 +70,16 @@ const SHOWCASE_TRANSITION_VH = 220;
 const SHOWCASE_CYCLES = 30;
 const SHOWCASE_ST_ID = "pz-showcase";
 const DETAIL_ST_ID = "pz-detail";
+/* Detail-track panel sequence:
+ *   1 — hero (frame on left; manufacturer rating table on right for
+ *       generators, fallback SpecReel for products without a table)
+ *   2 — story (tagline + descriptionLong + gallery[0])
+ *   3 — engineering breakdown + capabilities
+ *   4 — image + applications + origin (gallery[1])
+ *   5 — next-product hero (seamless handoff)
+ * The SpecReel-style description appears ONLY in the showcase listing
+ * (pre-click) — it's not duplicated into a detail panel per the
+ * customer's content-flow ask. */
 const DETAIL_PANELS = 5;
 
 const EASE = "power3.inOut";
@@ -897,19 +908,59 @@ export default function ProductExperience({
                 </h1>
               </div>
 
-              {/* Right half — renders the same SpecReel content the
-               * listing was showing pre-click, so the user perceives
-               * the right side as continuous (only the left side
-               * transforms during the entry choreography). */}
+              {/* Right half — manufacturer rating table for generators
+               * that have one (FPT, Perkins, Cummins, Yuchai). The
+               * SpecReel description that USED to live here now lives
+               * in the next panel ("moved forward in the horizontal
+               * scroll" per the customer ask). For products without
+               * a rating table (BESS / Battery / Inverter) we keep the
+               * old SpecReel-in-place behavior so those panels still
+               * read as continuous from the listing. */}
               <div
                 ref={detailRightRef}
                 className="relative overflow-hidden"
                 style={{ backgroundColor: activeProduct.rightColor }}
               >
-                <SpecReel
-                  products={[activeProduct]}
-                  panelRefs={detailSpecRefs}
-                />
+                {activeProduct.ratings && activeProduct.ratings.length > 0 ? (
+                  /* NO `pz-anim` on any descendant here — Panel 1 is the
+                     entry panel, revealed by the GSAP entry timeline's
+                     detailRightRef clip-path animation. Tagging children
+                     with pz-anim opts them into setupDetail()'s scroll-
+                     driven hide-then-reveal system, which zeroes them
+                     to opacity:0 right after the entry timeline shows
+                     them — that's what was causing the flash-then-vanish
+                     bug. Plain elements only on this panel. */
+                  <div
+                    className="flex h-full w-full flex-col px-[6vw] pt-[14vh] pb-[6vh]"
+                    style={{ color: textOn(activeProduct.rightColor) }}
+                  >
+                    <p
+                      className="font-mono text-[10px] uppercase tracking-[0.32em]"
+                      style={{ opacity: 0.55 }}
+                    >
+                      Model Ratings
+                    </p>
+                    <h2
+                      className="font-display mt-3 font-semibold leading-[1.04] text-[clamp(24px,2.6vw,38px)]"
+                      style={{ letterSpacing: "-0.02em" }}
+                    >
+                      {activeProduct.title} Lineup
+                    </h2>
+                    <div className="mt-6 min-h-0 flex-1 overflow-hidden">
+                      <RatingTable
+                        tables={activeProduct.ratings}
+                        fg={textOn(activeProduct.rightColor)}
+                        bg={activeProduct.rightColor}
+                        fillParent
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <SpecReel
+                    products={[activeProduct]}
+                    panelRefs={detailSpecRefs}
+                  />
+                )}
               </div>
             </section>
 

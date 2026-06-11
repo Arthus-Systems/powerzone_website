@@ -16,6 +16,22 @@ type SolutionCardData = {
   description: string;
 };
 
+/* Six cards (hard cap). Order picked for a B2B / government / EPC
+ * buyer reading through the carousel:
+ *   1-3 — engineering promise (reliability, stable power for
+ *         mission-critical sites, rapid response startup). What
+ *         they'll be comparing against other vendors first.
+ *   4   — engineer-supervised coupling. THE differentiator no other
+ *         Pakistani distributor has.
+ *   5   — 20+ years on the Pakistani grid. Pure credibility.
+ *   6   — nationwide doorstep service. Long-term cost reassurance.
+ *
+ * The two authorized-partner credentials (Cummins GOEM + FPT
+ * Distributor) live in the AuthorizedPartnersStrip immediately
+ * after PeekProductsSection on the homepage — that's the natural
+ * trust-badge footnote to the product cards, not a carousel beat.
+ * Dropped vs. the prior 9-card set: "Real Bill Savings" — secondary
+ * nice-to-have a buyer can infer from the engineering cards. */
 const SOLUTION_CARDS: SolutionCardData[] = [
   {
     title: 'Engineered for Reliability',
@@ -33,9 +49,19 @@ const SOLUTION_CARDS: SolutionCardData[] = [
       'Our diesel gensets and BESS systems are equipped with smart auto-start and synchronization capabilities, ensuring fast backup power during outages or grid instability — minimizing operational disruption.',
   },
   {
-    title: 'Real Bill Savings',
+    title: 'Engineer-Supervised Coupling',
     description:
-      'Fuel-efficient engines, smart battery dispatch, and optimized maintenance cycles make Power Zone systems cost-effective. Our hybrid setups help reduce fuel consumption and extend generator life, cutting your energy expenses over time.',
+      "First in Pakistan to put the generator coupling line under qualified engineers held to international standards. Built once, built right, with documented assembly tolerances — the difference between a unit that runs for a decade and one that fails in year two.",
+  },
+  {
+    title: '20+ Years on the Pakistani Grid',
+    description:
+      'Founded in 2003. Two decades of supplying, integrating, and supporting industrial power across Pakistan — long enough to know what actually works on this grid and what only looks good in a spec sheet.',
+  },
+  {
+    title: 'Nationwide Service, Doorstep Delivered',
+    description:
+      "Mobile service vans for doorstep after-sales support, anywhere in Pakistan — service is part of the product, not a separate contract. It's not just the equipment that keeps a site running; it's the company behind it.",
   },
 ];
 

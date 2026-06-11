@@ -3,14 +3,31 @@
 import Link from 'next/link';
 import TiltedCard from './ui/TiltedCard';
 
-// Cream background matches the GoalsSection further down so the upper
-// half of the page (after the dark hero) reads as one continuous warm
-// canvas. Section is min-h-screen + flex centered so it occupies the
-// full viewport when scrolled into — the cards land mid-screen rather
-// than crowding the section header.
+/* -----------------------------------------------------------------------------
+ * PeekProductsSection
+ *
+ * Single-viewport "Explore Our Products" surface. Three stacks fit inside
+ * exactly 100vh so the section can serve as the sticky-reveal underneath
+ * layer for the hero (see app/page.tsx) without any content getting clipped:
+ *
+ *   - eyebrow heading + intro line          (~14vh)
+ *   - two TiltedCards (Generators / BESS)    (~52vh)
+ *   - "Authorized Partner Of" credentials    (~22vh)
+ *
+ * The partner credentials live inside this section (not as a separate
+ * sibling) per the customer ask — they should read as one continuous
+ * "products" beat, not two separate beats.
+ *
+ * The Since-2003 company-credibility cards (Founded 2003 ·
+ * Engineer-Supervised Coupling · Nationwide Service Vans) and the
+ * company-behind-the-product tagline live in SolutionsSection's "Why
+ * Power Zone" carousel — they're stronger as scroll-paced trust signals
+ * there than as a credentials strip stacked here.
+ * -------------------------------------------------------------------------- */
+
 export default function PeekProductsSection() {
   return (
-    <section className="relative flex min-h-screen flex-col items-center overflow-hidden bg-[#F4EFE7] px-4 sm:px-6 md:px-12 py-12 lg:py-[clamp(28px,5vh,72px)]">
+    <section className="relative flex h-screen flex-col items-center overflow-hidden bg-[#F4EFE7] px-4 sm:px-6 md:px-12 py-[clamp(28px,5vh,72px)]">
       {/* Soft brand-accent glow in the top-right corner */}
       <div
         aria-hidden
@@ -21,22 +38,25 @@ export default function PeekProductsSection() {
         }}
       />
 
-      <div className="relative mx-auto flex w-full max-w-[1400px] flex-1 flex-col items-center justify-center gap-[clamp(24px,4.5vh,56px)]">
+      {/* justify-between distributes the three stacks (heading, cards,
+          partners) across the full flex height instead of clumping them
+          centered with empty space top/bottom. This was leaving the
+          section visibly shorter than the viewport. */}
+      <div className="relative mx-auto flex w-full max-w-[1400px] flex-1 flex-col items-center justify-between gap-[clamp(16px,3vh,40px)]">
         {/* Header — dark text on the cream surface */}
         <div className="text-center">
-          <h2 className="font-heading text-[clamp(28px,4.6vh,60px)] font-semibold leading-[1.05] tracking-tight text-black">
+          <h2 className="font-heading text-[clamp(28px,4.6vh,60px)] font-semibold leading-[1.04] tracking-tight text-black">
             Explore Our Products
           </h2>
-          <p className="font-body mx-auto mt-[clamp(12px,2vh,24px)] max-w-[40rem] text-[clamp(13px,1.7vh,16px)] leading-relaxed text-black/55">
+          <p className="font-body mx-auto mt-[clamp(8px,1.4vh,18px)] max-w-[42rem] text-[clamp(12px,1.5vh,15px)] leading-relaxed text-black/55">
             Diesel generators and battery storage systems engineered for the
             grid Pakistan actually has. Tap a card to explore the lineup.
           </p>
         </div>
 
-        {/* Cards — taller so the section fills the viewport, kept centered
-         * in a flex row (with a thin vertical divider between cards on
-         * md+ screens) that stacks on mobile. */}
-        <div className="flex w-full flex-col items-center justify-center gap-12 md:flex-row md:gap-16 lg:gap-20">
+        {/* Product cards — trimmed slightly from clamp(360,62vh,620) so the
+         * partner credentials fit underneath inside the same 100vh. */}
+        <div className="flex w-full flex-col items-center justify-center gap-8 md:flex-row md:gap-16 lg:gap-20">
           <Link
             href="/products?category=generators"
             aria-label="View our diesel generators"
@@ -45,27 +65,19 @@ export default function PeekProductsSection() {
             <TiltedCard
               imageSrc="/images/fpt_product_1.webp"
               altText="FPT diesel generator"
-              containerHeight="clamp(320px, 52vh, 520px)"
-              containerWidth="clamp(260px, 34vw, 420px)"
-              imageHeight="clamp(320px, 52vh, 520px)"
-              imageWidth="clamp(260px, 34vw, 420px)"
+              containerHeight="clamp(280px, 48vh, 460px)"
+              containerWidth="clamp(240px, 30vw, 380px)"
+              imageHeight="clamp(280px, 48vh, 460px)"
+              imageWidth="clamp(240px, 30vw, 380px)"
               rotateAmplitude={11}
               scaleOnHover={1.05}
               showMobileWarning={false}
               showTooltip={false}
               displayOverlayContent={true}
-              // Lighthouse-flagged LCP candidate. Setting priority adds
-              // loading="eager" + fetchPriority="high" so the browser starts
-              // this download immediately rather than treating it as
-              // viewport-lazy. Combined with the resized image (1.9MB → 65KB)
-              // this should clear the LCP audit cleanly.
               priority
               overlayContent={
                 <div className="flex h-full w-full flex-col justify-end">
                   <div className="bg-gradient-to-t from-black/95 via-black/70 to-transparent px-6 pt-24 pb-7">
-                    {/* <p className="font-mono text-[10px] uppercase tracking-[0.32em] text-red-400 mb-3">
-                      Generators
-                    </p> */}
                     <p className="font-body text-white text-[13px] sm:text-base md:text-2xl font-semibold leading-tight tracking-tight">
                       Learn more about
                       <br />
@@ -80,12 +92,9 @@ export default function PeekProductsSection() {
             />
           </Link>
 
-          {/* Thin vertical separator between the two product cards.
-           * Hidden on mobile (where the layout stacks); height roughly
-           * matches the cards so the line reads as a deliberate seam. */}
           <div
             aria-hidden
-            className="hidden md:block w-px h-[clamp(240px,42vh,420px)] bg-black/15"
+            className="hidden md:block w-px h-[clamp(220px,40vh,400px)] bg-black/15"
           />
 
           <Link
@@ -96,10 +105,10 @@ export default function PeekProductsSection() {
             <TiltedCard
               imageSrc="/images/bess_product_1.webp"
               altText="Power Zone battery energy storage cabinet"
-              containerHeight="clamp(320px, 52vh, 520px)"
-              containerWidth="clamp(260px, 34vw, 420px)"
-              imageHeight="clamp(320px, 52vh, 520px)"
-              imageWidth="clamp(260px, 34vw, 420px)"
+              containerHeight="clamp(280px, 48vh, 460px)"
+              containerWidth="clamp(240px, 30vw, 380px)"
+              imageHeight="clamp(280px, 48vh, 460px)"
+              imageWidth="clamp(240px, 30vw, 380px)"
               rotateAmplitude={11}
               scaleOnHover={1.05}
               showMobileWarning={false}
@@ -108,9 +117,6 @@ export default function PeekProductsSection() {
               overlayContent={
                 <div className="flex h-full w-full flex-col justify-end">
                   <div className="bg-gradient-to-t from-black/95 via-black/70 to-transparent px-6 pt-24 pb-7">
-                    {/* <p className="font-mono text-[10px] uppercase tracking-[0.32em] text-red-400 mb-3">
-                      Battery Storage
-                    </p> */}
                     <p className="font-body text-white text-[13px] sm:text-base md:text-2xl font-semibold leading-tight tracking-tight">
                       Learn more about our
                       <br />
@@ -126,72 +132,42 @@ export default function PeekProductsSection() {
           </Link>
         </div>
 
-        {/* ── Authorized Partner credentials ──────────────────────────────
-         * Sits below the product cards. Two substantial cards side-by-side,
-         * each surfacing the full credential statement at rest (no hover
-         * reveal needed). Uses the vertical space freed by dropping the
-         * "Explore" eyebrow so the strip reads as part of the section
-         * rather than an afterthought. */}
+        {/* Authorized Partner credentials — full-substance cards
+         * (not skinny pills) so they balance the visual weight of the
+         * enlarged product cards above. */}
         <div className="flex w-full max-w-[1280px] flex-col items-center">
-          <p className="font-tiny mb-[clamp(12px,1.8vh,22px)] text-[clamp(13px,1.6vh,16px)] uppercase tracking-[0.34em] text-black/55">
+          <p className="font-tiny mb-[clamp(10px,1.6vh,18px)] text-[clamp(11px,1.5vh,15px)] uppercase tracking-[0.34em] text-black/55">
             Authorized Partner Of
           </p>
           <div className="grid w-full gap-3 md:grid-cols-2 md:gap-4">
             <CredentialCard
               brand="Cummins"
               credential="GOEM · Pakistan"
-              tagline="Official GOEM of Cummins in Pakistan — powering the country with globally trusted Cummins engines, delivering unmatched performance, durability, and dependable support."
+              tagline="Official GOEM of Cummins in Pakistan — powering the country with globally trusted Cummins engines, delivering unmatched performance, durability, and dependable factory-backed support."
             />
             <CredentialCard
               brand="FPT"
               credential="Distributor · Pakistan"
-              tagline="Official FPT Distributor in Pakistan — delivering world-class Italian-engineered power solutions with full authenticity, support, and reliability."
+              tagline="Official FPT Distributor in Pakistan — delivering world-class Italian-engineered power solutions with full authenticity, factory support, and the reliability FPT Industrial is known for."
             />
           </div>
-        </div>
-
-        {/* ── Company credibility band ─────────────────────────────────────
-         * Folds in the founding year, the engineer-supervised coupling
-         * differentiator, and the nationwide service-van network — all
-         * carry-over content from the old Mission page that's a stronger
-         * buy-side signal than any product spec. Closes with the company-
-         * behind-the-product after-sales line that ran across the old
-         * homepage and is the spine of the B2B value pitch. */}
-        <div className="flex w-full max-w-[1280px] flex-col items-center">
-          <p className="font-tiny mb-[clamp(12px,1.8vh,22px)] text-[clamp(13px,1.6vh,16px)] uppercase tracking-[0.34em] text-black/55">
-            Since 2003
-          </p>
-          <div className="grid w-full gap-3 md:grid-cols-3 md:gap-4">
-            <StatCard
-              stat="20+ Years"
-              label="Founded 2003"
-              body="Two decades of supplying, integrating, and supporting industrial power across Pakistan — long enough to know what actually works on the country's grid."
-            />
-            <StatCard
-              stat="First in Pakistan"
-              label="Engineer-Supervised Coupling"
-              body="The first generator coupling line in Pakistan overseen by qualified engineers to international standards — built once, built right, with documented assembly tolerances."
-            />
-            <StatCard
-              stat="Nationwide"
-              label="Mobile Service Vans"
-              body="Mobile service vans for doorstep after-sales support, anywhere in Pakistan — service is part of the product, not a separate contract."
-            />
-          </div>
-          <p className="font-body mt-[clamp(16px,2.4vh,28px)] max-w-[44rem] text-center text-[clamp(14px,1.8vh,18px)] italic leading-relaxed text-black/70">
-            It&apos;s not just the product. It&apos;s the company behind the product —
-            engineered, installed, and supported by Power Zone.
-          </p>
         </div>
       </div>
     </section>
   );
 }
 
+/* AuthorizedPartnersStrip retained as a named export for backwards
+ * compatibility in case any other route imports it; renders nothing now
+ * that the credentials live inside PeekProductsSection itself. */
+export function AuthorizedPartnersStrip() {
+  return null;
+}
+
 /* ── CredentialCard ──────────────────────────────────────────────────────
- * Substantial credential card: brand wordmark + credential type + full
- * trust statement all visible at rest. Subtle lift + border darken on
- * hover. Brand-red dot for visual anchor. */
+ * Full-substance partner credential card — brand wordmark + credential
+ * type + trust statement. Sized to read as a meaningful card alongside
+ * the enlarged product cards above. */
 function CredentialCard({
   brand,
   credential,
@@ -220,41 +196,6 @@ function CredentialCard({
       <div aria-hidden className="hidden sm:block h-9 w-px shrink-0 bg-black/15" />
       <p className="font-body text-[12px] sm:text-[clamp(11px,1.4vh,13px)] leading-snug text-black/65">
         {tagline}
-      </p>
-    </div>
-  );
-}
-
-/* ── StatCard ────────────────────────────────────────────────────────────
- * Sibling of CredentialCard, used for the "Since 2003" credibility band.
- * Big stat number on top, small uppercase label, body copy beneath. Same
- * visual language as CredentialCard (rounded, soft hairline, subtle hover
- * lift) so the two bands read as one continuous credentials story. */
-function StatCard({
-  stat,
-  label,
-  body,
-}: {
-  stat: string;
-  label: string;
-  body: string;
-}) {
-  return (
-    <div className="group flex flex-col items-start gap-2 rounded-2xl border border-black/15 bg-black/[0.02] px-4 py-4 sm:px-5 sm:py-5 md:px-6 md:py-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-black/30 hover:bg-black/[0.04] hover:shadow-[0_10px_28px_rgba(0,0,0,0.08)]">
-      <div className="flex items-center gap-2.5">
-        <span
-          aria-hidden
-          className="inline-block h-2 w-2 shrink-0 rounded-full bg-red-600 transition-transform duration-200 group-hover:scale-125"
-        />
-        <span className="font-tiny text-[9px] uppercase tracking-[0.22em] text-red-600">
-          {label}
-        </span>
-      </div>
-      <h3 className="font-heading text-[clamp(20px,2.6vh,28px)] font-semibold leading-none tracking-tight text-black">
-        {stat}
-      </h3>
-      <p className="font-body text-[12px] sm:text-[clamp(11px,1.4vh,13px)] leading-snug text-black/65">
-        {body}
       </p>
     </div>
   );

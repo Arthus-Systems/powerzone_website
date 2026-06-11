@@ -50,6 +50,23 @@ export type Product = {
   features: string[];
   applications: string[];
   url: string;
+  /** Manufacturer rating list(s) shown in the detail panels as a
+   * tabular reference. Each entry is one self-contained table (header
+   * row + data rows), optionally titled — Cummins ships two manufacturer
+   * variants (AOSIF + UAE), other brands a single list. Cell count in
+   * each row must equal `headers.length`. Omit (undefined / []) for
+   * products that don't have a rating list (e.g. BESS, batteries,
+   * inverters). */
+  ratings?: RatingTable[];
+};
+
+export type RatingTable = {
+  /** Optional label shown above the table — used when a product has
+   * more than one manufacturer variant (Cummins → "AOSIF Manufacturer",
+   * "UAE Manufacturer"). Omit for single-table products. */
+  title?: string;
+  headers: string[];
+  rows: string[][];
 };
 
 /** Returns "#FFFFFF" or "#000000" depending on which gives better
@@ -101,6 +118,31 @@ export const products: Product[] = [
       "Microgrid integration",
     ],
     url: "https://powerzone.com.pk/fpt",
+    ratings: [
+      {
+        headers: ["Model", "KVA"],
+        rows: [
+          ["R24MANS01.23A02", "20 — R"],
+          ["R24MSNS01.31A02", "30 — R"],
+          ["R38MSNS01.55A01", "50 — R"],
+          ["NEF45AM2.S500", "50 — S"],
+          ["R38MSNS01.66A01", "60 — R"],
+          ["NEF45SM1A.S500", "60 — S"],
+          ["NEF45SM2A.S500", "80"],
+          ["NEF45TM2A.S500", "100"],
+          ["NEF45TM3.S500", "120"],
+          ["NEF67TM3A.S500", "150"],
+          ["NEF67TM4.S500", "170"],
+          ["NEF67TM7.S502", "200"],
+          ["NEF67TE8P.S500", "250"],
+          ["CURSOR87TE4.S550", "300"],
+          ["CURSOR13TE2A.S551", "350"],
+          ["CURSOR13TE3A.S551", "400"],
+          ["CR13TE7W.S550", "500"],
+          ["CR16TE1W.S550", "600"],
+        ],
+      },
+    ],
   },
   {
     id: 2,
@@ -141,6 +183,33 @@ export const products: Product[] = [
       "Data centers",
     ],
     url: "https://powerzone.com.pk/perkins",
+    ratings: [
+      {
+        headers: ["Model", "Prime Rating (kVA)", "PERKINS Engine No."],
+        rows: [
+          ["PZ13", "13", "403A-15G1 / 403D-15G1"],
+          ["PZ20", "20", "404A-22G1 / 404D-22G"],
+          ["PZ30", "30", "1103A-33G"],
+          ["PZ45", "45", "1103A-33TG1"],
+          ["PZ60", "60", "1103A-33TG2"],
+          ["PZ80", "80", "1104A-44TG2"],
+          ["PZ100", "100", "1104A-44TAG2"],
+          ["PZ150", "150", "11061-70TAG2"],
+          ["PZ200", "200", "1106A-70TAG4"],
+          ["PZ250", "250", "1206A-E70TTAG3"],
+          ["PZ300", "300", "1506A-E88TAG5"],
+          ["PZ350", "350", "2206A-E13TAG2 / 2206C-E13TAG2"],
+          ["PZ400", "400", "2206A-E13TAG3 / 2206C-E13TAG2"],
+          ["PZ500", "500", "2506A-E15TAG2 / 2506C-E15TAG2"],
+          ["PZ650", "650", "2806A-E18TAG2 / 2806C-E18TAG2"],
+          ["PZ800", "800", "4006-23TAG3A"],
+          ["PZ1000", "1000", "4008-TAG2A"],
+          ["PZ1250", "1250", "4012-46TWG2A"],
+          ["PZ1500", "1500", "4012-46TAG2A"],
+          ["PZ2000", "2000", "4016-61TRG2"],
+        ],
+      },
+    ],
   },
   {
     id: 3,
@@ -180,6 +249,97 @@ export const products: Product[] = [
       "Off-grid installations",
     ],
     url: "https://powerzone.com.pk/cummins",
+    ratings: [
+      {
+        title: "AOSIF Manufacturer",
+        headers: ["Prime Power (kVA/kW)", "Standby Power (kVA/kW)", "Engine Model"],
+        rows: [
+          ["21/17*", "24/19", "4B3.9-G11/25KW"],
+          ["25/20", "28/22", "QSB3.9-G3/25KW"],
+          ["28/22*", "30/24", "4B3.9-G1/24KW"],
+          ["28/22", "30/24", "4B3.9-G2-24KW"],
+          ["31/25", "34/27", "4B3.9-G2/27KW"],
+          ["38/30", "42/33", "QSB3.9-G33/36KW"],
+          ["38/30", "42/33", "B3.9CS4-GT3/36KW"],
+          ["40/32*", "44/35", "4BT3.9-G1/36KW"],
+          ["40/32", "44/35", "4BT3.9-G2/36KW"],
+          ["50/40", "55/44", "4BTA3.9-G2/50KW"],
+          ["56/45", "63/50", "QSB3.9-G35/58KW"],
+          ["63/50", "69/55", "4BTA3.9-G2/58KW"],
+          ["63/50", "69/55", "B3.9CS4-GT2/73KW"],
+          ["65/52", "70/56", "QSB3.9-G31/58KW"],
+          ["80/64", "90/72", "4BTA3.9-G11/75KW"],
+          ["75/60", "83/66", "B5.9CS4-GT3/75KW"],
+          ["88/70", "94/75", "QSB3.9-G37/84KW"],
+          ["94/75*", "103/82", "6BT5.9-G1/86KW"],
+          ["94/75", "103/82", "4BTA3.9-G13/87KW"],
+          ["95/76", "105/84", "6BTA5.9-G2/106KW"],
+          ["100/80*", "110/88", "4BTAA3.9-G3/96KW"],
+          ["100/80", "110/88", "QSB5.9-G2/86KW"],
+          ["100/80", "110/88", "QSB3.9-G39/100KW"],
+          ["100/80", "110/88", "6BT5.9-G2/86KW"],
+          ["100/80", "110/88", "B5.9CS4-GT2/107KW"],
+          ["105/84", "115/92", "4BTA3.9-G2/96KW"],
+          ["112/90", "125/100", "QSB5.9-G30/106KW"],
+          ["115/92", "125/100", "6BTA5.9-G2/106KW"],
+          ["125/100", "138/110", "6BTAA5.9-G2/120KW"],
+          ["125/100", "138/110", "B5.9CS4-GT1/117KW"],
+          ["138/110", "150/120", "QSB5.9-G31/132KW"],
+          ["135/108", "145/116", "6BTA5.9-G3/120KW"],
+          ["150/120", "165/132", "6BTAA5.9-G12/140KW"],
+          ["150/120", "165/132", "QSB5.9-G33/159KW"],
+          ["165/132", "165/132", "B6.7CS4-GT2/156KW"],
+          ["188/150", "206/165", "6BTC7-G2/173KW"],
+          ["188/150", "200/160", "6BTC7-G31/171KW"],
+          ["188/150", "200/160", "6CTA8.3-G1/163KW"],
+          ["200/160", "215/172", "6CTA8.3-G2/163KW"],
+          ["248/198", "250/200", "L9CS4-GT2/230KW"],
+          ["225/180", "250/200", "QSL9-G31/188KW"],
+          ["250/200", "250/200", "6CTAA8.3-G9/231KW"],
+          ["230/183", "264/211", "6CTAA8.3-G8/200KW"],
+          ["230/183", "275/220", "6LTA8.9-G3/230KW"],
+          ["230/183", "275/220", "6LTA8.9-G34/238KW"],
+          ["250/200", "275/220", "QSL9-G2/238KW"],
+          ["250/200", "275/220", "L9CS4-GT1/247KW"],
+          ["270/216", "300/240", "6LTA9.5-G3/250KW"],
+          ["280/224", "312/250", "6LTA9.5-G33/270KW"],
+          ["320/256", "350/280", "6LTAA9.5-G30/301KW"],
+          ["320/256", "350/280", "6LTAA9.5-G1/290KW"],
+          ["350/288", "385/308", "QSZ10-G12/315KW"],
+          ["340/280", "400/320", "QSZ13-G6/335KW"],
+          ["375/300", "375/300", "QSZ10-G11/345KW"],
+          ["388/310", "425/340", "6ZTAA13-G3/340KW"],
+          ["400/320", "450/360", "QSZ10-G7/367KW"],
+          ["438/350", "475/380", "6ZTAA13-G2/390KW"],
+          ["438/350", "475/380", "6LTAA14-G1/400KW"],
+          ["438/350", "469/375", "QSZ12-G2/400KW"],
+          ["450/360", "500/400", "QSZ13-G5/411KW"],
+          ["500/400", "525/420", "QSZ13-G3/450KW"],
+          ["500/400", "550/440", "QSZ13-G10/463KW"],
+        ],
+      },
+      {
+        title: "UAE Manufacturer",
+        headers: ["Model", "kVA*"],
+        rows: [
+          ["4B3.9-G11", "20"],
+          ["4B3.9-G1", "30"],
+          ["4BT3.9-G1", "40"],
+          ["4BTA3.9-G2", "50"],
+          ["4BTA3.9-G11", "80"],
+          ["6BT5.9-G1", "80"],
+          ["6BT5.9-G2", "100"],
+          ["6BTAA5.9-G12", "150"],
+          ["6CTA8.3-G2", "188"],
+          ["6CTAA8.3G7", "200"],
+          ["6LTAA9.5G3", "270"],
+          ["6LTAA9.5G1", "320"],
+          ["QSG12G3", "360"],
+          ["QSG12G4", "410"],
+          ["M15G8", "512"],
+        ],
+      },
+    ],
   },
   {
     id: 4,
@@ -219,6 +379,39 @@ export const products: Product[] = [
       "Construction sites",
     ],
     url: "https://powerzone.com.pk/yuchai",
+    ratings: [
+      {
+        headers: ["Model", "kVA"],
+        rows: [
+          ["YC4V35-D20", "20"],
+          ["YC4V45Z-D20", "30"],
+          ["YC4V55Z-D20", "40"],
+          ["YC4V35-D20", "20"],
+          ["YC4V45Z-D20", "30"],
+          ["YC4V55Z-D20", "40"],
+          ["YC4D60-D21", "40"],
+          ["YC4D60-D21", "40"],
+          ["YC4D90Z-D21", "62.5"],
+          ["YC4D90Z-D25", "62.5"],
+          ["YC4A100Z-D20", "75"],
+          ["YC4A100Z-D20", "80"],
+          ["YC4A140L-D20", "100"],
+          ["YC4A180L-D20", "125"],
+          ["YC6B180L-D20", "125"],
+          ["YC6B180L-D20", "125"],
+          ["YC6B205L-D20", "150"],
+          ["YC6A230L-D20", "175"],
+          ["YC6A245L-D21", "187.5"],
+          ["YC6MK285L-D20", "200"],
+          ["YC6MK350L-D20", "250"],
+          ["YC6MK350L-D20", "250"],
+          ["YC6MK420L-D20", "312.5"],
+          ["YC6MJ500L-D21", "375"],
+          ["YC6T600L-D22", "450"],
+          ["YC6T660L-D20", "500"],
+        ],
+      },
+    ],
   },
 ];
 
