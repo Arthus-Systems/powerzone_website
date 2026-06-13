@@ -804,6 +804,57 @@ function MobileIndustryStack() {
             />
           </motion.div>
         </AnimatePresence>
+
+        {/* ── Mobile scroll/swipe progress indicator ──────────────────────────
+            Mirrors the desktop dot column (left edge, line 433) but laid out
+            as a horizontal row at bottom-center so it doesn't fight the touch
+            swipe gutters. mix-blend-difference keeps it legible regardless of
+            the slide's background color. Active dot becomes a wide pill,
+            inactive dots are small circles — same visual language as desktop.
+            A "swipe up" chevron with animate-bounce above the row teaches
+            the gesture on the very first slide, fading once the user has
+            navigated at least once. */}
+        <div
+          aria-hidden
+          className="pointer-events-none fixed inset-x-0 bottom-6 z-[70] flex flex-col items-center gap-2 mix-blend-difference"
+        >
+          {!hasNavigated && (
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="white"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-4 w-4 animate-bounce opacity-80"
+              aria-hidden
+            >
+              <path d="M12 19V5M5 12l7-7 7 7" />
+            </svg>
+          )}
+          <nav
+            aria-label="Industry sections"
+            className="flex flex-row items-center gap-2"
+          >
+            {INDUSTRIES.map((_, i) => {
+              const active = activeIndex === i;
+              return (
+                <span
+                  key={i}
+                  className={`
+                    block rounded-full
+                    transition-all duration-500 ease-out
+                    ${
+                      active
+                        ? 'h-[3px] w-3 bg-white'
+                        : 'h-[3px] w-[3px] bg-white/35'
+                    }
+                  `}
+                />
+              );
+            })}
+          </nav>
+        </div>
       </div>
     </div>
   );

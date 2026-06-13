@@ -139,16 +139,38 @@ export default function PeekProductsSection() {
           <p className="font-tiny mb-[clamp(10px,1.6vh,18px)] text-[clamp(11px,1.5vh,15px)] uppercase tracking-[0.34em] text-black/55">
             Authorized Partner Of
           </p>
-          <div className="grid w-full gap-3 md:grid-cols-2 md:gap-4">
+          {/* `grid-cols-2` on mobile too (not stacked) so both partner
+              cards fit in the same horizontal row. Stacking on mobile
+              was pushing the FPT card past the section's 100vh
+              overflow-hidden clip, hiding it entirely. */}
+          <div className="grid w-full grid-cols-2 gap-2 md:gap-4">
             <CredentialCard
               brand="Cummins"
               credential="GOEM · Pakistan"
-              tagline="Official GOEM of Cummins in Pakistan — powering the country with globally trusted Cummins engines, delivering unmatched performance, durability, and dependable factory-backed support."
+              tagline={
+                <>
+                  <span className="sm:hidden">
+                    Official GOEM of Cummins in Pakistan.
+                  </span>
+                  <span className="hidden sm:inline">
+                    Official GOEM of Cummins in Pakistan — powering the country with globally trusted Cummins engines, delivering unmatched performance, durability, and dependable factory-backed support.
+                  </span>
+                </>
+              }
             />
             <CredentialCard
               brand="FPT"
               credential="Distributor · Pakistan"
-              tagline="Official FPT Distributor in Pakistan — delivering world-class Italian-engineered power solutions with full authenticity, factory support, and the reliability FPT Industrial is known for."
+              tagline={
+                <>
+                  <span className="sm:hidden">
+                    Official FPT Distributor in Pakistan.
+                  </span>
+                  <span className="hidden sm:inline">
+                    Official FPT Distributor in Pakistan — delivering world-class Italian-engineered power solutions with full authenticity, factory support, and the reliability FPT Industrial is known for.
+                  </span>
+                </>
+              }
             />
           </div>
         </div>
@@ -175,10 +197,10 @@ function CredentialCard({
 }: {
   brand: string;
   credential: string;
-  tagline: string;
+  tagline: React.ReactNode;
 }) {
   return (
-    <div className="group flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 md:gap-5 rounded-2xl border border-black/15 bg-black/[0.02] px-4 py-3 sm:px-5 sm:py-3.5 md:px-6 md:py-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-black/30 hover:bg-black/[0.04] hover:shadow-[0_10px_28px_rgba(0,0,0,0.08)]">
+    <div className="group flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 md:gap-5 rounded-2xl border border-black/15 bg-black/[0.02] px-3 py-2.5 sm:px-5 sm:py-3.5 md:px-6 md:py-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-black/30 hover:bg-black/[0.04] hover:shadow-[0_10px_28px_rgba(0,0,0,0.08)]">
       <div className="flex shrink-0 flex-col items-start gap-1.5">
         <div className="flex items-center gap-2.5">
           <span

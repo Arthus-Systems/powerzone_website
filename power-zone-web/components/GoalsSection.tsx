@@ -227,7 +227,7 @@ function GoalCard({
               sm:mt-5 sm:gap-2 sm:text-[11px] sm:tracking-[0.18em]
             "
           >
-            Flip to see more
+            Click to see more
             <svg
               viewBox="0 0 16 16"
               fill="none"
@@ -325,31 +325,47 @@ function GoalCard({
     </div>
   );
 
+  // Stable layoutId per card so framer-motion can animate the layout
+  // morph between the in-grid card (small, at the grid slot) and the
+  // portal'd card (full-size, fixed-centered at body level). The same
+  // layoutId on TWO motion.divs that mount/unmount opposite to each
+  // other lets framer-motion morph between their bboxes — that's the
+  // "grow from grid slot to viewport center" gesture. The flipInner
+  // inside both is the SAME JSX (driven by the same `isFlipped`
+  // state), so the rotateY animation plays concurrently with the
+  // layout morph — flip + enlarge as one coordinated gesture.
+  const layoutId = `pz-goal-${goal.title}`;
+
   return (
     <>
       <div className="relative h-[clamp(260px,40vh,340px)] sm:h-[clamp(360px,48vh,500px)]">
-        {/* In-grid card. Stays in the grid slot at all times; when
-            enlarged it fades out so the portal'd elevated card reads
-            as "the card lifted out". The opacity fade is short (220ms)
-            so the user perceives a quick handoff, not two separate
-            cards both visible. */}
-        <motion.div
-          animate={{ opacity: isEnlarged ? 0 : 1 }}
-          transition={{ duration: 0.22 }}
-          onClick={() => setIsFlipped(true)}
-          className="absolute inset-0 cursor-pointer"
-          style={{ pointerEvents: isEnlarged ? 'none' : 'auto' }}
-        >
-          {flipInner}
-        </motion.div>
+        {/* In-grid card — only mounted when NOT enlarged. When the
+            user clicks, isEnlarged flips true → this card unmounts,
+            the portal'd card mounts, and framer-motion morphs the
+            shared layoutId from grid slot → fixed center. */}
+        <AnimatePresence>
+          {!isEnlarged && (
+            <motion.div
+              key="ingrid"
+              layoutId={layoutId}
+              onClick={() => setIsFlipped(true)}
+              className="absolute inset-0 cursor-pointer"
+            >
+              {flipInner}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Portal'd elevated card + backdrop. Renders to document.body
           so it lives in the ROOT stacking context — escapes any
           sibling section's sticky/stacking context that would
           otherwise paint over its bottom edge during the
-          GoalsSection → ProcessSection transition. z-[9999]/[10000]
-          beat anything else on the page. */}
+          GoalsSection → ProcessSection transition. The card uses the
+          same layoutId as the in-grid card so framer-motion smoothly
+          morphs the layout between them, with the rotateY flip
+          animation inside flipInner running in parallel — "flip +
+          enlarge to center" as one gesture. */}
       {typeof window !== 'undefined' &&
         createPortal(
           <AnimatePresence>
@@ -366,88 +382,12 @@ function GoalCard({
                 />
                 <motion.div
                   key="goal-flip-card"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+                  layoutId={layoutId}
+                  transition={{ layout: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } }}
                   onClick={() => setIsFlipped(false)}
                   className="fixed inset-0 m-auto z-[10000] cursor-pointer w-[min(340px,90vw)] h-[min(560px,82vh)] md:w-[min(880px,88vw)] md:h-[min(640px,85vh)]"
                 >
-                  {/* Render the back face directly — the portal'd card
-                      doesn't need the rotateY animation since the user
-                      perceives the flip via the in-grid → enlarged
-                      handoff (in-grid card fades, enlarged card scales
-                      in showing the back face). */}
-                  <div
-                    className="pz-goal-flip-stage pz-goal-enlarged h-full w-full"
-                    style={{ perspective: '1200px' }}
-                  >
-                    <div
-                      className="pz-goal-back relative h-full w-full overflow-hidden rounded-2xl shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06),0_12px_32px_-8px_rgba(0,0,0,0.10)]"
-                    >
-                      {goal.backImage && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={goal.backImage}
-                          alt=""
-                          aria-hidden
-                          className="absolute inset-0 h-full w-full object-cover"
-                        />
-                      )}
-                      <div
-                        aria-hidden
-                        className="absolute inset-0"
-                        style={{
-                          background:
-                            'linear-gradient(180deg, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.62) 55%, rgba(0,0,0,0.78) 100%)',
-                        }}
-                      />
-                      <div className="pz-goal-back-content relative z-10 flex h-full flex-col p-5 sm:p-7 md:p-9">
-                        <p className="pz-goal-back-title font-tiny shrink-0 text-[11px] font-semibold uppercase tracking-[0.22em] text-red-400 md:text-[14px]">
-                          {goal.title}
-                        </p>
-                        <ul className="pz-goal-back-list mt-4 flex-1 space-y-3 md:mt-6 md:space-y-4">
-                          {goal.backPoints.map((point) => (
-                            <li
-                              key={point}
-                              className="flex items-start gap-2.5 md:gap-3"
-                            >
-                              <span
-                                aria-hidden
-                                className="pz-goal-back-dot mt-[8px] h-1.5 w-1.5 shrink-0 rounded-full bg-red-500 md:mt-[10px] md:h-2 md:w-2"
-                              />
-                              <span className="pz-goal-back-text font-body text-[13px] leading-relaxed text-white/90 md:text-[16px]">
-                                {point}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setIsFlipped(false);
-                          }}
-                          className="pz-goal-back-flipbtn font-tiny mt-4 inline-flex shrink-0 items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70 transition-colors hover:text-red-400 md:mt-6 md:text-[13px]"
-                        >
-                          <svg
-                            viewBox="0 0 16 16"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth={1.5}
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="h-4 w-4"
-                            aria-hidden
-                          >
-                            <path d="M3 8h10" />
-                            <path d="M7 4L3 8 7 12" />
-                          </svg>
-                          Close
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                  {flipInner}
                 </motion.div>
               </>
             )}

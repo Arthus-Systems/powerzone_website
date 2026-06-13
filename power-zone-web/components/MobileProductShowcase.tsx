@@ -260,6 +260,54 @@ export default function MobileProductShowcase({
               onCardClick={handleCardClick}
             />
           </div>
+
+          {/* ── Mobile scroll progress indicator ──────────────────────
+              Mirrors the desktop ProductNav dot column (vertical on the
+              right edge for desktop) as a horizontal row at bottom-
+              center for mobile. mix-blend-difference keeps it legible
+              over both the top photo and the bottom description.
+              Active dot = wide pill; inactive = small circle. A "scroll
+              down" chevron with animate-bounce above the row teaches
+              the gesture on the first product, fading once the user
+              has swiped past index 0. */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 bottom-6 z-40 flex flex-col items-center gap-2 mix-blend-difference"
+          >
+            {currentVisibleIdx === 0 && (
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4 w-4 animate-bounce opacity-80"
+                aria-hidden
+              >
+                <path d="M12 5v14M5 12l7 7 7-7" />
+              </svg>
+            )}
+            <div className="flex flex-row items-center gap-2">
+              {products.map((_, i) => {
+                const active = currentVisibleIdx === i;
+                return (
+                  <span
+                    key={i}
+                    className={`
+                      block rounded-full
+                      transition-all duration-500 ease-out
+                      ${
+                        active
+                          ? 'h-[3px] w-3 bg-white'
+                          : 'h-[3px] w-[3px] bg-white/35'
+                      }
+                    `}
+                  />
+                );
+              })}
+            </div>
+          </div>
         </section>
       </div>
 

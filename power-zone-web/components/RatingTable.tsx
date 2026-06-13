@@ -20,14 +20,17 @@
  *     where the parent provides a bounded box and a 2-table Cummins
  *     case would otherwise overflow that 100vh panel.
  *
- * Scroll behaviour: the table has a native scrollbar (always visible
- * for the columns that overflow). Wheel/touchpad gestures over the
- * table do NOT scroll the table — they continue to drive the page
- * (Lenis catches them via the global wheel handler, since this
- * component does NOT set data-lenis-prevent). The ONLY way to scroll
- * the table internally is by clicking + dragging the scrollbar. This
- * matches the customer ask: "make it only scrollable through the
- * scroll bar nothing else."
+ * Scroll behaviour:
+ *   - DESKTOP — native scrollbar always visible; wheel/touchpad
+ *     gestures over the table do NOT scroll the table (Lenis catches
+ *     wheel globally; this component does NOT set data-lenis-prevent).
+ *     The only way to scroll the table is dragging the scrollbar.
+ *   - MOBILE — native touch scroll inside the table works (Lenis only
+ *     handles wheel). When the table reaches its top/bottom boundary,
+ *     touch scroll CHAINS naturally to the page so the user can keep
+ *     scrolling past the table without lifting their finger. (This is
+ *     why we don't set overscroll-behavior:contain — that would trap
+ *     the user inside the 44vh/62vh table.)
  * -------------------------------------------------------------------------- */
 
 import type { RatingTable as RatingTableType } from "@/data/products";
@@ -99,10 +102,10 @@ export default function RatingTable({
 
         const scrollStyle: React.CSSProperties = {
           border: `1px solid ${borderColor}`,
-          // overscrollBehavior:contain still scoped here so even if
-          // someone tries wheeling (Lenis catches it instead but as
-          // belt-and-suspenders), no chain to page.
-          overscrollBehavior: "contain",
+          // No overscroll-behavior:contain here — on mobile that would
+          // trap touch scroll inside the table at its boundaries; on
+          // desktop it's unnecessary since Lenis catches all wheel
+          // events globally so the table never sees a chain-able wheel.
         };
         if (!fillParent) {
           // Page-flow mode (mobile): cap per-table height so a 60-row
